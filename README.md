@@ -102,7 +102,9 @@ npm run dev                 # starts on http://localhost:5173
 
 ### Pages
 
-- `/register`, `/login`, `/admin/login`
+- `/` — public home page (opens by default), with a top navbar (Home, Login,
+  Register, Admin — swaps to Dashboard/Logout once signed in)
+- `/login`, `/register`, `/admin/login`
 - `/forgot-password`, `/reset-password/:token`
 - `/verify-email/:token`
 - `/dashboard` (user, protected), `/admin/dashboard` (admin, protected)
@@ -110,10 +112,28 @@ npm run dev                 # starts on http://localhost:5173
 ### UI
 
 Redesigned around a "prescription pad" visual system — dashed perforated
-card edges, an Rx mark, mono-styled field labels, toast notifications,
-show/hide password toggles, and a soft email-verification nudge banner.
-Admin screens use a distinct warm accent so the two roles are visually
-unmistakable.
+card edges, mono-styled field labels, `lucide-react` icons on every input
+(mail, user, phone, lock, show/hide password), toast notifications, and a
+soft email-verification nudge banner. Admin screens use a distinct warm
+accent so the two roles are visually unmistakable.
+
+### Getting real password-reset emails working
+
+`forgot-password` always works, but where the email actually goes depends
+on your `.env`:
+
+- **Nothing configured** → sent to a free Ethereal test inbox; the server
+  console prints a clickable preview link so you can see the email content,
+  but it never reaches a real address.
+- **Gmail (easiest for real delivery)** → set `SMTP_SERVICE=gmail`,
+  `SMTP_USER=you@gmail.com`, `SMTP_PASS=<App Password>` (create one at
+  https://myaccount.google.com/apppasswords — requires 2FA on the account).
+  Restart the server after editing `.env`.
+- **Any other provider** → set `SMTP_HOST`/`SMTP_PORT` instead of
+  `SMTP_SERVICE`.
+
+Email sending never crashes the request — if SMTP fails, the error is
+logged to the server console and the API still responds normally.
 
 ## What's Next (Module 2+)
 

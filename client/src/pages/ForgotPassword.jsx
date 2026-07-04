@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Mail } from 'lucide-react';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import AuthCard from '../components/AuthCard';
+import IconInput from '../components/IconInput';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -33,7 +35,8 @@ const ForgotPassword = () => {
       ) : (
         <form onSubmit={handleSubmit} noValidate>
           <label className="field-label" htmlFor="email">Email</label>
-          <input
+          <IconInput
+            icon={Mail}
             id="email"
             type="email"
             placeholder="jane@example.com"

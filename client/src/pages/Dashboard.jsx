@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ShoppingBag } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -35,7 +36,7 @@ const Dashboard = () => {
 
       {data && <p className="info-text">{data.info}</p>}
       <div className="placeholder-card">
-        <span className="rx-mark small">Rx</span>
+        <ShoppingBag size={20} strokeWidth={2} className="placeholder-icon" />
         Medicine shopping, cart, checkout & order history unlock in Module 2.
       </div>
     </div>

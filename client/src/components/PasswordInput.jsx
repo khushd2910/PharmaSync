@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { Lock, Eye, EyeOff } from 'lucide-react';
 
 const PasswordInput = ({ name, placeholder, value, onChange, minLength, required, autoComplete }) => {
   const [visible, setVisible] = useState(false);
 
   return (
-    <div className="password-field">
+    <div className="icon-input">
+      <Lock size={16} className="icon-input-icon" strokeWidth={2} />
       <input
         name={name}
         type={visible ? 'text' : 'password'}
@@ -14,6 +16,7 @@ const PasswordInput = ({ name, placeholder, value, onChange, minLength, required
         minLength={minLength}
         required={required}
         autoComplete={autoComplete}
+        className="has-trailing-icon"
       />
       <button
         type="button"
@@ -22,7 +25,7 @@ const PasswordInput = ({ name, placeholder, value, onChange, minLength, required
         aria-label={visible ? 'Hide password' : 'Show password'}
         tabIndex={-1}
       >
-        {visible ? 'Hide' : 'Show'}
+        {visible ? <EyeOff size={16} strokeWidth={2} /> : <Eye size={16} strokeWidth={2} />}
       </button>
     </div>
   );

@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Mail } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import AuthCard from '../components/AuthCard';
 import PasswordInput from '../components/PasswordInput';
+import IconInput from '../components/IconInput';
 
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -39,7 +41,7 @@ const Login = () => {
       <form onSubmit={handleSubmit} noValidate>
         {error && <p className="error-text">{error}</p>}
         <label className="field-label" htmlFor="email">Email</label>
-        <input id="email" name="email" type="email" placeholder="jane@example.com" value={form.email} onChange={handleChange} required autoComplete="email" />
+        <IconInput icon={Mail} id="email" name="email" type="email" placeholder="jane@example.com" value={form.email} onChange={handleChange} required autoComplete="email" />
 
         <label className="field-label" htmlFor="password">Password</label>
         <PasswordInput

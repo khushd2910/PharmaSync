@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { User, Mail, Phone } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import AuthCard from '../components/AuthCard';
 import PasswordInput from '../components/PasswordInput';
+import IconInput from '../components/IconInput';
 
 const Register = () => {
   const [form, setForm] = useState({ name: '', email: '', password: '', phone: '' });
@@ -39,13 +41,13 @@ const Register = () => {
       <form onSubmit={handleSubmit} noValidate>
         {error && <p className="error-text">{error}</p>}
         <label className="field-label" htmlFor="name">Full name</label>
-        <input id="name" name="name" placeholder="Jane Doe" value={form.name} onChange={handleChange} required />
+        <IconInput icon={User} id="name" name="name" placeholder="Jane Doe" value={form.name} onChange={handleChange} required />
 
         <label className="field-label" htmlFor="email">Email</label>
-        <input id="email" name="email" type="email" placeholder="jane@example.com" value={form.email} onChange={handleChange} required autoComplete="email" />
+        <IconInput icon={Mail} id="email" name="email" type="email" placeholder="jane@example.com" value={form.email} onChange={handleChange} required autoComplete="email" />
 
         <label className="field-label" htmlFor="phone">Phone <span className="optional-tag">optional</span></label>
-        <input id="phone" name="phone" placeholder="+91 98765 43210" value={form.phone} onChange={handleChange} />
+        <IconInput icon={Phone} id="phone" name="phone" placeholder="+91 98765 43210" value={form.phone} onChange={handleChange} />
 
         <label className="field-label" htmlFor="password">Password</label>
         <PasswordInput
