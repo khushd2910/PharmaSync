@@ -40,6 +40,46 @@ pharma-management/
 - **Request logging** via morgan
 - **Configurable CORS** for one or more client origins
 
+## Medicine data (guest browsing)
+
+The home page lets guests browse medicines without logging in. It's seeded
+from the **[Indian Medicine Dataset](https://github.com/junioralive/Indian-Medicine-Dataset)**
+(253,973 real medicines — name, price, manufacturer, composition, pack
+size), which is community-maintained and free to use. Check that repo for
+attribution/licensing details if you plan to deploy this commercially.
+
+The CSV is already included at `server/data/indian_medicine_data.csv`.
+To load it into MongoDB:
+
+```bash
+cd server
+node scripts/importMedicines.js
+```
+
+This streams the CSV (so it doesn't load 31MB into memory at once), inserts
+in batches, skips malformed rows, and builds the text search index used by
+the browse/search bar. Re-running it clears and re-imports the collection.
+
+### Other data source options (for later modules)
+
+- **[openFDA](https://open.fda.gov/apis/drug/)** — free, no key required for
+  moderate use, updated daily. Good for supplementary drug label info
+  (warnings, dosage, interactions) fetched live via the Django
+  `python-service`, rather than bulk-imported.
+- **[RxNorm (NLM)](https://www.nlm.nih.gov/research/umls/rxnorm/)** — free
+  API for normalized drug names/ingredients, useful for matching brand
+  names to generic equivalents.
+
+### New public API endpoints
+
+| Method | Endpoint              | Access | Description                                  |
+|--------|------------------------|--------|-----------------------------------------------|
+| GET    | /api/medicines          | Public | List/search medicines — `?search=&sort=&page=&limit=` |
+| GET    | /api/medicines/:id      | Public | Get a single medicine's details               |
+
+`sort` accepts `name`, `price-asc`, `price-desc` (defaults to relevance when
+searching, name otherwise).
+
 ## Prerequisites
 
 - Node.js 18+
