@@ -4,19 +4,16 @@ import api from '../api/axios';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
+  // The JWT itself lives only in httpOnly cookies (inaccessible to JS).
+  // We cache the non-sensitive user object for instant UI on reload, then
+  // verify it against the server via /auth/me.
   const [user, setUser] = useState(() => {
     const stored = localStorage.getItem('user');
     return stored ? JSON.parse(stored) : null;
   });
   const [loading, setLoading] = useState(true);
 
-  // On first load, verify the stored token is still valid by hitting /auth/me
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setLoading(false);
-      return;
-    }
     api
       .get('/auth/me')
       .then((res) => {
@@ -25,14 +22,13 @@ export const AuthProvider = ({ children }) => {
       })
       .catch(() => {
         setUser(null);
-        localStorage.removeItem('token');
         localStorage.removeItem('user');
       })
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const login = (token, userData) => {
-    localStorage.setItem('token', token);
+  const login = (userData) => {
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
   };
@@ -41,9 +37,8 @@ export const AuthProvider = ({ children }) => {
     try {
       await api.post('/auth/logout');
     } catch (e) {
-      // even if the API call fails, clear local session
+      // even if the API call fails, clear local session state
     }
-    localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
   };

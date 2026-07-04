@@ -20,14 +20,23 @@ const Dashboard = () => {
   return (
     <div className="dashboard-page">
       <header className="dashboard-header">
-        <h2>User Dashboard</h2>
-        <button onClick={handleLogout}>Logout</button>
+        <div>
+          <p className="dashboard-eyebrow">Patient Dashboard</p>
+          <h2>Welcome, {user?.name?.split(' ')[0]}</h2>
+        </div>
+        <button className="btn-secondary" onClick={handleLogout}>Logout</button>
       </header>
-      <p>Welcome, {user?.name} 👋</p>
+
+      {user && !user.isVerified && (
+        <div className="notice-banner">
+          Your email isn't verified yet. Check your inbox for the verification link we sent when you registered.
+        </div>
+      )}
+
       {data && <p className="info-text">{data.info}</p>}
       <div className="placeholder-card">
-        Medicine shopping, cart, checkout & order history will be enabled in
-        Module 2.
+        <span className="rx-mark small">Rx</span>
+        Medicine shopping, cart, checkout & order history unlock in Module 2.
       </div>
     </div>
   );

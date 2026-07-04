@@ -20,14 +20,17 @@ const AdminDashboard = () => {
   return (
     <div className="dashboard-page admin-theme">
       <header className="dashboard-header">
-        <h2>Admin Dashboard</h2>
-        <button onClick={handleLogout}>Logout</button>
+        <div>
+          <p className="dashboard-eyebrow">Admin Dashboard</p>
+          <h2>Welcome, {user?.name?.split(' ')[0]}</h2>
+        </div>
+        <button className="btn-secondary admin" onClick={handleLogout}>Logout</button>
       </header>
-      <p>Welcome, {user?.name} 👋</p>
+
       {data && <p className="info-text">{data.info}</p>}
       <div className="placeholder-card">
-        Medicine CRUD, stock management, order management, POS billing &
-        invoicing will be enabled in later modules.
+        <span className="rx-mark small">Rx</span>
+        Medicine CRUD, stock management, order management, POS billing & invoicing unlock in later modules.
       </div>
     </div>
   );
