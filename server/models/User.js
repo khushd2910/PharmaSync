@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 const userSchema = new mongoose.Schema(
   {
@@ -39,6 +40,32 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verificationToken: {
+      type: String,
+      select: false,
+    },
+    verificationExpires: {
+      type: Date,
+      select: false,
+    },
+    passwordResetToken: {
+      type: String,
+      select: false,
+    },
+    passwordResetExpires: {
+      type: Date,
+      select: false,
+    },
+    // hashed copy of the current valid refresh token, so a stolen/expired
+    // token can be invalidated server-side (e.g. on logout)
+    refreshTokenHash: {
+      type: String,
+      select: false,
+    },
   },
   { timestamps: true }
 );
@@ -54,6 +81,29 @@ userSchema.pre('save', async function (next) {
 // Instance method to compare passwords
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return bcrypt.compare(enteredPassword, this.password);
+};
+
+// Generates a random email-verification token, stores its SHA-256 hash on
+// the document, and returns the RAW token (only the raw token is emailed —
+// the hash is what's stored, mirroring how passwords are never stored raw)
+userSchema.methods.createVerificationToken = function () {
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  this.verificationToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+  this.verificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24h
+  return rawToken;
+};
+
+// Same pattern for password-reset tokens
+userSchema.methods.createPasswordResetToken = function () {
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  this.passwordResetToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+  this.passwordResetExpires = Date.now() + 60 * 60 * 1000; // 1h
+  return rawToken;
+};
+
+// Hashes a refresh token the same way, for storage/comparison
+userSchema.methods.hashToken = function (rawToken) {
+  return crypto.createHash('sha256').update(rawToken).digest('hex');
 };
 
 module.exports = mongoose.model('User', userSchema);
