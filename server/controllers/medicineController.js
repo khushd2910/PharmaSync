@@ -1,6 +1,7 @@
 const Medicine = require('../models/Medicine');
 const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
+<<<<<<< HEAD
 
 const SORT_OPTIONS = {
   relevance: { score: { $meta: 'textScore' } },
@@ -12,11 +13,53 @@ const SORT_OPTIONS = {
 // @desc    List/search medicines with pagination — publicly accessible so
 //          guests can browse before creating an account
 // @route   GET /api/medicines?search=&page=&limit=&sort=
+=======
+const fetchDrugInfo = require('../utils/fetchDrugInfo');
+
+const SORT_OPTIONS = {
+  name: { name: 1 },
+  'price-asc': { price: 1 },
+  'price-desc': { price: -1 },
+  newest: { createdAt: -1 },
+};
+
+// Escapes regex special characters so user input can never be interpreted
+// as regex syntax (avoids both errors and regex-injection surprises)
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// Case-insensitive SUBSTRING search (not MongoDB's $text, which only does
+// whole-word/stemmed matching and would miss "roz" inside "Rozu"). Splits
+// the query into words so "amox clav" or "clav amox" both match a medicine
+// containing both substrings somewhere across name/manufacturer/
+// composition, regardless of which order the words were typed in — that
+// covers realistic reordering (brand vs. manufacturer word order) without
+// resorting to full letter-by-letter anagram matching, which would wreck
+// result relevance for everyone else (e.g. "tab" would start matching "bat").
+const buildSearchFilter = (search) => {
+  const tokens = search.trim().split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return null;
+
+  return {
+    $and: tokens.map((token) => {
+      const regex = new RegExp(escapeRegex(token), 'i');
+      return {
+        $or: [{ name: regex }, { manufacturer: regex }, { composition1: regex }, { composition2: regex }],
+      };
+    }),
+  };
+};
+
+// @desc    List/search/filter medicines with pagination — publicly
+//          accessible so guests can browse before creating an account.
+//          Also powers Home page sections via query flags (featured, onOffer).
+// @route   GET /api/medicines?search=&category=&brand=&prescriptionRequired=&inStock=&sort=&page=&limit=
+>>>>>>> master
 // @access  Public
 const listMedicines = catchAsync(async (req, res) => {
   const search = (req.query.search || '').trim();
   const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
   const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 50);
+<<<<<<< HEAD
   const sortKey = SORT_OPTIONS[req.query.sort] ? req.query.sort : search ? 'relevance' : 'name';
 
   const filter = { isDiscontinued: { $ne: true } };
@@ -29,6 +72,40 @@ const listMedicines = catchAsync(async (req, res) => {
 
   const [medicines, total] = await Promise.all([
     Medicine.find(filter, projection)
+=======
+
+  const filter = { isDiscontinued: { $ne: true } };
+
+  const searchFilter = search ? buildSearchFilter(search) : null;
+  if (searchFilter) {
+    Object.assign(filter, searchFilter);
+  }
+  if (req.query.category) {
+    filter.category = req.query.category;
+  }
+  if (req.query.brand) {
+    filter.manufacturer = req.query.brand;
+  }
+  if (req.query.prescriptionRequired === 'true') {
+    filter.requiresPrescription = true;
+  } else if (req.query.prescriptionRequired === 'false') {
+    filter.requiresPrescription = false;
+  }
+  if (req.query.inStock === 'true') {
+    filter.stock = { $gt: 0 };
+  }
+  if (req.query.featured === 'true') {
+    filter.isFeatured = true;
+  }
+  if (req.query.onOffer === 'true') {
+    filter.discountPercent = { $gt: 0 };
+  }
+
+  const sortKey = SORT_OPTIONS[req.query.sort] ? req.query.sort : 'name';
+
+  const [medicines, total] = await Promise.all([
+    Medicine.find(filter)
+>>>>>>> master
       .sort(SORT_OPTIONS[sortKey])
       .skip((page - 1) * limit)
       .limit(limit),
@@ -46,7 +123,29 @@ const listMedicines = catchAsync(async (req, res) => {
   });
 });
 
+<<<<<<< HEAD
 // @desc    Get a single medicine's details
+=======
+// @desc    Distinct list of categories, for the Home page's category pills
+//          and the search filter dropdown
+// @route   GET /api/medicines/categories
+// @access  Public
+const getCategories = catchAsync(async (req, res) => {
+  const categories = await Medicine.distinct('category', { isDiscontinued: { $ne: true } });
+  return res.status(200).json({ categories: categories.filter(Boolean).sort() });
+});
+
+// @desc    Distinct list of manufacturers, for the brand search filter
+// @route   GET /api/medicines/brands
+// @access  Public
+const getBrands = catchAsync(async (req, res) => {
+  const brands = await Medicine.distinct('manufacturer', { isDiscontinued: { $ne: true } });
+  return res.status(200).json({ brands: brands.filter(Boolean).sort() });
+});
+
+// @desc    Get a single medicine's details, enriched with a live openFDA
+//          lookup where a reliable US-generic-name match exists
+>>>>>>> master
 // @route   GET /api/medicines/:id
 // @access  Public
 const getMedicineById = catchAsync(async (req, res, next) => {
@@ -54,7 +153,17 @@ const getMedicineById = catchAsync(async (req, res, next) => {
   if (!medicine) {
     return next(new AppError('Medicine not found', 404));
   }
+<<<<<<< HEAD
   return res.status(200).json({ medicine });
 });
 
 module.exports = { listMedicines, getMedicineById };
+=======
+
+  const apiInfo = await fetchDrugInfo(medicine.fdaAlias);
+
+  return res.status(200).json({ medicine, apiInfo });
+});
+
+module.exports = { listMedicines, getCategories, getBrands, getMedicineById };
+>>>>>>> master

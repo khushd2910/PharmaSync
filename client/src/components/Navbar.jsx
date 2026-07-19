@@ -1,9 +1,19 @@
 import { Link, useNavigate } from 'react-router-dom';
+<<<<<<< HEAD
 import { Pill, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+=======
+import { Pill, LogOut, ShoppingCart, User as UserIcon, ClipboardList } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
+
+const Navbar = () => {
+  const { user, logout } = useAuth();
+  const { cart } = useCart();
+>>>>>>> master
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -31,7 +41,21 @@ const Navbar = () => {
 
         {user && user.role === 'user' && (
           <>
+<<<<<<< HEAD
             <Link to="/dashboard" className="navbar-link">Dashboard</Link>
+=======
+            <Link to="/orders" className="navbar-link icon-link">
+              <ClipboardList size={16} strokeWidth={2} /> Orders
+            </Link>
+            <Link to="/profile" className="navbar-link icon-link">
+              <UserIcon size={16} strokeWidth={2} /> Profile
+            </Link>
+            <Link to="/cart" className="navbar-link icon-link cart-link">
+              <ShoppingCart size={16} strokeWidth={2} />
+              Cart
+              {cart.totalItems > 0 && <span className="cart-badge">{cart.totalItems}</span>}
+            </Link>
+>>>>>>> master
             <button className="navbar-btn ghost" onClick={handleLogout}>
               <LogOut size={15} strokeWidth={2} /> Logout
             </button>

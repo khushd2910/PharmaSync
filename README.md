@@ -49,6 +49,7 @@ size), which is community-maintained and free to use. Check that repo for
 attribution/licensing details if you plan to deploy this commercially.
 
 The CSV is already included at `server/data/indian_medicine_data.csv`.
+<<<<<<< HEAD
 To load it into MongoDB:
 
 ```bash
@@ -56,6 +57,23 @@ cd server
 node scripts/importMedicines.js
 ```
 
+=======
+**Use this script** to load the curated, common-medicine subset (~1,150
+medicines with demo stock/category/featured/discount data — this is the one
+the storefront is actually built around):
+
+```bash
+cd server
+node scripts/importCommonMedicines.js
+```
+
+⚠️ There's also a `scripts/importMedicines.js` left over from an earlier
+version of this project, which imports the *entire* 253k-row dataset with
+none of the demo stock/category/offer data populated (medicines will show
+as permanently out of stock, and the Offers/Popular rows will be empty).
+**Don't use it** — it's kept only for reference and prints a warning if run.
+
+>>>>>>> master
 This streams the CSV (so it doesn't load 31MB into memory at once), inserts
 in batches, skips malformed rows, and builds the text search index used by
 the browse/search bar. Re-running it clears and re-imports the collection.
@@ -175,6 +193,7 @@ on your `.env`:
 Email sending never crashes the request — if SMTP fails, the error is
 logged to the server console and the API still responds normally.
 
+<<<<<<< HEAD
 ## What's Next (Module 2+)
 
 - Medicine CRUD, search/filters/sorting, medicine details
@@ -182,3 +201,43 @@ logged to the server console and the API still responds normally.
 - Stock & order management, offline POS billing, GST invoice PDFs
 - Sales/inventory/expiry analytics (Django + Pandas), CSV reports
 - AI chatbot & prescription-based medicine alerts
+=======
+## Module 2 — Shopping, Orders & Admin (complete)
+
+**Catalog:** ~1,150 curated common medicines (see "Medicine data" above),
+categories, brand/price/prescription/stock filters, Offers/Popular/Recently
+Added rows, medicine detail page with a live openFDA lookup.
+
+**Cart & Checkout:** server-persisted cart (login required), quantity
+controls, address form with browser-geolocation + free OpenStreetMap
+preview (swap in real Google Maps later once you have an API key — the
+integration point is `client/src/pages/Checkout.jsx`'s `mapSrc`), COD / UPI
+(Demo) payment, atomic stock decrement with rollback if stock runs out
+mid-checkout.
+
+**Order tracking:** Pending → Confirmed → Packed → Out for Delivery →
+Delivered. Auto-progresses on a demo timer (~45s/stage) until an admin
+manually sets a status — at that point `demoMode` flips off and the real
+status is trusted everywhere (`GET/PATCH /api/admin/orders`).
+
+**User self-service:** cancel an order while it's still Pending/Confirmed
+(`PATCH /api/orders/:id/cancel`, auto-restocks); download a GST-style PDF
+invoice at any time (`GET /api/orders/:id/invoice`) — the GST breakup is a
+simplified flat-12%-back-calculated-from-MRP demo, clearly labelled as such
+on the invoice itself, since the dataset has no real per-medicine HSN/GST
+slab data.
+
+**Admin:** `/admin/orders` — view every order, filter by status, change
+status (or cancel or download an invoice) for any order.
+
+**Profile:** edit name/phone/address, view order history link.
+
+## What's Next (Module 3+)
+
+- Medicine CRUD & stock/expiry management from the admin panel (currently
+  stock only changes via checkout/cancellation, not direct admin editing)
+- Offline POS billing
+- Sales/inventory/expiry analytics (Django + Pandas), CSV reports
+- AI chatbot & prescription-based medicine alerts
+- Real Google Maps integration once an API key is available
+>>>>>>> master
