@@ -23,17 +23,16 @@ Environment (.env in python-service/, or the repo root — see .env.example):
 
 import os
 import sys
-from datetime import datetime, timedelta, timezone;
+from datetime import datetime, timedelta, timezone
 
 import pandas as pd
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
-# Load .env from this folder first, then fall back to the repo root or the server folder,
-# so this script works whether it's run standalone or alongside the Node server.
+# Load .env from this folder first, then fall back to the repo root, so this
+# script works whether it's run standalone or alongside the Node server.
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
-load_dotenv(os.path.join(os.path.dirname(__file__), '..', '..', 'server', '.env'))
 
 # NOTE on LOW_STOCK_THRESHOLD: the Node side defines this in
 # server/utils/inventoryConstants.js. There's no code sharing across the

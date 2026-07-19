@@ -25,6 +25,7 @@ import AdminAddMedicine from './pages/AdminAddMedicine';
 import AdminMedicines from './pages/AdminMedicines';
 import AdminEditMedicine from './pages/AdminEditMedicine';
 import AdminPOS from './pages/AdminPOS';
+import AdminSalesAnalysis from './pages/AdminSalesAnalysis';
 
 function App() {
   return (
@@ -83,65 +84,72 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-            </Route>
 
-            {/* Dashboards have their own header/logout, no top Navbar */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute role="user">
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/dashboard"
-              element={
-                <ProtectedRoute role="admin">
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/orders"
-              element={
-                <ProtectedRoute role="admin">
-                  <AdminOrders />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/medicines/new"
-              element={
-                <ProtectedRoute role="admin">
-                  <AdminAddMedicine />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/medicines"
-              element={
-                <ProtectedRoute role="admin">
-                  <AdminMedicines />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/medicines/:id/edit"
-              element={
-                <ProtectedRoute role="admin">
-                  <AdminEditMedicine />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/pos"
-              element={
-                <ProtectedRoute role="admin">
-                  <AdminPOS />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute role="user">
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/dashboard"
+                element={
+                  <ProtectedRoute role="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/orders"
+                element={
+                  <ProtectedRoute role="admin">
+                    <AdminOrders />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/medicines/new"
+                element={
+                  <ProtectedRoute role="admin">
+                    <AdminAddMedicine />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/medicines"
+                element={
+                  <ProtectedRoute role="admin">
+                    <AdminMedicines />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/medicines/:id/edit"
+                element={
+                  <ProtectedRoute role="admin">
+                    <AdminEditMedicine />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/pos"
+                element={
+                  <ProtectedRoute role="admin">
+                    <AdminPOS />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/sales-analysis"
+                element={
+                  <ProtectedRoute role="admin">
+                    <AdminSalesAnalysis />
+                  </ProtectedRoute>
+                }
+              />
+            </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

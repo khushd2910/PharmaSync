@@ -1,5 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Pill, LogOut, ShoppingCart, User as UserIcon, ClipboardList } from 'lucide-react';
+import {
+  Pill, LogOut, ShoppingCart, User as UserIcon, ClipboardList, LayoutDashboard, ScanBarcode, BarChart3,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 
@@ -33,6 +35,9 @@ const Navbar = () => {
 
         {user && user.role === 'user' && (
           <>
+            <Link to="/dashboard" className="navbar-link icon-link">
+              <LayoutDashboard size={16} strokeWidth={2} /> Dashboard
+            </Link>
             <Link to="/orders" className="navbar-link icon-link">
               <ClipboardList size={16} strokeWidth={2} /> Orders
             </Link>
@@ -52,7 +57,21 @@ const Navbar = () => {
 
         {user && user.role === 'admin' && (
           <>
-            <Link to="/admin/dashboard" className="navbar-link">Admin Dashboard</Link>
+            <Link to="/admin/dashboard" className="navbar-link icon-link">
+              <LayoutDashboard size={16} strokeWidth={2} /> Dashboard
+            </Link>
+            <Link to="/admin/medicines" className="navbar-link icon-link">
+              <Pill size={16} strokeWidth={2} /> Medicines
+            </Link>
+            <Link to="/admin/orders" className="navbar-link icon-link">
+              <ClipboardList size={16} strokeWidth={2} /> Orders
+            </Link>
+            <Link to="/admin/pos" className="navbar-link icon-link">
+              <ScanBarcode size={16} strokeWidth={2} /> POS
+            </Link>
+            <Link to="/admin/sales-analysis" className="navbar-link icon-link">
+              <BarChart3 size={16} strokeWidth={2} /> Sales
+            </Link>
             <button className="navbar-btn ghost" onClick={handleLogout}>
               <LogOut size={15} strokeWidth={2} /> Logout
             </button>

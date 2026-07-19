@@ -1,223 +1,219 @@
-# Pharma Management System — Module 1: Authentication
+# PharmaSync — Comprehensive Pharmacy Management System
 
-Production-grade authentication for the Pharmacy Management System.
+PharmaSync is a production-grade pharmacy management application designed to handle authentication, online storefront browsing, database-persisted shopping carts, order tracking, in-store Point of Sale (POS) billing, and nightly inventory analytics. 
 
-**User**: Register (email verification sent) → Login → Dashboard → Logout
-**Admin**: Admin Login → Admin Dashboard → Logout
-**Recovery**: Forgot password → Email link → Reset password
+It is divided into a Node.js/Express API backend, a Vite + React SPA frontend, and a standalone Python service powered by Pandas for daily statistical summaries.
 
-## Project Structure
+---
+
+## 📁 Project Structure
 
 ```
-pharma-management/
+Pharmasync/
 ├── client/            # React frontend (Vite + React Router + Axios)
-├── server/            # Node.js + Express API (Auth, JWT, MongoDB)
-├── python-service/    # Django APIs + Pandas + AI (future modules)
-├── database/          # DB notes/scripts
-├── uploads/           # Prescription files (future modules)
-└── docs/              # Project documentation
+├── server/            # Node.js + Express API (JWT, MongoDB, Mongoose)
+├── python-service/    # Python service (Pandas-based analytics)
+│   ├── analytics/     # Core inventory analysis modules
+│   └── requirements.txt
+├── database/          # Database notes & seeding scripts
+├── uploads/           # Prescription uploads (for future verification modules)
+├── docs/              # Project documentation & briefs
+└── README.md          # Project readme with setup instructions
 ```
 
-## Security features implemented
+---
 
-- **httpOnly cookies** for JWTs — tokens are inaccessible to JS, immune to
-  token-stealing via XSS
-- **Access + refresh token rotation** — short-lived (15 min) access token,
-  long-lived (30 day) refresh token; the client silently refreshes on
-  expiry (see `client/src/api/axios.js` interceptor)
-- **Server-side session revocation** — refresh tokens are hashed and stored
-  on the user document, so logout invalidates them immediately
-- **express-validator** on every auth input (email format, password
-  strength, phone format)
-- **Rate limiting** — tighter limits on login/admin-login to slow
-  brute-force attempts, generous limits elsewhere
-- **Centralized error handling** — `AppError` + `catchAsync` + a single
-  global error handler that translates Mongo/JWT errors into clean messages
-  and hides internals in production
-- **Email verification** — verification link sent on registration
-  (`REQUIRE_EMAIL_VERIFICATION=true` in `.env` to enforce it before login)
-- **Password reset** — time-limited, single-use, hashed reset tokens
-- **Request logging** via morgan
-- **Configurable CORS** for one or more client origins
+## 🔑 Completed Modules & Features
 
-## Medicine data (guest browsing)
+### 📦 Module 1: Production-Grade Authentication
+*   **Role-Based Access Control**: Distinguishes between guest visitors (read-only catalog browsing), registered `user` roles, and staff/`admin` roles.
+*   **Token Security**:
+    *   **httpOnly Cookies**: Access tokens and refresh tokens are stored server-side to protect them from XSS token theft.
+    *   **Silent Token Rotation**: Short-lived access tokens (15 mins) and long-lived refresh tokens (30 days) rotate automatically on the client side.
+    *   **Session Revocation**: Session token hashes are stored in MongoDB. Logging out immediately revokes and invalidates session tokens.
+*   **Security Middleware**: Centralized error translation (`AppError` + `catchAsync`), endpoint rate-limiting to prevent brute force, and input validation using `express-validator`.
+*   **Self-Service flows**: Email verification and password resets using time-limited, single-use, cryptographically secure hashed tokens.
 
-The home page lets guests browse medicines without logging in. It's seeded
-from the **[Indian Medicine Dataset](https://github.com/junioralive/Indian-Medicine-Dataset)**
-(253,973 real medicines — name, price, manufacturer, composition, pack
-size), which is community-maintained and free to use. Check that repo for
-attribution/licensing details if you plan to deploy this commercially.
+### 🛒 Module 2: Online Storefront, Cart, and Order Flow
+*   **Medicine Catalog**: Powered by a subset of ~1,150 common medicines curated from the **[Indian Medicine Dataset](https://github.com/junioralive/Indian-Medicine-Dataset)**.
+*   **User Cart**: Fully database-persisted shopping cart requiring active authentication.
+*   **Geolocation & Maps**: Integrates browser-based geolocation coordinates and free OpenStreetMap previews for user address entries at checkout.
+*   **Order Execution & Integrity**:
+    *   **Atomic Stock Decrement**: Checks and decrements medicine stock atomically during checkout. If stock runs out mid-transaction, it rolls back gracefully.
+    *   **Invoice Generator**: Generates a standard GST-compliant PDF invoice (12% flat rate breakup) immediately available for download.
+    *   **Order Tracking State Machine**: Simulates progression through standard order lifecycle states (`Pending` ➔ `Confirmed` ➔ `Packed` ➔ `Out for Delivery` ➔ `Delivered`).
+    *   **Self-Service Cancellation**: Users can cancel pending or confirmed orders to trigger immediate stock restocking.
 
-The CSV is already included at `server/data/indian_medicine_data.csv`.
-**Use this script** to load the curated, common-medicine subset (~1,150
-medicines with demo stock/category/featured/discount data — this is the one
-the storefront is actually built around):
+### 🛠️ Module 3: Admin & Inventory Management
+*   **Dashboard Stats Overview**:
+    *   Aggregates live pharmacy metrics: **Total Medicines**, combined **Total Orders**, **Gross Revenue** (excluding cancelled/refunded transactions), **Low Stock Count**, and **Expiring Soon Count**.
+    *   Supports distinct tracking of online orders vs. in-store POS sales.
+*   **Catalog CRUD**:
+    *   Interactive data table displaying stock status badges (Discontinued, Out of Stock, Low, or Good).
+    *   Fast-access navigation via search query parameters for "Low Stock" and "Expiring Soon" filters.
+    *   Case-insensitive, multi-word token substring search across `name`, `manufacturer`, and `composition` fields.
+    *   **Quick Restock**: Instant restock action by target amount (`PATCH /api/admin/medicines/:id/restock`).
+    *   **Safe Deletion**: Deleting a medicine automatically pulls it from all active user carts to prevent orphaned document references.
 
+### 🏪 Module 4: In-Store POS (Point of Sale) Billing Counter
+*   **Cashier Billing Terminal**: Staff-only terminal (`/admin/pos`) supporting barcode scanner input (exact match) and multi-token manual text fallback lookup.
+*   **Fast Checkout Flow**:
+    *   Client-side basket management until completion.
+    *   Option to associate customer names and telephone numbers.
+    *   Multiple payment methods supported (Cash, UPI, Card).
+    *   Atomic stock validation and decrement with complete rollbacks on stock conflicts.
+*   **Till Reconciliation & Refunds**:
+    *   Live sidebar tracking today's POS revenue and total completed sales.
+    *   Printable PDF receipt generation.
+    *   Transaction refunds that restore item stock and mark the sale as `Refunded`.
+
+### 📊 Module 5: Nightly Inventory Analytics (Python + Pandas)
+*   **Standalone Analytics Engine**: A Pandas data pipeline ([inventory_analysis.py](file:///d:/Pharmasync/python-service/analytics/inventory_analysis.py)) that connects directly to the MongoDB instance.
+*   **Key Statistical Indicators**:
+    *   Loads medicine inventory and recent order transactions into DataFrames.
+    *   Computes **Total Stock**, **Low Stock Count**, **Fast-Selling medicines**, and **Slow-Selling medicines** based on rolling lookbacks.
+    *   Persists daily snapshot documents to MongoDB.
+*   **Execution Channels**:
+    *   Runs automatically via `cron` (daily at 2:00 AM) or Windows Task Scheduler.
+    *   Triggerable on-demand via the Admin Dashboard's "Run Analysis Now" button (spawns Python subprocess).
+    *   The Admin Dashboard queries the database to display the latest snapshot.
+
+---
+
+## 🛠️ Prerequisites
+
+*   **Node.js**: Version 18 or newer
+*   **Python**: Version 3.13 or newer
+*   **MongoDB**: A running local server instance or an Atlas URI connection string
+
+---
+
+## ⚙️ Setup & Installation
+
+### 1. Database Seeding & Setup
+Make sure MongoDB is running. Navigate to the `server/` directory:
 ```bash
 cd server
-node scripts/importCommonMedicines.js
-```
-
-⚠️ There's also a `scripts/importMedicines.js` left over from an earlier
-version of this project, which imports the *entire* 253k-row dataset with
-none of the demo stock/category/offer data populated (medicines will show
-as permanently out of stock, and the Offers/Popular rows will be empty).
-**Don't use it** — it's kept only for reference and prints a warning if run.
-
-This streams the CSV (so it doesn't load 31MB into memory at once), inserts
-in batches, skips malformed rows, and builds the text search index used by
-the browse/search bar. Re-running it clears and re-imports the collection.
-
-### Other data source options (for later modules)
-
-- **[openFDA](https://open.fda.gov/apis/drug/)** — free, no key required for
-  moderate use, updated daily. Good for supplementary drug label info
-  (warnings, dosage, interactions) fetched live via the Django
-  `python-service`, rather than bulk-imported.
-- **[RxNorm (NLM)](https://www.nlm.nih.gov/research/umls/rxnorm/)** — free
-  API for normalized drug names/ingredients, useful for matching brand
-  names to generic equivalents.
-
-### New public API endpoints
-
-| Method | Endpoint              | Access | Description                                  |
-|--------|------------------------|--------|-----------------------------------------------|
-| GET    | /api/medicines          | Public | List/search medicines — `?search=&sort=&page=&limit=` |
-| GET    | /api/medicines/:id      | Public | Get a single medicine's details               |
-
-`sort` accepts `name`, `price-asc`, `price-desc` (defaults to relevance when
-searching, name otherwise).
-
-## Prerequisites
-
-- Node.js 18+
-- MongoDB running locally (or an Atlas connection string)
-
-## 1. Backend Setup (server/)
-
-```bash
-cd server
-cp .env.example .env      # edit MONGO_URI, JWT_SECRET, REFRESH_TOKEN_SECRET
+cp .env.example .env     # Edit MONGO_URI, JWT_SECRET, REFRESH_TOKEN_SECRET
 npm install
-npm run dev                # starts on http://localhost:5000
 ```
 
-Use two different long random strings for `JWT_SECRET` and
-`REFRESH_TOKEN_SECRET` — never reuse one for both.
+*   **Create the first Admin Account**:
+    ```bash
+    node seed/createAdmin.js "Admin Name" admin@pharma.com "StrongPass123"
+    ```
+*   **Seed the Medicine Catalog**:
+    ```bash
+    node scripts/importCommonMedicines.js
+    ```
 
-If `SMTP_HOST/USER/PASS` are left blank, verification/reset emails are
-printed to the server console instead of actually sent — useful for local
-testing without a real mail provider.
-
-### Create the first Admin account
-
-Public registration always creates a `user` role account. To create an admin:
-
+### 2. Running the Backend Server
+From the `server/` folder:
 ```bash
-cd server
-node seed/createAdmin.js "Admin Name" admin@pharma.com "StrongPass123"
+npm run dev              # Backend runs on http://localhost:5000
 ```
+*Note: If SMTP credentials (`SMTP_HOST`/`SMTP_USER`/`SMTP_PASS`) are left blank in `.env`, outgoing emails (e.g. registration, password reset) will be printed directly to the console instead.*
 
-### API Endpoints (Module 1)
-
-| Method | Endpoint                       | Access         | Description                          |
-|--------|----------------------------------|----------------|----------------------------------------|
-| POST   | /api/auth/register               | Public         | Register + send verification email    |
-| POST   | /api/auth/login                  | Public         | Login as user or admin                |
-| POST   | /api/auth/admin/login            | Public         | Login restricted to admins            |
-| POST   | /api/auth/refresh                | Public*        | Exchange refresh cookie for new access token |
-| GET    | /api/auth/verify-email/:token    | Public         | Verify email from emailed link        |
-| POST   | /api/auth/forgot-password        | Public         | Request password reset email          |
-| POST   | /api/auth/reset-password/:token  | Public         | Set a new password                    |
-| GET    | /api/auth/me                     | Private        | Get current logged-in profile         |
-| POST   | /api/auth/logout                 | Private        | Logout, revoke refresh token          |
-| GET    | /api/user/dashboard              | Private (user) | User dashboard placeholder            |
-| GET    | /api/admin/dashboard             | Private (admin)| Admin dashboard placeholder           |
-
-\* requires a valid `refreshToken` cookie
-
-Auth uses httpOnly cookies (`accessToken`, `refreshToken`) — the browser
-sends them automatically; nothing to manage manually on the client.
-
-## 2. Frontend Setup (client/)
-
+### 3. Running the React Frontend Client
+Navigate to the `client/` folder:
 ```bash
-cd client
-cp .env.example .env       # points to the backend API
+cd ../client
+cp .env.example .env     # Verify configuration points to backend
 npm install
-npm run dev                 # starts on http://localhost:5173
+npm run dev              # Frontend SPA runs on http://localhost:5173
 ```
 
-### Pages
+### 4. Running the Python Analytics Service
+Navigate to the `python-service/` folder:
+```bash
+cd ../python-service
+python -m venv venv
+# Activate on Windows:
+venv\Scripts\activate
+# Activate on macOS/Linux:
+source venv/bin/activate
 
-- `/` — public home page (opens by default), with a top navbar (Home, Login,
-  Register, Admin — swaps to Dashboard/Logout once signed in)
-- `/login`, `/register`, `/admin/login`
-- `/forgot-password`, `/reset-password/:token`
-- `/verify-email/:token`
-- `/dashboard` (user, protected), `/admin/dashboard` (admin, protected)
+pip install -r requirements.txt
+cp .env.example .env     # Set MONGO_URI to match your server connection
+```
+*   **Run manually**:
+    ```bash
+    python analytics/inventory_analysis.py
+    ```
+*   **Automate via Cron (Linux/macOS)**:
+    Add to your crontab (`crontab -e`):
+    ```cron
+    0 2 * * * cd /absolute/path/to/python-service && venv/bin/python analytics/inventory_analysis.py >> ../logs/inventory_analysis.log 2>&1
+    ```
 
-### UI
+---
 
-Redesigned around a "prescription pad" visual system — dashed perforated
-card edges, mono-styled field labels, `lucide-react` icons on every input
-(mail, user, phone, lock, show/hide password), toast notifications, and a
-soft email-verification nudge banner. Admin screens use a distinct warm
-accent so the two roles are visually unmistakable.
+## 🔌 API Endpoint Reference
 
-### Getting real password-reset emails working
+### Authentication & Profiles
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| **POST** | `/api/auth/register` | Public | Register a new user account & send verification email |
+| **POST** | `/api/auth/login` | Public | Log in as a customer or admin |
+| **POST** | `/api/auth/admin/login` | Public | Privileged admin-only login route |
+| **POST** | `/api/auth/refresh` | Public* | Exchange refresh token cookie for a new access token |
+| **GET** | `/api/auth/verify-email/:token` | Public | Verify account email address |
+| **POST** | `/api/auth/forgot-password` | Public | Request a password reset link |
+| **POST** | `/api/auth/reset-password/:token` | Public | Submit new password using reset token |
+| **GET** | `/api/auth/me` | Private | Get logged-in profile data |
+| **POST** | `/api/auth/logout` | Private | Revoke active token session |
+| **PATCH**| `/api/user/profile` | Private | Update user name, phone, or address |
 
-`forgot-password` always works, but where the email actually goes depends
-on your `.env`:
+*\* Requires a valid `refreshToken` cookie.*
 
-- **Nothing configured** → sent to a free Ethereal test inbox; the server
-  console prints a clickable preview link so you can see the email content,
-  but it never reaches a real address.
-- **Gmail (easiest for real delivery)** → set `SMTP_SERVICE=gmail`,
-  `SMTP_USER=you@gmail.com`, `SMTP_PASS=<App Password>` (create one at
-  https://myaccount.google.com/apppasswords — requires 2FA on the account).
-  Restart the server after editing `.env`.
-- **Any other provider** → set `SMTP_HOST`/`SMTP_PORT` instead of
-  `SMTP_SERVICE`.
+### Storefront & Shopping Cart
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/api/medicines` | Public | Browse catalog (supports `?search=`, `?sort=`, `?page=`) |
+| **GET** | `/api/medicines/:id` | Public | Fetch detailed information for a single medicine |
+| **GET** | `/api/cart` | Private | Fetch user's shopping cart |
+| **POST** | `/api/cart/items` | Private | Add an item or increment quantity in cart |
+| **PATCH**| `/api/cart/items/:id` | Private | Edit item quantity in cart |
+| **DELETE**| `/api/cart/items/:id` | Private | Remove a medicine from the cart |
+| **DELETE**| `/api/cart` | Private | Clear shopping cart |
 
-Email sending never crashes the request — if SMTP fails, the error is
-logged to the server console and the API still responds normally.
+### Orders & Checkout
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| **POST** | `/api/orders` | Private | Create a storefront order (checks & decrements stock) |
+| **GET** | `/api/orders` | Private | List order history for the logged-in user |
+| **GET** | `/api/orders/:id` | Private | Fetch order details |
+| **PATCH**| `/api/orders/:id/cancel` | Private | Cancel order (Pending/Confirmed only; restocks items) |
+| **GET** | `/api/orders/:id/invoice`| Private | Download invoice PDF for a storefront order |
 
-## Module 2 — Shopping, Orders & Admin (complete)
+### Admin Dashboard & Catalog Management
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/api/admin/dashboard/stats` | Admin | Aggregate inventory stats, order counts, and channel revenue |
+| **GET** | `/api/admin/medicines` | Admin | List all medicines in database (including discontinued) |
+| **POST** | `/api/admin/medicines` | Admin | Add new medicine |
+| **PATCH**| `/api/admin/medicines/:id` | Admin | Edit medicine details |
+| **PATCH**| `/api/admin/medicines/:id/restock`| Admin | Restock a medicine by custom count |
+| **DELETE**| `/api/admin/medicines/:id` | Admin | Delete medicine (pulls it from active user carts) |
 
-**Catalog:** ~1,150 curated common medicines (see "Medicine data" above),
-categories, brand/price/prescription/stock filters, Offers/Popular/Recently
-Added rows, medicine detail page with a live openFDA lookup.
+### Admin Order Management
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/api/admin/orders` | Admin | List all client orders (supports `?status=` filter) |
+| **PATCH**| `/api/admin/orders/:id/status`| Admin | Manually update order stage or cancel order |
 
-**Cart & Checkout:** server-persisted cart (login required), quantity
-controls, address form with browser-geolocation + free OpenStreetMap
-preview (swap in real Google Maps later once you have an API key — the
-integration point is `client/src/pages/Checkout.jsx`'s `mapSrc`), COD / UPI
-(Demo) payment, atomic stock decrement with rollback if stock runs out
-mid-checkout.
+### In-Store POS (Point of Sale) Billing
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/api/admin/pos/search` | Admin | Search counter items by exact barcode or token match |
+| **POST** | `/api/admin/pos/sales` | Admin | Complete a POS checkout transaction and decrement stock |
+| **GET** | `/api/admin/pos/sales` | Admin | Fetch sales history (supports `?from=`, `?to=` date filters) |
+| **GET** | `/api/admin/pos/sales/:id` | Admin | Fetch detailed transaction details for a POS sale |
+| **PATCH**| `/api/admin/pos/sales/:id/refund`| Admin | Refund a sale and restore medicine stock levels |
+| **GET** | `/api/admin/pos/sales/:id/receipt`| Admin | Download printable receipt PDF for a counter sale |
 
-**Order tracking:** Pending → Confirmed → Packed → Out for Delivery →
-Delivered. Auto-progresses on a demo timer (~45s/stage) until an admin
-manually sets a status — at that point `demoMode` flips off and the real
-status is trusted everywhere (`GET/PATCH /api/admin/orders`).
-
-**User self-service:** cancel an order while it's still Pending/Confirmed
-(`PATCH /api/orders/:id/cancel`, auto-restocks); download a GST-style PDF
-invoice at any time (`GET /api/orders/:id/invoice`) — the GST breakup is a
-simplified flat-12%-back-calculated-from-MRP demo, clearly labelled as such
-on the invoice itself, since the dataset has no real per-medicine HSN/GST
-slab data.
-
-**Admin:** `/admin/orders` — view every order, filter by status, change
-status (or cancel or download an invoice) for any order.
-
-**Profile:** edit name/phone/address, view order history link.
-
-## What's Next (Module 3+)
-
-- Medicine CRUD & stock/expiry management from the admin panel (currently
-  stock only changes via checkout/cancellation, not direct admin editing)
-- Offline POS billing
-- Sales/inventory/expiry analytics (Django + Pandas), CSV reports
-- AI chatbot & prescription-based medicine alerts
-- Real Google Maps integration once an API key is available
+### Analytics
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/api/admin/inventory-analysis` | Admin | Fetch the latest nightly stats snapshot |
+| **POST** | `/api/admin/inventory-analysis/run` | Admin | Trigger python analysis pipeline on-demand |

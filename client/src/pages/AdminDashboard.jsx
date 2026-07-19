@@ -2,20 +2,19 @@ import { useEffect, useState } from 'react';
 import {
   ClipboardList, Pill, Package, Wallet, AlertTriangle, CalendarClock, ScanBarcode, BarChart3, RefreshCw,
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
 const AdminDashboard = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [data, setData] = useState(null);
   const [stats, setStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [analysis, setAnalysis] = useState(null);
   const [analysisLoading, setAnalysisLoading] = useState(true);
   const [runningAnalysis, setRunningAnalysis] = useState(false);
-  const navigate = useNavigate();
   const { showToast } = useToast();
 
   const loadAnalysis = () => {
@@ -51,11 +50,6 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/admin/login');
-  };
-
   return (
     <div className="dashboard-page admin-theme">
       <header className="dashboard-header">
@@ -63,7 +57,6 @@ const AdminDashboard = () => {
           <p className="eyebrow">Admin Dashboard</p>
           <h2>Welcome, {user?.name?.split(' ')[0]}</h2>
         </div>
-        <button className="btn-secondary admin" onClick={handleLogout}>Logout</button>
       </header>
 
       {data && <p className="info-text">{data.info}</p>}
@@ -186,6 +179,14 @@ const AdminDashboard = () => {
         <div>
           <strong>POS Billing</strong>
           <p className="muted-text">Ring up walk-in customers — scan or search, bill, and print a GST receipt.</p>
+        </div>
+      </Link>
+
+      <Link to="/admin/sales-analysis" className="placeholder-card admin-action-card">
+        <BarChart3 size={20} strokeWidth={2} className="placeholder-icon" />
+        <div>
+          <strong>Sales Analysis</strong>
+          <p className="muted-text">Daily, weekly, and monthly trends, revenue, and best/worst sellers.</p>
         </div>
       </Link>
 

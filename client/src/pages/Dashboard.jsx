@@ -2,21 +2,14 @@ import { useEffect, useState } from 'react';
 import { ShoppingBag } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [data, setData] = useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     api.get('/user/dashboard').then((res) => setData(res.data));
   }, []);
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
 
   return (
     <div className="dashboard-page">
@@ -25,7 +18,6 @@ const Dashboard = () => {
           <p className="eyebrow">Patient Dashboard</p>
           <h2>Welcome, {user?.name?.split(' ')[0]}</h2>
         </div>
-        <button className="btn-secondary" onClick={handleLogout}>Logout</button>
       </header>
 
       {user && !user.isVerified && (

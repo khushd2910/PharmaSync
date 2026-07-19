@@ -4,6 +4,7 @@ const { protect, adminOnly } = require('../middleware/authMiddleware');
 const { adminListOrders, adminUpdateOrderStatus } = require('../controllers/orderController');
 const { getDashboardStats } = require('../controllers/adminController');
 const { getInventoryAnalysis, runInventoryAnalysis } = require('../controllers/inventoryAnalysisController');
+const { getSalesAnalysis, runSalesAnalysis } = require('../controllers/salesAnalysisController');
 const {
   createMedicine,
   adminListMedicines,
@@ -45,6 +46,15 @@ router.get('/inventory-analysis', getInventoryAnalysis);
 //        nightly schedule
 // @route POST /api/admin/inventory-analysis/run
 router.post('/inventory-analysis/run', runInventoryAnalysis);
+
+// @desc  Latest nightly sales analysis snapshot (Daily/Weekly/Monthly
+//        Sales, Revenue, Best/Worst Sellers) — written by the Python service
+// @route GET /api/admin/sales-analysis
+router.get('/sales-analysis', getSalesAnalysis);
+
+// @desc  Run the Python sales analysis job on demand
+// @route POST /api/admin/sales-analysis/run
+router.post('/sales-analysis/run', runSalesAnalysis);
 
 // @desc  List all orders, optionally filtered by status
 // @route GET /api/admin/orders?status=
