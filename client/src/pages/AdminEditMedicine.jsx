@@ -14,6 +14,7 @@ const EMPTY_FORM = {
   manufacturer: '',
   description: '',
   requiresPrescription: false,
+  barcode: '',
 };
 
 const AdminEditMedicine = () => {
@@ -40,6 +41,7 @@ const AdminEditMedicine = () => {
           manufacturer: m.manufacturer || '',
           description: m.description || '',
           requiresPrescription: !!m.requiresPrescription,
+          barcode: m.barcode || '',
         });
       })
       .catch((err) => {
@@ -133,6 +135,11 @@ const AdminEditMedicine = () => {
             <div>
               <label className="field-label">Manufacturer</label>
               <input name="manufacturer" value={form.manufacturer} onChange={handleChange} />
+            </div>
+
+            <div>
+              <label className="field-label">Barcode</label>
+              <input name="barcode" value={form.barcode} onChange={handleChange} placeholder="Scan or type — used by POS lookup" />
             </div>
           </div>
 

@@ -42,6 +42,13 @@ const medicineSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Scanned/typed at POS checkout for instant lookup. Optional — not every
+    // catalog item (especially bulk-imported ones) has a physical barcode on
+    // file yet, so this is sparse-unique rather than required.
+    barcode: {
+      type: String,
+      trim: true,
+    },
     stock: {
       type: Number,
       default: 0,
@@ -111,5 +118,9 @@ const medicineSchema = new mongoose.Schema(
 // Powers the guest-facing search box (name, manufacturer, composition)
 medicineSchema.index({ name: 'text', manufacturer: 'text', composition1: 'text' });
 medicineSchema.index({ price: 1 });
+// sparse: only enforce uniqueness among documents that actually have a
+// barcode set, so the many bulk-imported rows without one don't collide
+// on `null`.
+medicineSchema.index({ barcode: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model('Medicine', medicineSchema);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ClipboardList, Pill, Package, Wallet, AlertTriangle, CalendarClock } from 'lucide-react';
+import { ClipboardList, Pill, Package, Wallet, AlertTriangle, CalendarClock, ScanBarcode } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -64,7 +64,7 @@ const AdminDashboard = () => {
             <Wallet size={18} strokeWidth={2} className="stat-icon" />
             <div>
               <p className="stat-value">₹{stats.revenue.toFixed(2)}</p>
-              <p className="stat-label">Revenue</p>
+              <p className="stat-label">Revenue · ₹{stats.onlineRevenue.toFixed(2)} online, ₹{stats.posRevenue.toFixed(2)} in-store</p>
             </div>
           </div>
 
@@ -85,6 +85,14 @@ const AdminDashboard = () => {
           </Link>
         </div>
       ) : null}
+
+      <Link to="/admin/pos" className="placeholder-card admin-action-card">
+        <ScanBarcode size={20} strokeWidth={2} className="placeholder-icon" />
+        <div>
+          <strong>POS Billing</strong>
+          <p className="muted-text">Ring up walk-in customers — scan or search, bill, and print a GST receipt.</p>
+        </div>
+      </Link>
 
       <Link to="/admin/orders" className="placeholder-card admin-action-card">
         <ClipboardList size={20} strokeWidth={2} className="placeholder-icon" />

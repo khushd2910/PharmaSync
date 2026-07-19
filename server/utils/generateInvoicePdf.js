@@ -13,10 +13,22 @@ const formatDate = (d) =>
   new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 
 /**
- * Streams a GST-style tax invoice PDF for the given order directly to the
- * provided writable stream (typically an Express `res`).
+ * Renders a GST-style tax invoice PDF from a normalized, channel-agnostic
+ * shape, streaming it directly to the provided writable stream (typically
+ * an Express `res`). Both the online-order invoice and the POS receipt
+ * build one of these and hand it here, so there's exactly one place that
+ * knows how to lay out an invoice.
+ *
+ * invoiceData shape:
+ * {
+ *   invoiceNumber, createdAt, channelLabel: 'Online Storefront' | 'In-Store Sale',
+ *   billTo: { name, phone, addressLines: [string] } | null (null = walk-in, no address to print),
+ *   items: [{ name, price, quantity }],
+ *   totalAmount,
+ *   paymentMethod, paymentStatus,
+ * }
  */
-const generateInvoicePdf = (order, res) => {
+const renderInvoicePdf = (invoiceData, res) => {
   const doc = new PDFDocument({ margin: 50, size: 'A4' });
   doc.pipe(res);
 
@@ -29,7 +41,7 @@ const generateInvoicePdf = (order, res) => {
     .font('Helvetica')
     .fontSize(9)
     .fillColor('#555555')
-    .text('Pharmacy Management System — Demo Storefront', leftX, 74)
+    .text(`Pharmacy Management System — ${invoiceData.channelLabel}`, leftX, 74)
     .text('GSTIN: 24DEMOGSTIN1Z5 (demo placeholder)', leftX, 87);
 
   doc
@@ -42,8 +54,8 @@ const generateInvoicePdf = (order, res) => {
     .font('Helvetica')
     .fontSize(9)
     .fillColor('#555555')
-    .text(`Invoice No: ${order.invoiceNumber}`, leftX, 135, { width: pageWidth, align: 'right' })
-    .text(`Date: ${formatDate(order.createdAt)}`, leftX, 148, { width: pageWidth, align: 'right' });
+    .text(`Invoice No: ${invoiceData.invoiceNumber}`, leftX, 135, { width: pageWidth, align: 'right' })
+    .text(`Date: ${formatDate(invoiceData.createdAt)}`, leftX, 148, { width: pageWidth, align: 'right' });
 
   doc.moveTo(leftX, 170).lineTo(leftX + pageWidth, 170).strokeColor('#dddddd').stroke();
 
@@ -52,16 +64,19 @@ const generateInvoicePdf = (order, res) => {
   doc.font('Helvetica-Bold').fontSize(10).fillColor('#000000').text('Bill To', leftX, y);
   y += 14;
   doc.font('Helvetica').fontSize(9.5).fillColor('#333333');
-  doc.text(order.user?.name || 'Customer', leftX, y);
+  const billTo = invoiceData.billTo;
+  doc.text(billTo?.name || 'Walk-in Customer', leftX, y);
   y += 13;
-  if (order.user?.phone) {
-    doc.text(order.user.phone, leftX, y);
+  if (billTo?.phone) {
+    doc.text(billTo.phone, leftX, y);
     y += 13;
   }
-  doc.text(`${order.address.line1}`, leftX, y);
+  (billTo?.addressLines || []).forEach((line) => {
+    if (!line) return;
+    doc.text(line, leftX, y);
+    y += 13;
+  });
   y += 13;
-  doc.text([order.address.city, order.address.state, order.address.pincode].filter(Boolean).join(', '), leftX, y);
-  y += 26;
 
   // --- Item table -------------------------------------------------
   const col = { name: leftX, qty: leftX + 300, price: leftX + 350, amount: leftX + 430 };
@@ -78,7 +93,7 @@ const generateInvoicePdf = (order, res) => {
   let rowY = tableTop + 20;
   doc.font('Helvetica').fontSize(9.5).fillColor('#222222');
 
-  order.items.forEach((item, i) => {
+  invoiceData.items.forEach((item, i) => {
     const rowHeight = 20;
     if (i % 2 === 1) {
       doc.rect(leftX, rowY, pageWidth, rowHeight).fill('#f4f6f1');
@@ -94,8 +109,8 @@ const generateInvoicePdf = (order, res) => {
   doc.rect(leftX, tableTop, pageWidth, rowY - tableTop).strokeColor('#dddddd').stroke();
 
   // --- Totals / GST breakup -----------------------------------------
-  const taxableValue = order.totalAmount / (1 + DEMO_GST_RATE);
-  const gstAmount = order.totalAmount - taxableValue;
+  const taxableValue = invoiceData.totalAmount / (1 + DEMO_GST_RATE);
+  const gstAmount = invoiceData.totalAmount - taxableValue;
   const cgst = gstAmount / 2;
   const sgst = gstAmount / 2;
 
@@ -115,7 +130,7 @@ const generateInvoicePdf = (order, res) => {
   totalsRow(`SGST @ ${(DEMO_GST_RATE / 2) * 100}%`, formatCurrency(sgst));
   doc.moveTo(totalsLabelX - 90, totalsY).lineTo(leftX + pageWidth, totalsY).strokeColor('#dddddd').stroke();
   totalsY += 6;
-  totalsRow('Grand Total', formatCurrency(order.totalAmount), true);
+  totalsRow('Grand Total', formatCurrency(invoiceData.totalAmount), true);
 
   // --- Payment info -------------------------------------------------
   totalsY += 14;
@@ -125,9 +140,9 @@ const generateInvoicePdf = (order, res) => {
     .font('Helvetica')
     .fontSize(9.5)
     .fillColor('#333333')
-    .text(`Method: ${order.paymentMethod === 'UPI' ? 'UPI (Demo)' : 'Cash on Delivery'}`, leftX, totalsY);
+    .text(`Method: ${invoiceData.paymentMethod}`, leftX, totalsY);
   totalsY += 13;
-  doc.text(`Status: ${order.paymentStatus}`, leftX, totalsY);
+  doc.text(`Status: ${invoiceData.paymentStatus}`, leftX, totalsY);
 
   // --- Footer -------------------------------------------------------
   doc
@@ -145,4 +160,51 @@ const generateInvoicePdf = (order, res) => {
   doc.end();
 };
 
+// --- Adapters: build the normalized invoiceData shape from each order type
+
+/**
+ * @route consumer: orderController.downloadInvoice (online storefront orders)
+ */
+const generateInvoicePdf = (order, res) => {
+  const invoiceData = {
+    invoiceNumber: order.invoiceNumber,
+    createdAt: order.createdAt,
+    channelLabel: 'Online Storefront',
+    billTo: {
+      name: order.user?.name,
+      phone: order.user?.phone,
+      addressLines: [
+        order.address.line1,
+        [order.address.city, order.address.state, order.address.pincode].filter(Boolean).join(', '),
+      ],
+    },
+    items: order.items,
+    totalAmount: order.totalAmount,
+    paymentMethod: order.paymentMethod === 'UPI' ? 'UPI (Demo)' : 'Cash on Delivery',
+    paymentStatus: order.paymentStatus,
+  };
+  renderInvoicePdf(invoiceData, res);
+};
+
+/**
+ * @route consumer: posController.downloadReceipt (in-store counter sales)
+ */
+const generatePOSReceiptPdf = (sale, res) => {
+  const invoiceData = {
+    invoiceNumber: sale.invoiceNumber,
+    createdAt: sale.createdAt,
+    channelLabel: 'In-Store Sale',
+    billTo: sale.customerName || sale.customerPhone
+      ? { name: sale.customerName, phone: sale.customerPhone, addressLines: [] }
+      : null, // walk-in, no name captured — prints "Walk-in Customer"
+    items: sale.items,
+    totalAmount: sale.totalAmount,
+    paymentMethod: sale.paymentMethod,
+    paymentStatus: 'Paid',
+  };
+  renderInvoicePdf(invoiceData, res);
+};
+
 module.exports = generateInvoicePdf;
+module.exports.generateInvoicePdf = generateInvoicePdf;
+module.exports.generatePOSReceiptPdf = generatePOSReceiptPdf;

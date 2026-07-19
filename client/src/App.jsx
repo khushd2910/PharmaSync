@@ -24,6 +24,7 @@ import AdminOrders from './pages/AdminOrders';
 import AdminAddMedicine from './pages/AdminAddMedicine';
 import AdminMedicines from './pages/AdminMedicines';
 import AdminEditMedicine from './pages/AdminEditMedicine';
+import AdminPOS from './pages/AdminPOS';
 
 function App() {
   return (
@@ -130,6 +131,14 @@ function App() {
               element={
                 <ProtectedRoute role="admin">
                   <AdminEditMedicine />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/pos"
+              element={
+                <ProtectedRoute role="admin">
+                  <AdminPOS />
                 </ProtectedRoute>
               }
             />

@@ -53,6 +53,7 @@ const addMedicineRules = [
   body('description').optional({ checkFalsy: true }).trim().isLength({ max: 2000 }),
   body('expiryDate').optional({ checkFalsy: true }).isISO8601().withMessage('Expiry must be a valid date'),
   body('requiresPrescription').optional().isBoolean().withMessage('Prescription Required must be true or false'),
+  body('barcode').optional({ checkFalsy: true }).trim().isLength({ max: 64 }).withMessage('Barcode is too long'),
 ];
 
 const updateMedicineRules = [
@@ -66,6 +67,7 @@ const updateMedicineRules = [
   body('expiryDate').optional({ checkFalsy: true }).isISO8601().withMessage('Expiry must be a valid date'),
   body('requiresPrescription').optional().isBoolean().withMessage('Prescription Required must be true or false'),
   body('isDiscontinued').optional().isBoolean().withMessage('isDiscontinued must be true or false'),
+  body('barcode').optional({ checkFalsy: true }).trim().isLength({ max: 64 }).withMessage('Barcode is too long'),
 ];
 
 module.exports = {

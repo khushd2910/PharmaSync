@@ -5,7 +5,10 @@ const handleCastError = (err) => new AppError(`Invalid ${err.path}: ${err.value}
 
 const handleDuplicateFieldError = (err) => {
   const field = Object.keys(err.keyValue || {})[0] || 'field';
-  return new AppError(`An account with this ${field} already exists`, 409);
+  const value = err.keyValue?.[field];
+  // Generic phrasing — this fires for any unique-index collision (user
+  // email, invoice number, medicine barcode, ...), not just accounts.
+  return new AppError(`A record with this ${field} (${value}) already exists`, 409);
 };
 
 const handleValidationError = (err) => {

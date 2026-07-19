@@ -671,6 +671,37 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 .admin-order-main p { margin: 0; }
 
 /* ============================================================
+   POS Billing
+   ============================================================ */
+.pos-till-card { min-width: 200px; }
+.pos-grid { align-items: flex-start; }
+.pos-search-form input { font-size: 15px; padding: 12px 14px; }
+.pos-search-hint { margin: 6px 0 14px; }
+
+.pos-result-list { display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow-y: auto; }
+.pos-result-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; text-align: left; background: var(--paper); border: 1px solid var(--line);
+  border-radius: var(--r-sm); padding: 10px 12px; cursor: pointer; font: inherit; color: inherit;
+  transition: border-color var(--ease);
+}
+.pos-result-row:hover { border-color: var(--teal); }
+.pos-result-row:disabled { opacity: 0.55; cursor: not-allowed; }
+.pos-result-row p { margin: 0; }
+.pos-result-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+
+.pos-recent-sales { margin-top: 2px; }
+
+.pos-cart-list { margin-bottom: 20px; }
+.pos-cart-item { grid-template-columns: 1fr auto auto auto; }
+
+.pos-customer-fields { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 16px; margin-bottom: 6px; }
+.pos-payment-options { display: flex; gap: 18px; margin-bottom: 16px; }
+.pos-payment-options .payment-option { border-bottom: none; padding: 4px 0; }
+
+.pos-last-sale { margin-top: 14px; }
+
+/* ============================================================
    Responsive
    ============================================================ */
 @media (max-width: 900px) {
@@ -697,4 +728,7 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
   .cart-item { grid-template-columns: 30px 1fr; row-gap: 8px; }
   .cart-item-total, .qty-stepper, .icon-btn-danger { grid-column: 2; }
   .admin-order-row { grid-template-columns: 1fr; row-gap: 8px; }
+  .pos-cart-item { grid-template-columns: 1fr; row-gap: 8px; }
+  .pos-cart-item .cart-item-total, .pos-cart-item .qty-stepper, .pos-cart-item .icon-btn-danger { grid-column: 1; }
+  .pos-customer-fields { grid-template-columns: 1fr; }
 }

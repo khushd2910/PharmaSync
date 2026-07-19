@@ -145,6 +145,7 @@ const createMedicine = catchAsync(async (req, res, next) => {
     manufacturer,
     description,
     requiresPrescription,
+    barcode,
   } = req.body;
 
   const medicine = await Medicine.create({
@@ -157,6 +158,7 @@ const createMedicine = catchAsync(async (req, res, next) => {
     manufacturer,
     description,
     requiresPrescription: requiresPrescription === true || requiresPrescription === 'true',
+    barcode: barcode || undefined,
   });
 
   return res.status(201).json({ message: 'Medicine added successfully', medicine });
@@ -219,6 +221,7 @@ const updateMedicine = catchAsync(async (req, res, next) => {
     'description',
     'requiresPrescription',
     'isDiscontinued',
+    'barcode',
   ];
 
   const updates = {};
@@ -231,10 +234,21 @@ const updateMedicine = catchAsync(async (req, res, next) => {
     updates.expiryDate = null;
   }
 
-  const medicine = await Medicine.findByIdAndUpdate(req.params.id, updates, {
-    new: true,
-    runValidators: true,
-  });
+  // Clearing the barcode needs $unset, not $set-to-null/empty-string — the
+  // sparse-unique index only skips documents where the field is entirely
+  // *absent*. A stored null or '' would still be indexed, so two medicines
+  // with a cleared barcode would collide on the unique constraint.
+  let clearBarcode = false;
+  if (updates.barcode === '') {
+    delete updates.barcode;
+    clearBarcode = true;
+  }
+
+  const medicine = await Medicine.findByIdAndUpdate(
+    req.params.id,
+    clearBarcode ? { $set: updates, $unset: { barcode: '' } } : updates,
+    { new: true, runValidators: true }
+  );
 
   if (!medicine) {
     return next(new AppError('Medicine not found', 404));
