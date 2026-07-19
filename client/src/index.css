@@ -620,6 +620,20 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 
 .checkout-grid, .order-details-grid, .profile-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; align-items: flex-start; }
 .checkout-section { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 18px 20px; margin-bottom: 18px; }
+
+.analysis-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+.analysis-meta { margin: 0 0 14px; }
+.analysis-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.analysis-col h3 { font-size: 13px; margin: 0 0 8px; color: var(--ink); }
+.analysis-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow-y: auto; }
+.analysis-list li {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  font-size: 12.5px; padding: 7px 9px; border: 1px solid var(--line); border-radius: var(--r-sm);
+}
+.analysis-list li .num { font-weight: 600; font-variant-numeric: tabular-nums; flex-shrink: 0; white-space: nowrap; }
+.analysis-empty { color: var(--muted); border-style: dashed !important; justify-content: center !important; }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .checkout-section-title { display: flex; align-items: center; gap: 8px; font-size: 14.5px; margin: 0 0 14px; }
 .checkout-section input { margin-bottom: 4px; }
 .location-btn { margin-top: 12px; width: 100%; justify-content: center; }
@@ -731,4 +745,6 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
   .pos-cart-item { grid-template-columns: 1fr; row-gap: 8px; }
   .pos-cart-item .cart-item-total, .pos-cart-item .qty-stepper, .pos-cart-item .icon-btn-danger { grid-column: 1; }
   .pos-customer-fields { grid-template-columns: 1fr; }
+  .analysis-grid { grid-template-columns: 1fr; }
+  .analysis-header { flex-direction: column; align-items: flex-start; gap: 8px; }
 }

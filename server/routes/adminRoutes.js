@@ -3,6 +3,7 @@ const router = express.Router();
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 const { adminListOrders, adminUpdateOrderStatus } = require('../controllers/orderController');
 const { getDashboardStats } = require('../controllers/adminController');
+const { getInventoryAnalysis, runInventoryAnalysis } = require('../controllers/inventoryAnalysisController');
 const {
   createMedicine,
   adminListMedicines,
@@ -34,6 +35,16 @@ router.get('/dashboard', (req, res) => {
 //        low stock, expiring soon)
 // @route GET /api/admin/dashboard/stats
 router.get('/dashboard/stats', getDashboardStats);
+
+// @desc  Latest nightly inventory analysis snapshot (Total Stock, Low
+//        Stock, Fast Selling, Slow Selling) — written by the Python service
+// @route GET /api/admin/inventory-analysis
+router.get('/inventory-analysis', getInventoryAnalysis);
+
+// @desc  Run the Python analysis job on demand instead of waiting for its
+//        nightly schedule
+// @route POST /api/admin/inventory-analysis/run
+router.post('/inventory-analysis/run', runInventoryAnalysis);
 
 // @desc  List all orders, optionally filtered by status
 // @route GET /api/admin/orders?status=
