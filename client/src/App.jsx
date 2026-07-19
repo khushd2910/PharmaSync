@@ -22,6 +22,8 @@ import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminOrders from './pages/AdminOrders';
 import AdminAddMedicine from './pages/AdminAddMedicine';
+import AdminMedicines from './pages/AdminMedicines';
+import AdminEditMedicine from './pages/AdminEditMedicine';
 
 function App() {
   return (
@@ -112,6 +114,22 @@ function App() {
               element={
                 <ProtectedRoute role="admin">
                   <AdminAddMedicine />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/medicines"
+              element={
+                <ProtectedRoute role="admin">
+                  <AdminMedicines />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/medicines/:id/edit"
+              element={
+                <ProtectedRoute role="admin">
+                  <AdminEditMedicine />
                 </ProtectedRoute>
               }
             />

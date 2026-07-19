@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { PackagePlus } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { Pencil, ArrowLeft } from 'lucide-react';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 
@@ -16,11 +16,39 @@ const EMPTY_FORM = {
   requiresPrescription: false,
 };
 
-const AdminAddMedicine = () => {
+const AdminEditMedicine = () => {
+  const { id } = useParams();
   const [form, setForm] = useState(EMPTY_FORM);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { showToast } = useToast();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    api
+      .get(`/medicines/${id}`)
+      .then((res) => {
+        const m = res.data.medicine;
+        setForm({
+          name: m.name || '',
+          brand: m.brand || '',
+          category: m.category || '',
+          price: m.price ?? '',
+          stock: m.stock ?? '',
+          // Trim the ISO timestamp down to yyyy-mm-dd for the date input
+          expiryDate: m.expiryDate ? m.expiryDate.slice(0, 10) : '',
+          manufacturer: m.manufacturer || '',
+          description: m.description || '',
+          requiresPrescription: !!m.requiresPrescription,
+        });
+      })
+      .catch((err) => {
+        showToast(err.response?.data?.message || 'Could not load medicine', 'error');
+        navigate('/admin/medicines');
+      })
+      .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -31,59 +59,70 @@ const AdminAddMedicine = () => {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.post('/admin/medicines', {
+      await api.patch(`/admin/medicines/${id}`, {
         ...form,
         price: Number(form.price),
         stock: Number(form.stock),
       });
-      showToast('Medicine added successfully', 'success');
+      showToast('Medicine updated — live on the storefront now', 'success');
       navigate('/admin/medicines');
     } catch (err) {
-      showToast(err.response?.data?.message || 'Could not add medicine', 'error');
+      showToast(err.response?.data?.message || 'Could not update medicine', 'error');
     } finally {
       setSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="dashboard-page admin-theme">
+        <p className="info-text center-text">Loading medicine…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-page admin-theme">
       <header className="dashboard-header">
         <div>
           <p className="eyebrow">Admin</p>
-          <h2>Add Medicine</h2>
+          <h2>Update Medicine</h2>
         </div>
+        <Link to="/admin/medicines" className="btn-secondary admin">
+          <ArrowLeft size={15} strokeWidth={2} /> Back to list
+        </Link>
       </header>
 
       <section className="checkout-section">
         <h2 className="checkout-section-title">
-          <PackagePlus size={16} strokeWidth={2} /> Medicine details
+          <Pencil size={16} strokeWidth={2} /> Admin edits
         </h2>
 
         <form onSubmit={handleSubmit}>
           <div className="form-grid">
             <div>
               <label className="field-label">Name</label>
-              <input name="name" value={form.name} onChange={handleChange} placeholder="e.g. Paracetamol 500mg" required />
+              <input name="name" value={form.name} onChange={handleChange} required />
             </div>
 
             <div>
               <label className="field-label">Brand</label>
-              <input name="brand" value={form.brand} onChange={handleChange} placeholder="e.g. Crocin" />
+              <input name="brand" value={form.brand} onChange={handleChange} />
             </div>
 
             <div>
               <label className="field-label">Category</label>
-              <input name="category" value={form.category} onChange={handleChange} placeholder="e.g. Pain Relief" />
+              <input name="category" value={form.category} onChange={handleChange} />
             </div>
 
             <div>
               <label className="field-label">Price (₹)</label>
-              <input type="number" name="price" value={form.price} onChange={handleChange} min="0" step="0.01" placeholder="0.00" required />
+              <input type="number" name="price" value={form.price} onChange={handleChange} min="0" step="0.01" required />
             </div>
 
             <div>
               <label className="field-label">Quantity</label>
-              <input type="number" name="stock" value={form.stock} onChange={handleChange} min="0" step="1" placeholder="0" required />
+              <input type="number" name="stock" value={form.stock} onChange={handleChange} min="0" step="1" required />
             </div>
 
             <div>
@@ -93,18 +132,12 @@ const AdminAddMedicine = () => {
 
             <div>
               <label className="field-label">Manufacturer</label>
-              <input name="manufacturer" value={form.manufacturer} onChange={handleChange} placeholder="e.g. GSK" />
+              <input name="manufacturer" value={form.manufacturer} onChange={handleChange} />
             </div>
           </div>
 
           <label className="field-label">Description</label>
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            placeholder="Short description shown on the medicine's detail page"
-            rows={4}
-          />
+          <textarea name="description" value={form.description} onChange={handleChange} rows={4} />
 
           <label className="checkbox-filter form-checkbox">
             <input
@@ -117,8 +150,8 @@ const AdminAddMedicine = () => {
           </label>
 
           <p className="info-text muted-text form-note">
-            Saved medicines are available across both the online storefront and (once POS billing ships) in-store —
-            there's a single shared catalog.
+            Automatically updates everywhere this medicine appears — Online Store and Offline Store both read the
+            same catalog record, so there's nothing extra to sync.
           </p>
 
           <button type="submit" className="btn-primary" disabled={saving} style={{ marginTop: 18 }}>
@@ -130,4 +163,4 @@ const AdminAddMedicine = () => {
   );
 };
 
-export default AdminAddMedicine;
+export default AdminEditMedicine;

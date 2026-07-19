@@ -160,4 +160,80 @@ const createMedicine = catchAsync(async (req, res, next) => {
   return res.status(201).json({ message: 'Medicine added successfully', medicine });
 });
 
-module.exports = { listMedicines, getCategories, getBrands, getMedicineById, createMedicine };
+// @desc    List medicines for the admin management table — unlike the public
+//          listing, this INCLUDES discontinued items, since an admin needs to
+//          find and re-enable/edit them too.
+// @route   GET /api/admin/medicines?search=&page=&limit=
+// @access  Private (admin)
+const adminListMedicines = catchAsync(async (req, res) => {
+  const search = (req.query.search || '').trim();
+  const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+  const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 100);
+
+  const filter = search ? buildSearchFilter(search) || {} : {};
+
+  const [medicines, total] = await Promise.all([
+    Medicine.find(filter)
+      .sort({ name: 1 })
+      .skip((page - 1) * limit)
+      .limit(limit),
+    Medicine.countDocuments(filter),
+  ]);
+
+  return res.status(200).json({
+    medicines,
+    pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+  });
+});
+
+// @desc    Edit an existing medicine (e.g. price, stock, description). Since
+//          the storefront and future POS both read from this same Medicine
+//          collection, any change here takes effect everywhere immediately —
+//          there's nothing separate to "sync" to the online or offline side.
+// @route   PATCH /api/admin/medicines/:id
+// @access  Private (admin)
+const updateMedicine = catchAsync(async (req, res, next) => {
+  const EDITABLE_FIELDS = [
+    'name',
+    'brand',
+    'category',
+    'price',
+    'stock',
+    'expiryDate',
+    'manufacturer',
+    'description',
+    'requiresPrescription',
+    'isDiscontinued',
+  ];
+
+  const updates = {};
+  for (const field of EDITABLE_FIELDS) {
+    if (req.body[field] !== undefined) {
+      updates[field] = req.body[field];
+    }
+  }
+  if (updates.expiryDate === '') {
+    updates.expiryDate = null;
+  }
+
+  const medicine = await Medicine.findByIdAndUpdate(req.params.id, updates, {
+    new: true,
+    runValidators: true,
+  });
+
+  if (!medicine) {
+    return next(new AppError('Medicine not found', 404));
+  }
+
+  return res.status(200).json({ message: 'Medicine updated successfully', medicine });
+});
+
+module.exports = {
+  listMedicines,
+  getCategories,
+  getBrands,
+  getMedicineById,
+  createMedicine,
+  adminListMedicines,
+  updateMedicine,
+};

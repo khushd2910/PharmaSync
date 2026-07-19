@@ -94,11 +94,11 @@ const AdminDashboard = () => {
         </div>
       </Link>
 
-      <Link to="/admin/medicines/new" className="placeholder-card admin-action-card">
+      <Link to="/admin/medicines" className="placeholder-card admin-action-card">
         <Pill size={20} strokeWidth={2} className="placeholder-icon" />
         <div>
-          <strong>Add Medicine</strong>
-          <p className="muted-text">Add a new medicine to the catalog. Full edit/delete and stock management are coming in a later module.</p>
+          <strong>Manage Medicines</strong>
+          <p className="muted-text">Add new medicines, edit price/stock/details — changes are live on the storefront immediately.</p>
         </div>
       </Link>
     </div>
