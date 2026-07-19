@@ -22,11 +22,7 @@ const Dashboard = () => {
     <div className="dashboard-page">
       <header className="dashboard-header">
         <div>
-<<<<<<< HEAD
-          <p className="dashboard-eyebrow">Patient Dashboard</p>
-=======
           <p className="eyebrow">Patient Dashboard</p>
->>>>>>> master
           <h2>Welcome, {user?.name?.split(' ')[0]}</h2>
         </div>
         <button className="btn-secondary" onClick={handleLogout}>Logout</button>

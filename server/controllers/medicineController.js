@@ -1,19 +1,6 @@
 const Medicine = require('../models/Medicine');
 const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
-<<<<<<< HEAD
-
-const SORT_OPTIONS = {
-  relevance: { score: { $meta: 'textScore' } },
-  name: { name: 1 },
-  'price-asc': { price: 1 },
-  'price-desc': { price: -1 },
-};
-
-// @desc    List/search medicines with pagination — publicly accessible so
-//          guests can browse before creating an account
-// @route   GET /api/medicines?search=&page=&limit=&sort=
-=======
 const fetchDrugInfo = require('../utils/fetchDrugInfo');
 
 const SORT_OPTIONS = {
@@ -53,26 +40,11 @@ const buildSearchFilter = (search) => {
 //          accessible so guests can browse before creating an account.
 //          Also powers Home page sections via query flags (featured, onOffer).
 // @route   GET /api/medicines?search=&category=&brand=&prescriptionRequired=&inStock=&sort=&page=&limit=
->>>>>>> master
 // @access  Public
 const listMedicines = catchAsync(async (req, res) => {
   const search = (req.query.search || '').trim();
   const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
   const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 50);
-<<<<<<< HEAD
-  const sortKey = SORT_OPTIONS[req.query.sort] ? req.query.sort : search ? 'relevance' : 'name';
-
-  const filter = { isDiscontinued: { $ne: true } };
-  let projection = null;
-
-  if (search) {
-    filter.$text = { $search: search };
-    projection = { score: { $meta: 'textScore' } };
-  }
-
-  const [medicines, total] = await Promise.all([
-    Medicine.find(filter, projection)
-=======
 
   const filter = { isDiscontinued: { $ne: true } };
 
@@ -105,7 +77,6 @@ const listMedicines = catchAsync(async (req, res) => {
 
   const [medicines, total] = await Promise.all([
     Medicine.find(filter)
->>>>>>> master
       .sort(SORT_OPTIONS[sortKey])
       .skip((page - 1) * limit)
       .limit(limit),
@@ -123,9 +94,6 @@ const listMedicines = catchAsync(async (req, res) => {
   });
 });
 
-<<<<<<< HEAD
-// @desc    Get a single medicine's details
-=======
 // @desc    Distinct list of categories, for the Home page's category pills
 //          and the search filter dropdown
 // @route   GET /api/medicines/categories
@@ -145,7 +113,6 @@ const getBrands = catchAsync(async (req, res) => {
 
 // @desc    Get a single medicine's details, enriched with a live openFDA
 //          lookup where a reliable US-generic-name match exists
->>>>>>> master
 // @route   GET /api/medicines/:id
 // @access  Public
 const getMedicineById = catchAsync(async (req, res, next) => {
@@ -153,17 +120,44 @@ const getMedicineById = catchAsync(async (req, res, next) => {
   if (!medicine) {
     return next(new AppError('Medicine not found', 404));
   }
-<<<<<<< HEAD
-  return res.status(200).json({ medicine });
-});
-
-module.exports = { listMedicines, getMedicineById };
-=======
 
   const apiInfo = await fetchDrugInfo(medicine.fdaAlias);
 
   return res.status(200).json({ medicine, apiInfo });
 });
 
-module.exports = { listMedicines, getCategories, getBrands, getMedicineById };
->>>>>>> master
+// @desc    Add a new medicine to the catalog (admin manual entry). New
+//          medicines are immediately visible to guest/user browsing and, once
+//          POS billing exists, to in-store sale too — there's a single
+//          catalog, not separate online/offline records.
+// @route   POST /api/admin/medicines
+// @access  Private (admin)
+const createMedicine = catchAsync(async (req, res, next) => {
+  const {
+    name,
+    brand,
+    category,
+    price,
+    stock,
+    expiryDate,
+    manufacturer,
+    description,
+    requiresPrescription,
+  } = req.body;
+
+  const medicine = await Medicine.create({
+    name,
+    brand,
+    category,
+    price,
+    stock,
+    expiryDate: expiryDate || undefined,
+    manufacturer,
+    description,
+    requiresPrescription: requiresPrescription === true || requiresPrescription === 'true',
+  });
+
+  return res.status(201).json({ message: 'Medicine added successfully', medicine });
+});
+
+module.exports = { listMedicines, getCategories, getBrands, getMedicineById, createMedicine };

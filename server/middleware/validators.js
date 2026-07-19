@@ -43,10 +43,23 @@ const resetPasswordRules = [
     .withMessage('Password must contain at least one number'),
 ];
 
+const addMedicineRules = [
+  body('name').trim().notEmpty().withMessage('Name is required').isLength({ max: 150 }),
+  body('price').notEmpty().withMessage('Price is required').isFloat({ min: 0 }).withMessage('Price must be a positive number'),
+  body('stock').notEmpty().withMessage('Quantity is required').isInt({ min: 0 }).withMessage('Quantity must be a whole number, 0 or more'),
+  body('brand').optional({ checkFalsy: true }).trim().isLength({ max: 100 }),
+  body('category').optional({ checkFalsy: true }).trim().isLength({ max: 100 }),
+  body('manufacturer').optional({ checkFalsy: true }).trim().isLength({ max: 150 }),
+  body('description').optional({ checkFalsy: true }).trim().isLength({ max: 2000 }),
+  body('expiryDate').optional({ checkFalsy: true }).isISO8601().withMessage('Expiry must be a valid date'),
+  body('requiresPrescription').optional().isBoolean().withMessage('Prescription Required must be true or false'),
+];
+
 module.exports = {
   validate,
   registerRules,
   loginRules,
   forgotPasswordRules,
   resetPasswordRules,
+  addMedicineRules,
 };

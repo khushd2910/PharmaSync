@@ -1,10 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
-<<<<<<< HEAD
-=======
 import { CartProvider } from './context/CartContext';
->>>>>>> master
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicLayout from './components/PublicLayout';
 
@@ -15,10 +12,6 @@ import AdminLogin from './pages/AdminLogin';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import VerifyEmail from './pages/VerifyEmail';
-<<<<<<< HEAD
-import Dashboard from './pages/Dashboard';
-import AdminDashboard from './pages/AdminDashboard';
-=======
 import MedicineDetails from './pages/MedicineDetails';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
@@ -28,46 +21,12 @@ import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminOrders from './pages/AdminOrders';
->>>>>>> master
+import AdminAddMedicine from './pages/AdminAddMedicine';
 
 function App() {
   return (
     <ToastProvider>
       <AuthProvider>
-<<<<<<< HEAD
-        <Routes>
-          {/* Public pages share the Navbar via PublicLayout */}
-          <Route element={<PublicLayout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password/:token" element={<ResetPassword />} />
-            <Route path="/verify-email/:token" element={<VerifyEmail />} />
-          </Route>
-
-          {/* Dashboards have their own header/logout, no top Navbar */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute role="user">
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute role="admin">
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-=======
         <CartProvider>
           <Routes>
             {/* Public pages share the Navbar via PublicLayout */}
@@ -148,11 +107,18 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/admin/medicines/new"
+              element={
+                <ProtectedRoute role="admin">
+                  <AdminAddMedicine />
+                </ProtectedRoute>
+              }
+            />
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </CartProvider>
->>>>>>> master
       </AuthProvider>
     </ToastProvider>
   );

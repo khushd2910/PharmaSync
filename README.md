@@ -49,15 +49,6 @@ size), which is community-maintained and free to use. Check that repo for
 attribution/licensing details if you plan to deploy this commercially.
 
 The CSV is already included at `server/data/indian_medicine_data.csv`.
-<<<<<<< HEAD
-To load it into MongoDB:
-
-```bash
-cd server
-node scripts/importMedicines.js
-```
-
-=======
 **Use this script** to load the curated, common-medicine subset (~1,150
 medicines with demo stock/category/featured/discount data — this is the one
 the storefront is actually built around):
@@ -73,7 +64,6 @@ none of the demo stock/category/offer data populated (medicines will show
 as permanently out of stock, and the Offers/Popular rows will be empty).
 **Don't use it** — it's kept only for reference and prints a warning if run.
 
->>>>>>> master
 This streams the CSV (so it doesn't load 31MB into memory at once), inserts
 in batches, skips malformed rows, and builds the text search index used by
 the browse/search bar. Re-running it clears and re-imports the collection.
@@ -193,15 +183,6 @@ on your `.env`:
 Email sending never crashes the request — if SMTP fails, the error is
 logged to the server console and the API still responds normally.
 
-<<<<<<< HEAD
-## What's Next (Module 2+)
-
-- Medicine CRUD, search/filters/sorting, medicine details
-- Cart, checkout, order history, profile
-- Stock & order management, offline POS billing, GST invoice PDFs
-- Sales/inventory/expiry analytics (Django + Pandas), CSV reports
-- AI chatbot & prescription-based medicine alerts
-=======
 ## Module 2 — Shopping, Orders & Admin (complete)
 
 **Catalog:** ~1,150 curated common medicines (see "Medicine data" above),
@@ -240,4 +221,3 @@ status (or cancel or download an invoice) for any order.
 - Sales/inventory/expiry analytics (Django + Pandas), CSV reports
 - AI chatbot & prescription-based medicine alerts
 - Real Google Maps integration once an API key is available
->>>>>>> master

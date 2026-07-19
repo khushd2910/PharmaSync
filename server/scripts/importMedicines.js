@@ -44,8 +44,6 @@ const mapRow = (row) => {
 };
 
 const run = async () => {
-<<<<<<< HEAD
-=======
   console.log('\n⚠️  WARNING: this script imports all 253k+ medicines with NO demo');
   console.log('   stock/category/featured/discount data — everything will show as');
   console.log('   out of stock and the Offers/Popular rows will be empty.');
@@ -53,7 +51,6 @@ const run = async () => {
   console.log('   Continuing in 5 seconds... (Ctrl+C to cancel)\n');
   await new Promise((resolve) => setTimeout(resolve, 5000));
 
->>>>>>> master
   if (!fs.existsSync(csvPath)) {
     console.error(`CSV file not found at: ${csvPath}`);
     console.error('Download it from https://github.com/junioralive/Indian-Medicine-Dataset (DATA/indian_medicine_data.csv)');

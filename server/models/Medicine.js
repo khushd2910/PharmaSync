@@ -15,6 +15,12 @@ const medicineSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    // Distinct from `manufacturer` — the retail/marketing brand name, as
+    // entered by the admin on the Add Medicine form.
+    brand: {
+      type: String,
+      trim: true,
+    },
     type: {
       type: String,
       trim: true,
@@ -36,12 +42,6 @@ const medicineSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-<<<<<<< HEAD
-    // Not in the seed dataset — defaulted here so Module 2's stock/order
-    // management and prescription-alert features have somewhere to live
-    // without a schema migration later.
-=======
->>>>>>> master
     stock: {
       type: Number,
       default: 0,
@@ -55,8 +55,6 @@ const medicineSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-<<<<<<< HEAD
-=======
     // Simplified single-batch expiry for the storefront demo — real
     // batch/lot-level expiry tracking belongs to the admin stock module.
     expiryDate: {
@@ -68,6 +66,13 @@ const medicineSchema = new mongoose.Schema(
       type: String,
       trim: true,
       index: true,
+    },
+    // Free-text summary the admin types on the Add Medicine form — separate
+    // from the curated `uses`/`sideEffects`/`dosage` fields the bulk importer
+    // populates for catalog medicines.
+    description: {
+      type: String,
+      trim: true,
     },
     uses: {
       type: String,
@@ -99,7 +104,6 @@ const medicineSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
->>>>>>> master
   },
   { timestamps: true }
 );

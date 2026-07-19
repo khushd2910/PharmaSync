@@ -1,15 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { protect, adminOnly } = require('../middleware/authMiddleware');
-<<<<<<< HEAD
-
-// @desc  Admin dashboard (placeholder - later modules add medicine CRUD,
-//        stock management, order management, POS billing, invoices, etc.)
-// @route GET /api/admin/dashboard
-// @access Private (admin only)
-router.get('/dashboard', protect, adminOnly, (req, res) => {
-=======
 const { adminListOrders, adminUpdateOrderStatus } = require('../controllers/orderController');
+const { getDashboardStats } = require('../controllers/adminController');
+const { createMedicine } = require('../controllers/medicineController');
+const { validate, addMedicineRules } = require('../middleware/validators');
 
 router.use(protect, adminOnly); // every admin route requires an admin login
 
@@ -17,7 +12,6 @@ router.use(protect, adminOnly); // every admin route requires an admin login
 //        stock management, POS billing, etc.)
 // @route GET /api/admin/dashboard
 router.get('/dashboard', (req, res) => {
->>>>>>> master
   res.status(200).json({
     message: `Welcome Admin ${req.user.name}`,
     info: 'Manage complete pharmacy from here (coming in later modules).',
@@ -30,8 +24,11 @@ router.get('/dashboard', (req, res) => {
   });
 });
 
-<<<<<<< HEAD
-=======
+// @desc  Overview counters for the dashboard (medicines, orders, revenue,
+//        low stock, expiring soon)
+// @route GET /api/admin/dashboard/stats
+router.get('/dashboard/stats', getDashboardStats);
+
 // @desc  List all orders, optionally filtered by status
 // @route GET /api/admin/orders?status=
 router.get('/orders', adminListOrders);
@@ -40,5 +37,8 @@ router.get('/orders', adminListOrders);
 // @route PATCH /api/admin/orders/:id/status
 router.patch('/orders/:id/status', adminUpdateOrderStatus);
 
->>>>>>> master
+// @desc  Add a new medicine to the catalog
+// @route POST /api/admin/medicines
+router.post('/medicines', addMedicineRules, validate, createMedicine);
+
 module.exports = router;
