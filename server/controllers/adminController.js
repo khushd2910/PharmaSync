@@ -1,10 +1,7 @@
 const Medicine = require('../models/Medicine');
 const Order = require('../models/Order');
 const catchAsync = require('../utils/catchAsync');
-
-// Tunable thresholds for the dashboard's "attention needed" counters.
-const LOW_STOCK_THRESHOLD = 10;
-const EXPIRY_WINDOW_DAYS = 30;
+const { LOW_STOCK_THRESHOLD, EXPIRY_WINDOW_DAYS } = require('../utils/inventoryConstants');
 
 // @desc    Aggregate counters for the admin dashboard overview
 //          (Total Medicines, Total Orders, Revenue, Low Stock, Expiring Medicines)

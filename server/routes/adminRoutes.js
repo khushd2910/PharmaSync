@@ -3,7 +3,13 @@ const router = express.Router();
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 const { adminListOrders, adminUpdateOrderStatus } = require('../controllers/orderController');
 const { getDashboardStats } = require('../controllers/adminController');
-const { createMedicine, adminListMedicines, updateMedicine } = require('../controllers/medicineController');
+const {
+  createMedicine,
+  adminListMedicines,
+  updateMedicine,
+  deleteMedicine,
+  restockMedicine,
+} = require('../controllers/medicineController');
 const { validate, addMedicineRules, updateMedicineRules } = require('../middleware/validators');
 
 router.use(protect, adminOnly); // every admin route requires an admin login
@@ -49,5 +55,13 @@ router.post('/medicines', addMedicineRules, validate, createMedicine);
 //        future POS) immediately, since both read the same catalog.
 // @route PATCH /api/admin/medicines/:id
 router.patch('/medicines/:id', updateMedicineRules, validate, updateMedicine);
+
+// @desc  Refill stock by a given amount — the quick action for a low-stock alert
+// @route PATCH /api/admin/medicines/:id/restock
+router.patch('/medicines/:id/restock', restockMedicine);
+
+// @desc  Delete a medicine — removed from inventory entirely
+// @route DELETE /api/admin/medicines/:id
+router.delete('/medicines/:id', deleteMedicine);
 
 module.exports = router;

@@ -68,21 +68,21 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className={`stat-card${stats.lowStockCount > 0 ? ' stat-card-warn' : ''}`}>
+          <Link to="/admin/medicines?lowStock=true" className={`stat-card stat-card-link${stats.lowStockCount > 0 ? ' stat-card-warn' : ''}`}>
             <AlertTriangle size={18} strokeWidth={2} className="stat-icon" />
             <div>
               <p className="stat-value">{stats.lowStockCount}</p>
               <p className="stat-label">Low Stock</p>
             </div>
-          </div>
+          </Link>
 
-          <div className={`stat-card${stats.expiringCount > 0 ? ' stat-card-warn' : ''}`}>
+          <Link to="/admin/medicines?expiringSoon=true" className={`stat-card stat-card-link${stats.expiringCount > 0 ? ' stat-card-warn' : ''}`}>
             <CalendarClock size={18} strokeWidth={2} className="stat-icon" />
             <div>
               <p className="stat-value">{stats.expiringCount}</p>
               <p className="stat-label">Expiring Soon</p>
             </div>
-          </div>
+          </Link>
         </div>
       ) : null}
 

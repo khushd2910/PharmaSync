@@ -1,7 +1,9 @@
 const Medicine = require('../models/Medicine');
+const Cart = require('../models/Cart');
 const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
 const fetchDrugInfo = require('../utils/fetchDrugInfo');
+const { LOW_STOCK_THRESHOLD, EXPIRY_WINDOW_DAYS } = require('../utils/inventoryConstants');
 
 const SORT_OPTIONS = {
   name: { name: 1 },
@@ -162,8 +164,9 @@ const createMedicine = catchAsync(async (req, res, next) => {
 
 // @desc    List medicines for the admin management table — unlike the public
 //          listing, this INCLUDES discontinued items, since an admin needs to
-//          find and re-enable/edit them too.
-// @route   GET /api/admin/medicines?search=&page=&limit=
+//          find and re-enable/edit them too. Supports the dashboard's "Low
+//          Stock" / "Expiring Soon" alert cards via query flags.
+// @route   GET /api/admin/medicines?search=&lowStock=&expiringSoon=&page=&limit=
 // @access  Private (admin)
 const adminListMedicines = catchAsync(async (req, res) => {
   const search = (req.query.search || '').trim();
@@ -172,9 +175,20 @@ const adminListMedicines = catchAsync(async (req, res) => {
 
   const filter = search ? buildSearchFilter(search) || {} : {};
 
+  if (req.query.lowStock === 'true') {
+    filter.isDiscontinued = false;
+    filter.stock = { $lte: LOW_STOCK_THRESHOLD };
+  }
+  if (req.query.expiringSoon === 'true') {
+    const now = new Date();
+    const windowEnd = new Date(now.getTime() + EXPIRY_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+    filter.isDiscontinued = false;
+    filter.expiryDate = { $gte: now, $lte: windowEnd };
+  }
+
   const [medicines, total] = await Promise.all([
     Medicine.find(filter)
-      .sort({ name: 1 })
+      .sort({ stock: 1, name: 1 })
       .skip((page - 1) * limit)
       .limit(limit),
     Medicine.countDocuments(filter),
@@ -183,6 +197,7 @@ const adminListMedicines = catchAsync(async (req, res) => {
   return res.status(200).json({
     medicines,
     pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+    lowStockThreshold: LOW_STOCK_THRESHOLD,
   });
 });
 
@@ -228,6 +243,48 @@ const updateMedicine = catchAsync(async (req, res, next) => {
   return res.status(200).json({ message: 'Medicine updated successfully', medicine });
 });
 
+// @desc    Permanently remove a medicine from inventory. Past orders keep
+//          their own name/price snapshot (see Order model), so order history
+//          stays intact — this only affects future browsing/cart/checkout.
+//          Also pulls the medicine out of every user's cart so no one is left
+//          with a dangling cart line for something that no longer exists.
+// @route   DELETE /api/admin/medicines/:id
+// @access  Private (admin)
+const deleteMedicine = catchAsync(async (req, res, next) => {
+  const medicine = await Medicine.findByIdAndDelete(req.params.id);
+  if (!medicine) {
+    return next(new AppError('Medicine not found', 404));
+  }
+
+  await Cart.updateMany({}, { $pull: { items: { medicine: medicine._id } } });
+
+  return res.status(200).json({ message: 'Medicine removed from inventory' });
+});
+
+// @desc    Refill stock for a medicine by a given amount (adds to whatever
+//          stock currently is, rather than overwriting it — the quick action
+//          for "Admin refills stock" once a low-stock alert fires).
+// @route   PATCH /api/admin/medicines/:id/restock
+// @access  Private (admin)
+const restockMedicine = catchAsync(async (req, res, next) => {
+  const amount = Number(req.body.amount);
+  if (!Number.isInteger(amount) || amount <= 0) {
+    return next(new AppError('amount must be a whole number greater than 0', 400));
+  }
+
+  const medicine = await Medicine.findByIdAndUpdate(
+    req.params.id,
+    { $inc: { stock: amount } },
+    { new: true }
+  );
+
+  if (!medicine) {
+    return next(new AppError('Medicine not found', 404));
+  }
+
+  return res.status(200).json({ message: `Stock increased by ${amount}`, medicine });
+});
+
 module.exports = {
   listMedicines,
   getCategories,
@@ -236,4 +293,6 @@ module.exports = {
   createMedicine,
   adminListMedicines,
   updateMedicine,
+  deleteMedicine,
+  restockMedicine,
 };
