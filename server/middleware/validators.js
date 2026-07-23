@@ -19,8 +19,10 @@ const registerRules = [
   body('name').trim().notEmpty().withMessage('Name is required').isLength({ max: 80 }),
   body('email').trim().notEmpty().withMessage('Email is required').isEmail().withMessage('Enter a valid email').normalizeEmail(),
   body('password')
-    .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters')
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters')
+    .matches(/[A-Za-z]/)
+    .withMessage('Password must contain at least one letter')
     .matches(/\d/)
     .withMessage('Password must contain at least one number'),
   body('phone').optional({ checkFalsy: true }).isMobilePhone('any').withMessage('Enter a valid phone number'),
@@ -37,8 +39,10 @@ const forgotPasswordRules = [
 
 const resetPasswordRules = [
   body('password')
-    .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters')
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters')
+    .matches(/[A-Za-z]/)
+    .withMessage('Password must contain at least one letter')
     .matches(/\d/)
     .withMessage('Password must contain at least one number'),
 ];

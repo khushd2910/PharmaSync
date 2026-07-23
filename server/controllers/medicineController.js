@@ -1,9 +1,12 @@
 const Medicine = require('../models/Medicine');
 const Cart = require('../models/Cart');
+const Order = require('../models/Order');
+const POSSale = require('../models/POSSale');
 const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
 const fetchDrugInfo = require('../utils/fetchDrugInfo');
 const { LOW_STOCK_THRESHOLD, EXPIRY_WINDOW_DAYS } = require('../utils/inventoryConstants');
+const { parse: parseCsv } = require('csv-parse/sync');
 
 const SORT_OPTIONS = {
   name: { name: 1 },
@@ -257,19 +260,40 @@ const updateMedicine = catchAsync(async (req, res, next) => {
   return res.status(200).json({ message: 'Medicine updated successfully', medicine });
 });
 
-// @desc    Permanently remove a medicine from inventory. Past orders keep
-//          their own name/price snapshot (see Order model), so order history
-//          stays intact — this only affects future browsing/cart/checkout.
-//          Also pulls the medicine out of every user's cart so no one is left
-//          with a dangling cart line for something that no longer exists.
+// @desc    Permanently remove a medicine from inventory — but only if it
+//          has never actually been sold (online or in-store). A medicine
+//          with sales history is rejected with a 409 directing the admin to
+//          discontinue it instead (isDiscontinued), which keeps that
+//          history intact. Also pulls the medicine out of every user's
+//          cart so no one is left with a dangling cart line.
 // @route   DELETE /api/admin/medicines/:id
 // @access  Private (admin)
 const deleteMedicine = catchAsync(async (req, res, next) => {
-  const medicine = await Medicine.findByIdAndDelete(req.params.id);
+  const medicine = await Medicine.findById(req.params.id);
   if (!medicine) {
     return next(new AppError('Medicine not found', 404));
   }
 
+  // A hard delete on a medicine that has actual sales history would sever
+  // what analytics/receipts can show for it going forward (best/worst
+  // sellers, inventory trend) — the `isDiscontinued` flag exists exactly
+  // to remove something from sale without destroying that history.
+  // Reserve the permanent delete for genuine mistakes (added the wrong
+  // item, duplicate entry, ...) that never actually sold anything.
+  const [hasOnlineSales, hasPosSales] = await Promise.all([
+    Order.exists({ 'items.medicine': medicine._id }),
+    POSSale.exists({ 'items.medicine': medicine._id }),
+  ]);
+  if (hasOnlineSales || hasPosSales) {
+    return next(
+      new AppError(
+        `"${medicine.name}" has past sales on record and can't be permanently deleted. Discontinue it instead — that removes it from sale everywhere while keeping its order/sales history intact.`,
+        409
+      )
+    );
+  }
+
+  await medicine.deleteOne();
   await Cart.updateMany({}, { $pull: { items: { medicine: medicine._id } } });
 
   return res.status(200).json({ message: 'Medicine removed from inventory' });
@@ -299,6 +323,138 @@ const restockMedicine = catchAsync(async (req, res, next) => {
   return res.status(200).json({ message: `Stock increased by ${amount}`, medicine });
 });
 
+const BULK_IMPORT_MAX_ROWS = 500;
+
+// Column headers a real pharmacy admin would produce in Excel/CSV, matching
+// the Add Medicine form's own fields — deliberately NOT the raw external
+// dataset's column names (short_composition1, Is_discontinued, ...) used by
+// server/scripts/importMedicines.js, since that format is specific to one
+// seed dataset and isn't something an admin would hand-author.
+const REQUIRED_COLUMNS = ['name', 'price', 'stock'];
+const OPTIONAL_COLUMNS = ['brand', 'category', 'manufacturer', 'description', 'expiryDate', 'requiresPrescription', 'barcode'];
+
+const toBool = (val) => {
+  const s = String(val ?? '').trim().toLowerCase();
+  return s === 'true' || s === 'yes' || s === '1';
+};
+
+// Validates and coerces one CSV row into a Medicine-shaped object, or
+// returns a { error } describing why it can't be imported. Never throws —
+// one malformed row should never abort the rest of the batch.
+const mapRow = (row, rowNumber) => {
+  const name = (row.name || '').trim();
+  if (!name) return { error: `Row ${rowNumber}: name is required` };
+
+  const price = Number(row.price);
+  if (!Number.isFinite(price) || price < 0) return { error: `Row ${rowNumber}: price must be a positive number` };
+
+  const stock = Number(row.stock);
+  if (!Number.isInteger(stock) || stock < 0) return { error: `Row ${rowNumber}: stock must be a whole number, 0 or more` };
+
+  let expiryDate;
+  if (row.expiryDate) {
+    const parsed = new Date(row.expiryDate);
+    if (Number.isNaN(parsed.getTime())) return { error: `Row ${rowNumber}: expiryDate "${row.expiryDate}" isn't a valid date` };
+    expiryDate = parsed;
+  }
+
+  return {
+    doc: {
+      name,
+      price,
+      stock,
+      brand: row.brand?.trim() || undefined,
+      category: row.category?.trim() || undefined,
+      manufacturer: row.manufacturer?.trim() || undefined,
+      description: row.description?.trim() || undefined,
+      expiryDate,
+      requiresPrescription: toBool(row.requiresPrescription),
+      barcode: row.barcode?.trim() || undefined,
+    },
+  };
+};
+
+// @desc    Bulk-add or bulk-update medicines from a CSV pasted/uploaded by
+//          an admin. Reads raw CSV text in the request body (parsed
+//          entirely client-side via FileReader — no multipart/file-upload
+//          middleware needed, since csv-parse only needs a string).
+//          Matching row: a row whose barcode matches an existing medicine's
+//          barcode UPDATES that record; every other row CREATES a new one
+//          (this catalog allows multiple medicines sharing a name from
+//          different manufacturers, so name alone is never treated as a
+//          safe match key).
+// @route   POST /api/admin/medicines/bulk-import
+// @access  Private (admin)
+const bulkImportMedicines = catchAsync(async (req, res, next) => {
+  const { csv } = req.body;
+  if (!csv || typeof csv !== 'string' || !csv.trim()) {
+    return next(new AppError('csv (raw CSV text) is required', 400));
+  }
+
+  let rows;
+  try {
+    rows = parseCsv(csv, { columns: true, skip_empty_lines: true, trim: true });
+  } catch (err) {
+    return next(new AppError(`Could not parse CSV: ${err.message}`, 400));
+  }
+
+  if (rows.length === 0) {
+    return next(new AppError('CSV has no data rows', 400));
+  }
+  if (rows.length > BULK_IMPORT_MAX_ROWS) {
+    return next(new AppError(`CSV has ${rows.length} rows — split it into batches of ${BULK_IMPORT_MAX_ROWS} or fewer`, 400));
+  }
+
+  const headerRow = Object.keys(rows[0]).map((h) => h.trim().toLowerCase());
+  const missingRequired = REQUIRED_COLUMNS.filter((col) => !headerRow.includes(col.toLowerCase()));
+  if (missingRequired.length > 0) {
+    return next(
+      new AppError(
+        `CSV is missing required column(s): ${missingRequired.join(', ')}. Expected columns: ${[...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS].join(', ')}`,
+        400
+      )
+    );
+  }
+
+  let created = 0;
+  let updated = 0;
+  const errors = [];
+
+  for (let i = 0; i < rows.length; i++) {
+    const rowNumber = i + 2; // +1 for 0-index, +1 for the header line itself
+    const result = mapRow(rows[i], rowNumber);
+    if (result.error) {
+      errors.push(result.error);
+      continue;
+    }
+
+    try {
+      if (result.doc.barcode) {
+        const existing = await Medicine.findOne({ barcode: result.doc.barcode });
+        if (existing) {
+          await Medicine.updateOne({ _id: existing._id }, { $set: result.doc });
+          updated += 1;
+          continue;
+        }
+      }
+      await Medicine.create(result.doc);
+      created += 1;
+    } catch (err) {
+      // Most likely a duplicate barcode colliding with another row in this
+      // same batch, or a schema validation error — record it and continue.
+      errors.push(`Row ${rowNumber} ("${result.doc.name}"): ${err.message}`);
+    }
+  }
+
+  return res.status(200).json({
+    message: `Imported ${created + updated} of ${rows.length} rows (${created} created, ${updated} updated, ${errors.length} skipped)`,
+    created,
+    updated,
+    skipped: errors.length,
+    errors: errors.slice(0, 25), // cap what's echoed back — a bad file could otherwise return hundreds of lines
+  });
+});
+
 module.exports = {
   listMedicines,
   getCategories,
@@ -309,4 +465,5 @@ module.exports = {
   updateMedicine,
   deleteMedicine,
   restockMedicine,
+  bulkImportMedicines,
 };

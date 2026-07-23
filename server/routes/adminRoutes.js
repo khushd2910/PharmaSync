@@ -11,6 +11,7 @@ const {
   updateMedicine,
   deleteMedicine,
   restockMedicine,
+  bulkImportMedicines,
 } = require('../controllers/medicineController');
 const { validate, addMedicineRules, updateMedicineRules } = require('../middleware/validators');
 
@@ -57,7 +58,7 @@ router.get('/sales-analysis', getSalesAnalysis);
 router.post('/sales-analysis/run', runSalesAnalysis);
 
 // @desc  List all orders, optionally filtered by status
-// @route GET /api/admin/orders?status=
+// @route GET /api/admin/orders?status=&page=&limit=
 router.get('/orders', adminListOrders);
 
 // @desc  Manually advance/cancel an order's status
@@ -71,6 +72,11 @@ router.get('/medicines', adminListMedicines);
 // @desc  Add a new medicine to the catalog
 // @route POST /api/admin/medicines
 router.post('/medicines', addMedicineRules, validate, createMedicine);
+
+// @desc  Bulk-add/update medicines from CSV text (parsed client-side,
+//        sent as { csv: "..." } — no file-upload middleware needed)
+// @route POST /api/admin/medicines/bulk-import
+router.post('/medicines/bulk-import', bulkImportMedicines);
 
 // @desc  Edit an existing medicine — takes effect on the storefront (and
 //        future POS) immediately, since both read the same catalog.

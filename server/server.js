@@ -43,7 +43,10 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
+// Default 100kb is comfortable for every other endpoint but too tight for
+// the admin bulk medicine CSV import (POST /api/admin/medicines/bulk-import),
+// which can legitimately be a few hundred KB of raw CSV text in one request.
+app.use(express.json({ limit: '2mb' }));
 app.use(cookieParser());
 
 // Health check

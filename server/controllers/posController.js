@@ -100,7 +100,7 @@ const searchCatalog = catchAsync(async (req, res, next) => {
 // @route   POST /api/admin/pos/sales
 // @access  Private (admin)
 const checkout = catchAsync(async (req, res, next) => {
-  const { items, paymentMethod, customerName, customerPhone } = req.body;
+  const { items, paymentMethod, customerName, customerPhone, prescriptionConfirmed } = req.body;
 
   if (!Array.isArray(items) || items.length === 0) {
     return next(new AppError('At least one item is required', 400));
@@ -123,6 +123,21 @@ const checkout = catchAsync(async (req, res, next) => {
       return next(new AppError('One of the scanned items is no longer available', 404));
     }
     resolvedItems.push({ medicine, quantity: qty });
+  }
+
+  // Same enforcement as the online storefront: a sale containing an Rx
+  // medicine requires an explicit confirmation. At the counter that means
+  // the cashier has physically seen the customer's prescription — this is
+  // a recorded acknowledgment, not a scanned/verified prescription (no
+  // upload workflow exists yet).
+  const rxItems = resolvedItems.filter((item) => item.medicine.requiresPrescription);
+  if (rxItems.length > 0 && prescriptionConfirmed !== true) {
+    return next(
+      new AppError(
+        `This sale includes prescription-only medicine(s): ${rxItems.map((i) => i.medicine.name).join(', ')}. Confirm the prescription has been seen before completing the sale.`,
+        400
+      )
+    );
   }
 
   const stockResult = await decrementStockOrRollback(resolvedItems);
@@ -159,6 +174,7 @@ const checkout = catchAsync(async (req, res, next) => {
     customerName: customerName || undefined,
     customerPhone: customerPhone || undefined,
     invoiceNumber: generateInvoiceNumber(),
+    prescriptionConfirmed: rxItems.length > 0 ? prescriptionConfirmed === true : false,
   });
 
   return res.status(201).json({ message: 'Sale completed', sale });

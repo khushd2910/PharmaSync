@@ -35,10 +35,10 @@ const ResetPassword = () => {
         <label className="field-label" htmlFor="password">New password</label>
         <PasswordInput
           name="password"
-          placeholder="At least 6 characters, 1 number"
+          placeholder="At least 8 characters, with a letter and a number"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          minLength={6}
+          minLength={8}
           required
           autoComplete="new-password"
         />

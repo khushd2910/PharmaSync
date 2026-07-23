@@ -35,6 +35,13 @@ const orderSchema = new mongoose.Schema(
     address: { type: addressSchema, required: true },
     paymentMethod: { type: String, enum: ['COD', 'UPI'], required: true },
     paymentStatus: { type: String, default: 'Pending' },
+    // Self-declared at checkout, only meaningful (and only ever set true)
+    // when the order actually contains a requiresPrescription medicine —
+    // see orderController.createOrder. This is NOT prescription
+    // verification (no upload/pharmacist review exists yet, per the
+    // roadmap) — it's a recorded acknowledgment that enforcement can point
+    // to, not proof.
+    prescriptionConfirmed: { type: Boolean, default: false },
     // Real status, settable by admin in a later module — defaults to
     // Pending; the frontend also computes a simulated in-progress status
     // for demo purposes until admin order management exists.

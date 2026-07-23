@@ -107,7 +107,15 @@ const updateItemQuantity = catchAsync(async (req, res, next) => {
     return next(new AppError('Item not in cart', 404));
   }
 
-  item.quantity = Math.min(qty, medicine.stock || qty);
+  // `medicine.stock || qty` looks harmless but has a real bug: when stock is
+  // exactly 0, `0 || qty` evaluates to `qty` (0 is falsy in JS), so a fully
+  // out-of-stock medicine let this endpoint set ANY quantity instead of
+  // clamping to 0. Guard the actual value, not its truthiness.
+  const availableStock = Number.isFinite(medicine.stock) ? medicine.stock : qty;
+  item.quantity = Math.min(qty, availableStock);
+  if (item.quantity <= 0) {
+    return next(new AppError('This medicine is currently out of stock', 400));
+  }
   await cart.save();
 
   const cartResponse = await buildCartResponse(req.user._id);

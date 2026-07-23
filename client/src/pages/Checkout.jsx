@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, CreditCard, Truck } from 'lucide-react';
+import { MapPin, CreditCard, Truck, ShieldAlert } from 'lucide-react';
 import api from '../api/axios';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
@@ -15,6 +15,9 @@ const Checkout = () => {
   const [locating, setLocating] = useState(false);
   const [placing, setPlacing] = useState(false);
   const [upiConfirmed, setUpiConfirmed] = useState(false);
+  const [prescriptionConfirmed, setPrescriptionConfirmed] = useState(false);
+
+  const rxItems = cart.items.filter(({ medicine }) => medicine.requiresPrescription);
 
   const handleChange = (e) => setAddress({ ...address, [e.target.name]: e.target.value });
 
@@ -46,10 +49,14 @@ const Checkout = () => {
       showToast('Please complete the demo UPI payment step first', 'error');
       return;
     }
+    if (rxItems.length > 0 && !prescriptionConfirmed) {
+      showToast('Please confirm you have a valid prescription for the marked item(s)', 'error');
+      return;
+    }
 
     setPlacing(true);
     try {
-      const res = await api.post('/orders', { address, paymentMethod });
+      const res = await api.post('/orders', { address, paymentMethod, prescriptionConfirmed });
       showToast('Order placed successfully!', 'success');
       await refreshCart();
       navigate(`/orders/${res.data.order._id}`);
@@ -131,6 +138,24 @@ const Checkout = () => {
               </div>
             )}
           </section>
+
+          {rxItems.length > 0 && (
+            <section className="checkout-section">
+              <h2 className="checkout-section-title"><ShieldAlert size={16} strokeWidth={2} /> Prescription Required</h2>
+              <p className="muted-text">
+                Your order includes: {rxItems.map(({ medicine }) => medicine.name).join(', ')}.
+                These are sold only against a valid prescription.
+              </p>
+              <label className="payment-option">
+                <input
+                  type="checkbox"
+                  checked={prescriptionConfirmed}
+                  onChange={(e) => setPrescriptionConfirmed(e.target.checked)}
+                />
+                I confirm I have a valid doctor's prescription for the item(s) above
+              </label>
+            </section>
+          )}
         </div>
 
         <div className="checkout-summary-col">
@@ -146,7 +171,11 @@ const Checkout = () => {
               <span>Total</span>
               <span>₹{cart.totalAmount.toFixed(2)}</span>
             </div>
-            <button className="btn-primary place-order-btn" onClick={handlePlaceOrder} disabled={placing}>
+            <button
+              className="btn-primary place-order-btn"
+              onClick={handlePlaceOrder}
+              disabled={placing || (rxItems.length > 0 && !prescriptionConfirmed)}
+            >
               {placing ? 'Placing order…' : 'Place Order'}
             </button>
           </section>

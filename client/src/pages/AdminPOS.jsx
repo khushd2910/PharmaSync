@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ScanBarcode, Minus, Plus, Trash2, Receipt, RotateCcw, Wallet } from 'lucide-react';
+import { ScanBarcode, Minus, Plus, Trash2, Receipt, RotateCcw, Wallet, ShieldAlert } from 'lucide-react';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 
@@ -31,6 +31,7 @@ const AdminPOS = () => {
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Cash');
+  const [prescriptionConfirmed, setPrescriptionConfirmed] = useState(false);
   const [placing, setPlacing] = useState(false);
   const [lastSale, setLastSale] = useState(null);
 
@@ -151,17 +152,23 @@ const AdminPOS = () => {
   ) / 100;
   const taxableValue = Math.round((totalAmount / (1 + DEMO_GST_RATE)) * 100) / 100;
   const gstAmount = Math.round((totalAmount - taxableValue) * 100) / 100;
+  const rxItems = cart.filter((line) => line.medicine.requiresPrescription);
 
   const resetSaleForm = () => {
     setCart([]);
     setCustomerName('');
     setCustomerPhone('');
     setPaymentMethod('Cash');
+    setPrescriptionConfirmed(false);
   };
 
   const handleCompleteSale = async () => {
     if (cart.length === 0) {
       showToast('Add at least one item to bill', 'error');
+      return;
+    }
+    if (rxItems.length > 0 && !prescriptionConfirmed) {
+      showToast('Confirm the prescription has been seen before completing this sale', 'error');
       return;
     }
     setPlacing(true);
@@ -171,6 +178,7 @@ const AdminPOS = () => {
         paymentMethod,
         customerName: customerName || undefined,
         customerPhone: customerPhone || undefined,
+        prescriptionConfirmed,
       });
       setLastSale(res.data.sale);
       showToast('Sale completed', 'success');
@@ -366,6 +374,25 @@ const AdminPOS = () => {
               ))}
             </div>
 
+            {rxItems.length > 0 && (
+              <div className="notice-banner pos-rx-notice">
+                <ShieldAlert size={15} strokeWidth={2} />
+                <div>
+                  <p>
+                    Prescription-only: {rxItems.map((line) => line.medicine.name).join(', ')}
+                  </p>
+                  <label className="payment-option">
+                    <input
+                      type="checkbox"
+                      checked={prescriptionConfirmed}
+                      onChange={(e) => setPrescriptionConfirmed(e.target.checked)}
+                    />
+                    I've seen a valid prescription for the item(s) above
+                  </label>
+                </div>
+              </div>
+            )}
+
             <div className="summary-line">
               <span>Taxable value</span>
               <span>₹{taxableValue.toFixed(2)}</span>
@@ -379,7 +406,11 @@ const AdminPOS = () => {
               <span>₹{totalAmount.toFixed(2)}</span>
             </div>
 
-            <button className="btn-primary place-order-btn" onClick={handleCompleteSale} disabled={placing || cart.length === 0}>
+            <button
+              className="btn-primary place-order-btn"
+              onClick={handleCompleteSale}
+              disabled={placing || cart.length === 0 || (rxItems.length > 0 && !prescriptionConfirmed)}
+            >
               {placing ? 'Billing…' : 'Complete Sale'}
             </button>
 

@@ -39,6 +39,28 @@ const registerUser = catchAsync(async (req, res, next) => {
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
+    // Registration still tells the *submitter* the email is taken (unlike
+    // forgotPassword, which stays generic) — that's a deliberate,
+    // industry-standard trade-off, not an oversight: hiding it here would
+    // mean giving up the immediate "log in instead" UX for a low-severity
+    // signal, and this endpoint is already behind authLimiter to bound how
+    // fast it can be used as an enumeration oracle. What genuinely is
+    // worth adding is notifying the real account owner — they may not
+    // otherwise know someone (possibly them, on a forgotten old account)
+    // just tried to sign up with their address.
+    await sendEmail({
+      to: existingUser.email,
+      subject: 'Someone tried to sign up with your email',
+      text:
+        `Hi ${existingUser.name}, someone just tried to create a new Pharma Management account using this email address. ` +
+        `You already have an account — if this was you, use "Forgot password" on the login page to get back in. ` +
+        `If it wasn't you, no action is needed; your account is unaffected.`,
+      html:
+        `<p>Hi ${existingUser.name},</p>` +
+        `<p>Someone just tried to create a new Pharma Management account using this email address. You already have an account — ` +
+        `if this was you, use <strong>"Forgot password"</strong> on the login page to get back in.</p>` +
+        `<p>If it wasn't you, no action is needed; your account is unaffected.</p>`,
+    }).catch(() => {}); // best-effort — a notification failure shouldn't block the 409 response
     return next(new AppError('An account with this email already exists', 409));
   }
 

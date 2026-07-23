@@ -1,82 +1,93 @@
 # PharmaSync Project Brief
 
-PharmaSync is a production-grade pharmacy management application designed to handle authentication, storefront browsing, carts, order tracking, and inventory management across both online storefronts and a future in-store POS (Point of Sale) billing system.
+PharmaSync is a production-grade, end-to-end pharmacy management application designed to handle role-based authentication, storefront browsing, database-persisted shopping carts, order tracking, an in-store POS (Point of Sale) billing terminal, and nightly inventory/sales analytics.
+
+The system is split into three main parts:
+1. **Frontend**: React SPA (Vite + React Router + Axios)
+2. **Backend API**: Node.js + Express + MongoDB (Mongoose)
+3. **Analytics**: Standalone Python service (Pandas + PyMongo)
 
 ---
 
 ## 📁 Project Structure
 
 ```
-pharma-management/ (PharmaSync)
+PharmaSync/
 ├── client/            # React frontend (Vite + React Router + Axios)
 ├── server/            # Node.js + Express API (JWT, MongoDB, Mongoose)
-├── python-service/    # Django + Pandas + AI (for analytics/reporting in later modules)
+├── python-service/    # Django + Pandas + AI (standalone analytics scripts & pipelines)
+│   ├── analytics/     # Core Python analytics modules (inventory & sales analysis)
+│   └── requirements.txt
 ├── database/          # Database notes & seeding scripts
-├── uploads/           # Prescription uploads (for prescription validation in future modules)
-├── docs/              # Project documentation
+├── uploads/           # Prescription uploads (for future verification modules)
+├── docs/              # Project documentation & briefs
 └── README.md          # Project readme with setup instructions
 ```
 
 ---
 
-## 🔑 Module 1: Production-Grade Authentication (Completed)
+## 🔑 Module 1: Production-Grade Authentication
 
-- **Role-Based Access**: Distinguishes between guest browsing, registered `user` roles, and privileged `admin` roles.
-- **Security Features**:
-  - **httpOnly Cookies**: JWTs (`accessToken`, `refreshToken`) stored on the server side to minimize XSS token-stealing risk.
-  - **Refresh Token Rotation**: Short-lived access token (15 mins) and long-lived refresh token (30 days) with client-side silent refresh rotation.
-  - **Server-Side Revocation**: Session token hashes are stored on user documents, allowing immediate server-side validation/invalidation upon logout.
-  - **Security Middleware**: Centralized error handling, rate limiting on auth endpoints, and input sanitization/validation using `express-validator`.
-  - **Self-Service**: Email verification and password resets (using Ethereal for dev mailboxes / console logging, and Gmail/custom SMTP options for production).
-
----
-
-## 🛒 Module 2: Storefront, Cart, and Order Flow (Completed)
-
-- **Catalog Seeding**: Built on a curated ~1,150 common medicines subset derived from the *Indian Medicine Dataset*.
-- **Shopping Cart**: Fully database-persisted cart requiring a user login.
-- **Address & Geolocation**: Integrates browser-based geolocation and free OpenStreetMap previews for user address input.
-- **Transactions & Orders**:
-  - Atomic stock validation decrement at checkout with rollback capabilities.
-  - GST breakup back-calculated from MRP at a flat 12% rate.
-  - GST-compliant invoice generator in PDF format.
-  - Order state machine (`Pending` ➔ `Confirmed` ➔ `Packed` ➔ `Out for Delivery` ➔ `Delivered`) that automatically simulates progression on a timer unless overridden by an admin.
+*   **Role-Based Access Control (RBAC)**: Distinguishes between guest browsing, registered `user` roles (customers), and privileged `admin`/staff roles (cashiers, inventory managers).
+*   **Security Features**:
+    *   **httpOnly Cookies**: JWTs (`accessToken`, `refreshToken`) are stored in secure, httpOnly cookies to mitigate XSS-based token theft.
+    *   **Refresh Token Rotation (RTR)**: Long-lived refresh tokens (30 days) and short-lived access tokens (15 mins) rotate dynamically, executing silent refreshes.
+    *   **Server-Side Revocation**: Session token hashes are stored directly in user records, allowing instant session validation or immediate invalidation upon logout.
+    *   **Security Middleware**: Rate limiting on login/register endpoints, inputs validation/sanitization via `express-validator`, and centralized error handling (`AppError` + `catchAsync`).
+    *   **Self-Service flows**: Secured verification of accounts and password reset flows using cryptographically safe, short-lived hashed tokens.
 
 ---
 
-## 📦 Module 3: Admin & Inventory Management (Completed)
+## 🛒 Module 2: Storefront, Cart, and Order Flow
 
-We have successfully implemented the core dashboard overview and CRUD management views for pharmacy stock and catalog metadata.
-
-### 1. Dashboard Overview Stats
-- **Implementation File**: `server/controllers/adminController.js` (via `getDashboardStats`)
-- **Endpoint**: `GET /api/admin/dashboard/stats`
-- **Features**:
-  - Real-time metrics counting: **Total Medicines**, **Total Orders**, **Gross Revenue** (summing non-cancelled orders).
-  - **Low Stock Count** and **Expiring Soon Count** based on shared threshold values defined in `server/utils/inventoryConstants.js` (`LOW_STOCK_THRESHOLD = 10` and `EXPIRY_WINDOW_DAYS = 30`).
-  - Linked dashboard widgets in `client/src/pages/AdminDashboard.jsx` that navigate directly to filtered views of the medicine list.
-
-### 2. Catalog & Medicine CRUD
-- **Controller**: `server/controllers/medicineController.js`
-- **Routes**: `server/routes/adminRoutes.js` (guarded by `protect` and `adminOnly` middlewares)
-- **Frontend Component**: `client/src/pages/AdminMedicines.jsx`
-- **Key Capabilities**:
-  - **Interactive Table**: Shows details, stock status badge (Discontinued, Out of Stock, Low, or Good), and actions.
-  - **Query-Based Filters**: Allows admins to view *Low Stock* or *Expiring Soon* products directly via search URL parameters.
-  - **Case-Insensitive Substring Token Search**: Word tokens are split and searched across `name`, `manufacturer`, and `composition` fields (e.g. searching "amox clav" works regardless of token ordering).
-  - **Quick Restock**: Admins can use a restock action to increase stock counts instantly (`PATCH /api/admin/medicines/:id/restock`).
-  - **Delete Medicine**: Deletes a record from the database and uses `$pull` in MongoDB to remove it from all user carts dynamically so users aren't left with dangling/orphaned cart items (`DELETE /api/admin/medicines/:id`).
-
-### 3. Add & Edit Medicines
-- **Input Validation**: Strict validation rules configured in `server/middleware/validators.js` (`addMedicineRules`, `updateMedicineRules`) covering prices, whole-number quantities, dates, and names.
-- **Add Medicine** (`client/src/pages/AdminAddMedicine.jsx`): Allows full entry of brand, category, price, quantity, expiry date, manufacturer, description, and prescription requirement.
-- **Edit Medicine** (`client/src/pages/AdminEditMedicine.jsx`): Pre-populates the form with existing database records and allows partial changes. Since there is a single shared MongoDB collection, any updates here instantly sync on the online storefront.
+*   **Medicine Catalog**: Powered by a curated subset of ~1,150 common medicines derived from the *Indian Medicine Dataset*, covering detailed metadata (brand, category, price, composition, manufacturer, and prescription requirements).
+*   **Shopping Cart**: Fully database-persisted user carts synchronized in real-time.
+*   **Geolocation & Addresses**: Integrates browser-based geolocation capture and interactive OpenStreetMap previews for delivery address validation.
+*   **Transactions & Orders**:
+    *   **Atomic Stock Operations**: Checks and decrements medicine stock atomically during checkout. If stock runs out mid-transaction, it rolls back gracefully.
+    *   **GST-Inclusive Calculations**: India medicine MRPs are GST-inclusive; therefore, the system back-calculates tax breakups at a flat 12% rate (demonstration placeholder).
+    *   **PDF Invoice Generator**: Generates standard GST-compliant invoice PDFs instantly available for download.
+    *   **Fulfillment State Machine**: Simulates progression through order lifecycle stages (`Pending` ➔ `Confirmed` ➔ `Packed` ➔ `Out for Delivery` ➔ `Delivered`) on a background timer, unless overridden by an admin.
+    *   **Failsafe Stock Restoration**: Users can cancel pending/confirmed orders, triggering immediate stock restoration.
 
 ---
 
-## 🚀 Next Steps (Future Roadmap)
+## 🛠️ Module 3: Admin & Catalog Management
 
-- Offline POS billing panel for counter sales.
-- Sales, inventory, and expiry analytics (Django service using Pandas to compile CSV/PDF reports).
-- AI chatbot & alerts based on prescription uploads.
-- Real Google Maps API integration for checkout.
+*   **Dashboard Stats Overview**: Aggregates real-time KPIs: **Total Medicines**, combined **Total Orders**, **Gross Revenue** (excluding cancelled/refunded sales), **Low Stock Count**, and **Expiring Soon Count**.
+*   **Medicine Catalog CRUD**:
+    *   Interactive data table displaying stock status badges (Discontinued, Out of Stock, Low, or Good).
+    *   Quick-access filter parameters for inventory alerts (Low Stock threshold = 10 units, Expiry window = 30 days).
+    *   Case-insensitive multi-word token substring search across `name`, `manufacturer`, and `composition`.
+    *   **Quick Restock**: Admins can increase inventory counts directly from the list view.
+    *   **Cascading Deletion**: Deleting a medicine triggers a `$pull` in MongoDB to remove it from all user carts dynamically, preventing orphaned item references.
+
+---
+
+## 🏪 Module 4: In-Store POS (Point of Sale) Billing Counter
+
+*   **Cashier Billing Terminal**: Staff-only terminal (`/admin/pos`) designed for counter billing. Supports barcode scanner input (exact match) and multi-token manual text search fallback.
+*   **Checkout & Basket Management**:
+    *   Maintains a local basket until the sale is completed.
+    *   Option to associate customer names and telephone numbers for billing history.
+    *   Multiple payment methods supported: Cash, UPI, and Card.
+    *   Atomic stock validation and decrement with complete rollbacks on stock conflicts.
+    *   **Prescription Control**: Explicit cashier acknowledgment required to complete sales containing prescription-only (Rx) medicines.
+*   **Till Reconciliation & Refunds**:
+    *   Live sidebar tracking today's POS revenue and total completed sales.
+    *   Printable PDF receipt generation (using a unified invoice layout labeled as "In-Store Sale").
+    *   Transaction refunds that restore item stock and mark the status as `Refunded`.
+
+---
+
+## 📊 Module 5: Standalone Analytics & Reporting (Python + Pandas)
+
+*   **Standalone Analytics Engine**: A Pandas data pipeline that connects directly to MongoDB, eliminating API dependencies during scheduled night runs.
+*   **Dual Analytics Pipelines**:
+    *   **Inventory Analysis** (`inventory_analysis.py`): Performs rolling 30-day lookbacks. Aggregates total stock units and identifies low stock, fast-selling medicines, and slow-selling medicines (items with stock > 0 but ≤ 1 units sold).
+    *   **Sales Analysis** (`sales_analysis.py`): Performs a rolling 365-day lookback. Generates daily (last 30 days), weekly (last 12 weeks), and monthly (last 12 months) revenue and order count trends. Left-joins results onto a gap-free date index so missing data points appear as explicit zeros. Identifies top-performing best sellers and lowest-performing worst sellers.
+*   **Execution & Integration**:
+    *   Scheduled to run automatically every night via `cron` or Windows Task Scheduler.
+    *   Admins can trigger analyses on-demand via the Admin Dashboard's "Run Analysis Now" button, which spawns the Python script as a Node subprocess.
+    *   Results are written to distinct collections (`inventory_analysis` and `sales_analysis`).
+    *   The frontend uses a custom bar chart component built using CSS div heights to visualize trends dynamically.

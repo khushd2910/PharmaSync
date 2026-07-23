@@ -36,6 +36,10 @@ const posSaleSchema = new mongoose.Schema(
     customerName: { type: String, trim: true },
     customerPhone: { type: String, trim: true },
     invoiceNumber: { type: String, required: true, unique: true },
+    // Self-declared by the cashier at checkout — see posController.checkout.
+    // Only meaningful (and only ever true) when the sale actually contains
+    // a requiresPrescription medicine.
+    prescriptionConfirmed: { type: Boolean, default: false },
     // Counter sales are settled and complete the instant they're rung up —
     // there's no fulfillment pipeline, only a possible later reversal.
     status: { type: String, enum: ['Completed', 'Refunded'], default: 'Completed' },

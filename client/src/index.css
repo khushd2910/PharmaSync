@@ -312,6 +312,7 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
    Dashboard pages
    ============================================================ */
 .dashboard-page { max-width: 720px; margin: 44px auto; padding: 0 20px; }
+.admin-header-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .dashboard-header {
   display: flex;
   justify-content: space-between;
@@ -703,6 +704,16 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 }
 .admin-order-main p { margin: 0; }
 
+.pagination-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line);
+}
+.pagination-controls { display: flex; gap: 8px; }
+.pagination-controls .btn-secondary {
+  display: inline-flex; align-items: center; gap: 4px; padding: 7px 14px; font-size: 12.5px;
+}
+.pagination-controls .btn-secondary:disabled { opacity: 0.45; cursor: not-allowed; }
+
 /* ============================================================
    POS Billing
    ============================================================ */
@@ -733,6 +744,10 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 .pos-payment-options .payment-option { border-bottom: none; padding: 4px 0; }
 
 .pos-last-sale { margin-top: 14px; }
+
+.pos-rx-notice { display: flex; align-items: flex-start; gap: 10px; }
+.pos-rx-notice p { margin: 0 0 6px; font-weight: 600; }
+.pos-rx-notice .payment-option { border-bottom: none; padding: 0; font-size: 13px; }
 
 /* ============================================================
    Responsive

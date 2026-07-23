@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Download } from 'lucide-react';
+import { Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import { computeDisplayStatus, ORDER_STAGES } from '../utils/orderStatus';
@@ -12,21 +12,34 @@ const AdminOrders = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 1 });
   const { showToast } = useToast();
 
-  const loadOrders = () => {
+  const loadOrders = (pageValue) => {
     setLoading(true);
+    const params = { limit: 20, page: pageValue };
+    if (statusFilter) params.status = statusFilter;
+
     api
-      .get('/admin/orders', { params: statusFilter ? { status: statusFilter } : {} })
-      .then((res) => setOrders(res.data.orders))
+      .get('/admin/orders', { params })
+      .then((res) => {
+        setOrders(res.data.orders);
+        setPagination(res.data.pagination);
+      })
       .catch((err) => showToast(err.response?.data?.message || 'Could not load orders', 'error'))
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    loadOrders();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Changing the status filter invalidates whatever page we were on.
+    setPage(1);
   }, [statusFilter]);
+
+  useEffect(() => {
+    loadOrders(page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter, page]);
 
   const handleStatusChange = async (orderId, newStatus) => {
     setUpdatingId(orderId);
@@ -100,6 +113,30 @@ const AdminOrders = () => {
               </a>
             </div>
           ))}
+        </div>
+      )}
+
+      {!loading && pagination.total > 0 && (
+        <div className="pagination-bar">
+          <span className="muted-text">
+            {pagination.total} order{pagination.total === 1 ? '' : 's'} · page {pagination.page} of {pagination.pages}
+          </span>
+          <div className="pagination-controls">
+            <button
+              className="btn-secondary admin"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+            >
+              <ChevronLeft size={14} strokeWidth={2} /> Prev
+            </button>
+            <button
+              className="btn-secondary admin"
+              onClick={() => setPage((p) => Math.min(pagination.pages, p + 1))}
+              disabled={page >= pagination.pages}
+            >
+              Next <ChevronRight size={14} strokeWidth={2} />
+            </button>
+          </div>
         </div>
       )}
     </div>

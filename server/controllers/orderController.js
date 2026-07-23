@@ -73,6 +73,22 @@ const createOrder = catchAsync(async (req, res, next) => {
     return next(new AppError('No valid items in cart to order', 400));
   }
 
+  // requiresPrescription is checked here, not just shown as a badge — an
+  // order containing one is blocked unless the checkout screen sent an
+  // explicit confirmation. This is a self-declared acknowledgment, not
+  // real prescription verification (no upload/pharmacist-review step
+  // exists yet) — but it's a real gate where previously there was none.
+  const rxItems = validItems.filter((item) => item.medicine.requiresPrescription);
+  const prescriptionConfirmed = req.body.prescriptionConfirmed === true;
+  if (rxItems.length > 0 && !prescriptionConfirmed) {
+    return next(
+      new AppError(
+        `Your cart contains prescription-only medicine(s): ${rxItems.map((i) => i.medicine.name).join(', ')}. Please confirm you have a valid prescription before placing this order.`,
+        400
+      )
+    );
+  }
+
   const stockResult = await decrementStockOrRollback(validItems);
   if (!stockResult.success) {
     return next(
@@ -105,6 +121,7 @@ const createOrder = catchAsync(async (req, res, next) => {
     paymentStatus: paymentMethod === 'UPI' ? 'Paid' : 'Pending',
     orderStatus: 'Pending',
     invoiceNumber: generateInvoiceNumber(),
+    prescriptionConfirmed: rxItems.length > 0 ? prescriptionConfirmed : false,
   });
 
   await Cart.updateOne({ user: req.user._id }, { $set: { items: [] } });
@@ -175,15 +192,30 @@ const downloadInvoice = catchAsync(async (req, res, next) => {
 });
 
 // @desc    List every order in the system, optionally filtered by status
-// @route   GET /api/admin/orders?status=
+// @route   GET /api/admin/orders?status=&page=&limit=
 // @access  Private (admin)
 const adminListOrders = catchAsync(async (req, res) => {
   const filter = {};
   if (req.query.status) {
     filter.orderStatus = req.query.status;
   }
-  const orders = await Order.find(filter).populate('user', 'name email').sort({ createdAt: -1 });
-  return res.status(200).json({ orders });
+
+  const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+  const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 100);
+
+  const [orders, total] = await Promise.all([
+    Order.find(filter)
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit),
+    Order.countDocuments(filter),
+  ]);
+
+  return res.status(200).json({
+    orders,
+    pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+  });
 });
 
 // @desc    Manually set an order's status — takes it out of demo-timer mode

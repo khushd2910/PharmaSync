@@ -3,13 +3,19 @@
 // purely from elapsed time since the order was placed. Once an admin
 // updates it (or the user cancels), demoMode flips false server-side and
 // the real orderStatus is trusted directly everywhere.
+//
+// Set VITE_ORDER_DEMO_ENABLED=false (and ORDER_DEMO_ENABLED=false in the
+// server's .env, to match) before running this for real — a genuine order
+// shouldn't visually walk itself to "Delivered" on a clock.
 export const ORDER_STAGES = ['Pending', 'Confirmed', 'Packed', 'Out for Delivery', 'Delivered'];
 
-const STAGE_DURATION_MS = 45 * 1000; // 45s per stage — full demo cycle ≈ 3 minutes
+const DEMO_ENABLED = import.meta.env.VITE_ORDER_DEMO_ENABLED !== 'false'; // opt out, not opt in
+const STAGE_DURATION_MS = Number(import.meta.env.VITE_ORDER_DEMO_STAGE_DURATION_MS) || 45 * 1000; // 45s default — must match server/utils/orderStatus.js
 
 export const computeDisplayStatus = (order) => {
   if (!order) return ORDER_STAGES[0];
   if (order.orderStatus === 'Cancelled') return 'Cancelled';
+  if (!DEMO_ENABLED) return order.orderStatus; // simulation off — status is exactly what was last set
   if (order.demoMode === false) return order.orderStatus; // admin has taken manual control
 
   const elapsed = Date.now() - new Date(order.createdAt).getTime();
