@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ScanBarcode, Minus, Plus, Trash2, Receipt, RotateCcw, Wallet, ShieldAlert } from 'lucide-react';
+import { ScanBarcode, Minus, Plus, Trash2, Receipt, RotateCcw, Wallet, ShieldAlert, FileWarning } from 'lucide-react';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 
@@ -264,7 +264,14 @@ const AdminPOS = () => {
                     disabled={medicine.stock <= 0}
                   >
                     <div>
-                      <p className="order-invoice">{medicine.name}</p>
+                      <p className="order-invoice">
+                        {medicine.name}
+                        {medicine.requiresPrescription && (
+                          <span className="badge badge-rx pos-rx-inline">
+                            <FileWarning size={11} strokeWidth={2} /> Rx
+                          </span>
+                        )}
+                      </p>
                       <p className="muted-text">{medicine.manufacturer || medicine.brand || 'No brand'}</p>
                     </div>
                     <div className="pos-result-meta">
@@ -338,7 +345,14 @@ const AdminPOS = () => {
                 {cart.map((line) => (
                   <div className="cart-item pos-cart-item" key={line.medicine._id}>
                     <div className="cart-item-info">
-                      <p className="cart-item-name">{line.medicine.name}</p>
+                      <p className="cart-item-name">
+                        {line.medicine.name}
+                        {line.medicine.requiresPrescription && (
+                          <span className="badge badge-rx pos-rx-inline">
+                            <FileWarning size={11} strokeWidth={2} /> Rx
+                          </span>
+                        )}
+                      </p>
                       <p className="cart-item-unit-price">₹{getEffectivePrice(line.medicine).toFixed(2)} each</p>
                     </div>
                     <div className="qty-stepper">
