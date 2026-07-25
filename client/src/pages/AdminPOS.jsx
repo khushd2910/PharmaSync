@@ -40,10 +40,23 @@ const AdminPOS = () => {
   const [recentSales, setRecentSales] = useState([]);
   const [salesLoading, setSalesLoading] = useState(true);
 
+  // Start of today, local time — passed as `from` so the list below the
+  // till summary is actually restricted to today's sales. Previously this
+  // called /admin/pos/sales with no date filter at all, so on a slow
+  // morning (or right after midnight) it would silently show yesterday's
+  // sales under an empty state that said "No sales yet today" — the total
+  // above it was correct (the server always scopes that to today), but the
+  // list underneath it wasn't telling the truth about what it contained.
+  const startOfToday = () => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d.toISOString();
+  };
+
   const loadTill = () => {
     setSalesLoading(true);
     api
-      .get('/admin/pos/sales', { params: { limit: 8 } })
+      .get('/admin/pos/sales', { params: { limit: 8, from: startOfToday() } })
       .then((res) => {
         setToday(res.data.today);
         setRecentSales(res.data.sales);
@@ -267,7 +280,7 @@ const AdminPOS = () => {
           </section>
 
           <section className="checkout-section">
-            <h2 className="checkout-section-title"><Receipt size={16} strokeWidth={2} /> Recent Sales</h2>
+            <h2 className="checkout-section-title"><Receipt size={16} strokeWidth={2} /> Today's Sales</h2>
             {salesLoading ? (
               <p className="info-text center-text">Loading…</p>
             ) : recentSales.length === 0 ? (
