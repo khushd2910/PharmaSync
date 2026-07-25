@@ -5,6 +5,8 @@ const { adminListOrders, adminUpdateOrderStatus } = require('../controllers/orde
 const { getDashboardStats } = require('../controllers/adminController');
 const { getInventoryAnalysis, runInventoryAnalysis } = require('../controllers/inventoryAnalysisController');
 const { getSalesAnalysis, runSalesAnalysis } = require('../controllers/salesAnalysisController');
+const { getExpiryAnalysis, runExpiryAnalysis } = require('../controllers/expiryAnalysisController');
+const { listReports, generateReports, downloadReport } = require('../controllers/reportController');
 const {
   createMedicine,
   adminListMedicines,
@@ -56,6 +58,29 @@ router.get('/sales-analysis', getSalesAnalysis);
 // @desc  Run the Python sales analysis job on demand
 // @route POST /api/admin/sales-analysis/run
 router.post('/sales-analysis/run', runSalesAnalysis);
+
+// @desc  Latest nightly expiry analysis snapshot (Expired, Expiring in
+//        30/60/90 Days, and the alert count) — written by the Python service
+// @route GET /api/admin/expiry-analysis
+router.get('/expiry-analysis', getExpiryAnalysis);
+
+// @desc  Run the Python expiry analysis job on demand
+// @route POST /api/admin/expiry-analysis/run
+router.post('/expiry-analysis/run', runExpiryAnalysis);
+
+// @desc  Current state of the four CSV exports (Sales, Inventory, Expiry,
+//        Orders) — name, size, and when each was last generated
+// @route GET /api/admin/reports
+router.get('/reports', listReports);
+
+// @desc  Run the Module 7 report-generation script on demand, overwriting
+//        the four CSVs under reports/exports with a fresh snapshot
+// @route POST /api/admin/reports/generate
+router.post('/reports/generate', generateReports);
+
+// @desc  Download one of the generated CSVs by exact filename
+// @route GET /api/admin/reports/download/:filename
+router.get('/reports/download/:filename', downloadReport);
 
 // @desc  List all orders, optionally filtered by status
 // @route GET /api/admin/orders?status=&page=&limit=

@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
-  ClipboardList, Pill, Package, Wallet, AlertTriangle, CalendarClock, ScanBarcode, BarChart3, RefreshCw,
+  ClipboardList, Pill, Package, Wallet, AlertTriangle, CalendarClock, ScanBarcode, BarChart3, RefreshCw, BellRing,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+
+const formatExpiry = (iso) => new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -15,7 +17,11 @@ const AdminDashboard = () => {
   const [analysis, setAnalysis] = useState(null);
   const [analysisLoading, setAnalysisLoading] = useState(true);
   const [runningAnalysis, setRunningAnalysis] = useState(false);
+  const [expiryAnalysis, setExpiryAnalysis] = useState(null);
+  const [expiryLoading, setExpiryLoading] = useState(true);
+  const [runningExpiry, setRunningExpiry] = useState(false);
   const { showToast } = useToast();
+  const expiryAlertShown = useRef(false);
 
   const loadAnalysis = () => {
     setAnalysisLoading(true);
@@ -26,6 +32,29 @@ const AdminDashboard = () => {
       .finally(() => setAnalysisLoading(false));
   };
 
+  const loadExpiryAnalysis = ({ notify = false } = {}) => {
+    setExpiryLoading(true);
+    api
+      .get('/admin/expiry-analysis')
+      .then((res) => {
+        const result = res.data.analysis;
+        setExpiryAnalysis(result);
+        // Dashboard Notification — surface a toast the first time we learn
+        // there's an urgent (expired / expiring soon) batch, so admins don't
+        // have to scroll down to notice. Doesn't re-fire on every re-render.
+        if (notify && result?.alertCount > 0 && !expiryAlertShown.current) {
+          expiryAlertShown.current = true;
+          showToast(
+            `${result.alertCount} medicine${result.alertCount === 1 ? '' : 's'} expired or expiring within ${result.expiryAlertDays} days`,
+            'error',
+            7000
+          );
+        }
+      })
+      .catch((err) => showToast(err.response?.data?.message || 'Could not load expiry analysis', 'error'))
+      .finally(() => setExpiryLoading(false));
+  };
+
   useEffect(() => {
     api.get('/admin/dashboard').then((res) => setData(res.data));
     api
@@ -34,6 +63,7 @@ const AdminDashboard = () => {
       .catch((err) => showToast(err.response?.data?.message || 'Could not load dashboard overview', 'error'))
       .finally(() => setStatsLoading(false));
     loadAnalysis();
+    loadExpiryAnalysis({ notify: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -47,6 +77,19 @@ const AdminDashboard = () => {
       showToast(err.response?.data?.message || 'Could not run analysis', 'error');
     } finally {
       setRunningAnalysis(false);
+    }
+  };
+
+  const handleRunExpiryAnalysis = async () => {
+    setRunningExpiry(true);
+    try {
+      const res = await api.post('/admin/expiry-analysis/run');
+      setExpiryAnalysis(res.data.analysis);
+      showToast('Expiry analysis complete', 'success');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Could not run expiry analysis', 'error');
+    } finally {
+      setRunningExpiry(false);
     }
   };
 
@@ -170,6 +213,93 @@ const AdminDashboard = () => {
                 </ul>
               </div>
             </div>
+          </>
+        )}
+      </section>
+
+      <section className="checkout-section analysis-section">
+        <div className="analysis-header">
+          <h2 className="checkout-section-title">
+            <CalendarClock size={16} strokeWidth={2} /> Expiry Analysis
+            {expiryAnalysis?.alertCount > 0 && (
+              <span className="badge badge-rx expiry-alert-badge">
+                <BellRing size={12} strokeWidth={2.2} /> {expiryAnalysis.alertCount} urgent
+              </span>
+            )}
+          </h2>
+          <button className="btn-secondary admin" onClick={handleRunExpiryAnalysis} disabled={runningExpiry}>
+            <RefreshCw size={14} strokeWidth={2} className={runningExpiry ? 'spin' : ''} />
+            {runningExpiry ? 'Running…' : 'Run Analysis Now'}
+          </button>
+        </div>
+
+        {expiryLoading ? (
+          <p className="info-text center-text">Loading…</p>
+        ) : !expiryAnalysis ? (
+          <p className="info-text center-text">
+            No expiry analysis has run yet. It runs automatically every night — or click "Run Analysis Now" above.
+          </p>
+        ) : (
+          <>
+            <p className="muted-text analysis-meta">
+              Last run {new Date(expiryAnalysis.generatedAt).toLocaleString('en-IN')} · {expiryAnalysis.totalTracked}{' '}
+              medicines with a known expiry date · {expiryAnalysis.expired.length} already expired
+            </p>
+
+            <div className="analysis-grid">
+              <div className="analysis-col">
+                <h3>Expiring in 30 Days</h3>
+                <ul className="analysis-list">
+                  {expiryAnalysis.expiringIn30.length === 0 && <li className="analysis-empty">Nothing expiring this soon</li>}
+                  {expiryAnalysis.expiringIn30.map((item) => (
+                    <li key={item.medicineId}>
+                      <span>{item.name}</span>
+                      <span className="num">{formatExpiry(item.expiryDate)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="analysis-col">
+                <h3>Expiring in 60 Days</h3>
+                <ul className="analysis-list">
+                  {expiryAnalysis.expiringIn60.length === 0 && <li className="analysis-empty">Nothing in this window</li>}
+                  {expiryAnalysis.expiringIn60.map((item) => (
+                    <li key={item.medicineId}>
+                      <span>{item.name}</span>
+                      <span className="num">{formatExpiry(item.expiryDate)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="analysis-col">
+                <h3>Expiring in 90 Days</h3>
+                <ul className="analysis-list">
+                  {expiryAnalysis.expiringIn90.length === 0 && <li className="analysis-empty">Nothing in this window</li>}
+                  {expiryAnalysis.expiringIn90.map((item) => (
+                    <li key={item.medicineId}>
+                      <span>{item.name}</span>
+                      <span className="num">{formatExpiry(item.expiryDate)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {expiryAnalysis.expired.length > 0 && (
+              <div className="analysis-col expiry-expired-col">
+                <h3>Already Expired</h3>
+                <ul className="analysis-list">
+                  {expiryAnalysis.expired.map((item) => (
+                    <li key={item.medicineId}>
+                      <span>{item.name}</span>
+                      <span className="num">{formatExpiry(item.expiryDate)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </>
         )}
       </section>

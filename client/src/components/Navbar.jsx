@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Pill, LogOut, ShoppingCart, User as UserIcon, ClipboardList, LayoutDashboard, ScanBarcode, BarChart3,
+  Pill, LogOut, ShoppingCart, User as UserIcon, ClipboardList, LayoutDashboard, ScanBarcode, BarChart3, FileSpreadsheet,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -71,6 +71,9 @@ const Navbar = () => {
             </Link>
             <Link to="/admin/sales-analysis" className="navbar-link icon-link">
               <BarChart3 size={16} strokeWidth={2} /> Sales
+            </Link>
+            <Link to="/admin/reports" className="navbar-link icon-link">
+              <FileSpreadsheet size={16} strokeWidth={2} /> Reports
             </Link>
             <button className="navbar-btn ghost" onClick={handleLogout}>
               <LogOut size={15} strokeWidth={2} /> Logout

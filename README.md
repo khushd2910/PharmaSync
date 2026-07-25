@@ -59,7 +59,7 @@ Pharmasync/
 *   **Cashier Billing Terminal**: Staff-only terminal (`/admin/pos`) supporting barcode scanner input (exact match) and multi-token manual text fallback lookup.
 *   **Fast Checkout Flow**:
     *   Client-side basket management until completion.
-    *   Option to associate customer names and telephone numbers.
+    *   Option to associate customer names and telephone numbers
     *   Multiple payment methods supported (Cash, UPI, Card).
     *   Atomic stock validation and decrement with complete rollbacks on stock conflicts.
 *   **Till Reconciliation & Refunds**:
