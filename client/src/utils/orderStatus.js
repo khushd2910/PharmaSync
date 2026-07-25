@@ -15,6 +15,9 @@ const STAGE_DURATION_MS = Number(import.meta.env.VITE_ORDER_DEMO_STAGE_DURATION_
 export const computeDisplayStatus = (order) => {
   if (!order) return ORDER_STAGES[0];
   if (order.orderStatus === 'Cancelled') return 'Cancelled';
+  // Module 10: held at Pending until an admin approves the linked
+  // prescription upload — mirrors server/utils/orderStatus.js.
+  if (order.prescriptionRequired && order.prescriptionStatus !== 'Approved') return 'Pending';
   if (!DEMO_ENABLED) return order.orderStatus; // simulation off — status is exactly what was last set
   if (order.demoMode === false) return order.orderStatus; // admin has taken manual control
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { FileText, MapPin, CreditCard, Download, XCircle } from 'lucide-react';
+import { FileText, MapPin, CreditCard, Download, XCircle, ShieldAlert } from 'lucide-react';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import OrderStatusStepper from '../components/OrderStatusStepper';
@@ -90,6 +90,33 @@ const OrderDetails = () => {
             <span>Total</span>
             <span>₹{order.totalAmount.toFixed(2)}</span>
           </div>
+
+          {order.prescriptionRequired && (
+            <div className="prescription-status-block">
+              <h3 className="detail-subheading"><ShieldAlert size={14} strokeWidth={2} /> Prescription Status</h3>
+              <span
+                className={`badge ${
+                  order.prescriptionStatus === 'Approved'
+                    ? 'badge-success'
+                    : order.prescriptionStatus === 'Rejected'
+                    ? 'badge-rx'
+                    : 'badge-status'
+                }`}
+              >
+                {order.prescriptionStatus}
+              </span>
+              {order.prescriptionStatus === 'Pending Review' && (
+                <p className="muted-text">
+                  Your uploaded prescription is awaiting pharmacist review. The order will start processing once it's approved.
+                </p>
+              )}
+              {order.prescriptionStatus === 'Rejected' && (
+                <p className="muted-text">
+                  Your prescription was rejected, so this order was cancelled and stock was released. Please place a new order with a valid prescription.
+                </p>
+              )}
+            </div>
+          )}
         </section>
 
         <div className="order-details-side">

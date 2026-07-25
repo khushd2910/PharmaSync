@@ -19,6 +19,13 @@ const handleValidationError = (err) => {
 const handleJWTError = () => new AppError('Invalid or expired session. Please log in again.', 401);
 const handleJWTExpiredError = () => new AppError('Your session has expired. Please log in again.', 401);
 
+// Module 10 prescription upload — multer throws its own error class for
+// file-size/type/field problems rather than something AppError-shaped.
+const handleMulterError = (err) => {
+  if (err.code === 'LIMIT_FILE_SIZE') return new AppError('Prescription file is too large (5MB max)', 400);
+  return new AppError(`Upload failed: ${err.message}`, 400);
+};
+
 // Turns any thrown error — ours (AppError, already clean) or one of
 // Mongoose/JWT's raw error types — into a clean, safe-to-show AppError.
 // This used to only run in production, which meant every raw Mongoose/JWT
@@ -35,6 +42,7 @@ const translateError = (err) => {
   if (err.name === 'ValidationError') return handleValidationError(err);
   if (err.name === 'JsonWebTokenError') return handleJWTError();
   if (err.name === 'TokenExpiredError') return handleJWTExpiredError();
+  if (err.name === 'MulterError') return handleMulterError(err);
 
   // Genuinely unexpected (programming) error — log it server-side either way.
   console.error('UNEXPECTED ERROR 💥', err);

@@ -17,6 +17,11 @@ const STAGE_DURATION_MS = Number(process.env.ORDER_DEMO_STAGE_DURATION_MS) || 45
 
 const computeEffectiveStatus = (order) => {
   if (order.orderStatus === 'Cancelled') return 'Cancelled';
+  // Module 10: an order needing a prescription doesn't move past Pending
+  // until an admin approves the linked upload — a rejection cancels it
+  // outright (prescriptionController.adminReviewPrescription), so the only
+  // way out of this branch is 'Approved'.
+  if (order.prescriptionRequired && order.prescriptionStatus !== 'Approved') return 'Pending';
   if (!DEMO_ENABLED) return order.orderStatus; // simulation off — status is exactly what was last set
   if (order.demoMode === false) return order.orderStatus; // admin has taken manual control
 

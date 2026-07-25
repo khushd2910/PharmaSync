@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, CreditCard, Truck, ShieldAlert } from 'lucide-react';
+import { MapPin, CreditCard, Truck, ShieldAlert, UploadCloud, FileCheck2 } from 'lucide-react';
 import api from '../api/axios';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
@@ -15,7 +15,14 @@ const Checkout = () => {
   const [locating, setLocating] = useState(false);
   const [placing, setPlacing] = useState(false);
   const [upiConfirmed, setUpiConfirmed] = useState(false);
-  const [prescriptionConfirmed, setPrescriptionConfirmed] = useState(false);
+
+  // Module 10 — Prescription Medicine Alert. Replaces the old
+  // self-declared checkbox: the user must actually upload a prescription
+  // file, which an admin later approves or rejects. `prescription` holds
+  // the uploaded doc's id/status once the upload succeeds.
+  const [prescriptionFile, setPrescriptionFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [prescription, setPrescription] = useState(null);
 
   const rxItems = cart.items.filter(({ medicine }) => medicine.requiresPrescription);
 
@@ -40,6 +47,27 @@ const Checkout = () => {
     );
   };
 
+  const handleUploadPrescription = async () => {
+    if (!prescriptionFile) {
+      showToast('Choose a prescription file first', 'error');
+      return;
+    }
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('prescription', prescriptionFile);
+      const res = await api.post('/prescriptions', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setPrescription(res.data.prescription);
+      showToast('Prescription uploaded — you can now place your order', 'success');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Upload a valid prescription before placing this order.', 'error');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handlePlaceOrder = async () => {
     if (!address.line1 || !address.city) {
       showToast('Please enter at least an address line and city', 'error');
@@ -49,14 +77,18 @@ const Checkout = () => {
       showToast('Please complete the demo UPI payment step first', 'error');
       return;
     }
-    if (rxItems.length > 0 && !prescriptionConfirmed) {
-      showToast('Please confirm you have a valid prescription for the marked item(s)', 'error');
+    if (rxItems.length > 0 && !prescription) {
+      showToast('Upload a valid prescription before placing this order.', 'error');
       return;
     }
 
     setPlacing(true);
     try {
-      const res = await api.post('/orders', { address, paymentMethod, prescriptionConfirmed });
+      const res = await api.post('/orders', {
+        address,
+        paymentMethod,
+        prescriptionId: prescription?._id,
+      });
       showToast('Order placed successfully!', 'success');
       await refreshCart();
       navigate(`/orders/${res.data.order._id}`);
@@ -144,16 +176,32 @@ const Checkout = () => {
               <h2 className="checkout-section-title"><ShieldAlert size={16} strokeWidth={2} /> Prescription Required</h2>
               <p className="muted-text">
                 Your order includes: {rxItems.map(({ medicine }) => medicine.name).join(', ')}.
-                These are sold only against a valid prescription.
+                These are sold only against a valid, pharmacist-approved prescription.
               </p>
-              <label className="payment-option">
-                <input
-                  type="checkbox"
-                  checked={prescriptionConfirmed}
-                  onChange={(e) => setPrescriptionConfirmed(e.target.checked)}
-                />
-                I confirm I have a valid doctor's prescription for the item(s) above
-              </label>
+
+              {prescription ? (
+                <p className="success-text">
+                  <FileCheck2 size={15} strokeWidth={2} /> "{prescription.originalName}" uploaded — awaiting
+                  pharmacist review. Placing the order now will hold it pending that approval.
+                </p>
+              ) : (
+                <>
+                  <p className="error-text">Upload a valid prescription before placing this order.</p>
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.webp"
+                    onChange={(e) => setPrescriptionFile(e.target.files?.[0] || null)}
+                  />
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={handleUploadPrescription}
+                    disabled={uploading || !prescriptionFile}
+                  >
+                    <UploadCloud size={14} strokeWidth={2} /> {uploading ? 'Uploading…' : 'Upload Prescription'}
+                  </button>
+                </>
+              )}
             </section>
           )}
         </div>
@@ -174,7 +222,7 @@ const Checkout = () => {
             <button
               className="btn-primary place-order-btn"
               onClick={handlePlaceOrder}
-              disabled={placing || (rxItems.length > 0 && !prescriptionConfirmed)}
+              disabled={placing || (rxItems.length > 0 && !prescription)}
             >
               {placing ? 'Placing order…' : 'Place Order'}
             </button>

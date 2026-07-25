@@ -35,13 +35,21 @@ const orderSchema = new mongoose.Schema(
     address: { type: addressSchema, required: true },
     paymentMethod: { type: String, enum: ['COD', 'UPI'], required: true },
     paymentStatus: { type: String, default: 'Pending' },
-    // Self-declared at checkout, only meaningful (and only ever set true)
-    // when the order actually contains a requiresPrescription medicine —
-    // see orderController.createOrder. This is NOT prescription
-    // verification (no upload/pharmacist review exists yet, per the
-    // roadmap) — it's a recorded acknowledgment that enforcement can point
-    // to, not proof.
-    prescriptionConfirmed: { type: Boolean, default: false },
+    // Module 10 — Prescription Medicine Alert. Set at checkout time if the
+    // cart contained any requiresPrescription medicine; `prescription`
+    // points at the actual uploaded file (server/models/Prescription.js)
+    // the user submitted for this order. `prescriptionStatus` starts at
+    // 'Pending Review' and is flipped by an admin's approve/reject
+    // decision (see prescriptionController.adminReviewPrescription) — a
+    // rejection auto-cancels the order and restocks it, same as any other
+    // cancellation.
+    prescriptionRequired: { type: Boolean, default: false },
+    prescriptionStatus: {
+      type: String,
+      enum: ['Not Required', 'Pending Review', 'Approved', 'Rejected'],
+      default: 'Not Required',
+    },
+    prescription: { type: mongoose.Schema.Types.ObjectId, ref: 'Prescription', default: null },
     // Real status, settable by admin in a later module — defaults to
     // Pending; the frontend also computes a simulated in-progress status
     // for demo purposes until admin order management exists.

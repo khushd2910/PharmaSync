@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const Medicine = require('../models/Medicine');
+const Prescription = require('../models/Prescription');
 const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
 const { buildCartResponse, getEffectivePrice } = require('./cartController');
@@ -73,20 +74,23 @@ const createOrder = catchAsync(async (req, res, next) => {
     return next(new AppError('No valid items in cart to order', 400));
   }
 
-  // requiresPrescription is checked here, not just shown as a badge — an
-  // order containing one is blocked unless the checkout screen sent an
-  // explicit confirmation. This is a self-declared acknowledgment, not
-  // real prescription verification (no upload/pharmacist-review step
-  // exists yet) — but it's a real gate where previously there was none.
+  // Module 10 — Prescription Medicine Alert. An order containing any
+  // requiresPrescription medicine must reference an uploaded prescription
+  // that (a) belongs to this user, (b) hasn't already been used for a
+  // different order, and (c) hasn't already been rejected. This replaces
+  // the old self-declared "I confirm I have a prescription" checkbox with
+  // a real upload the admin then has to actually approve — see
+  // prescriptionController.adminReviewPrescription for that half of the flow.
   const rxItems = validItems.filter((item) => item.medicine.requiresPrescription);
-  const prescriptionConfirmed = req.body.prescriptionConfirmed === true;
-  if (rxItems.length > 0 && !prescriptionConfirmed) {
-    return next(
-      new AppError(
-        `Your cart contains prescription-only medicine(s): ${rxItems.map((i) => i.medicine.name).join(', ')}. Please confirm you have a valid prescription before placing this order.`,
-        400
-      )
-    );
+  let prescription = null;
+  if (rxItems.length > 0) {
+    const prescriptionId = req.body.prescriptionId;
+    if (prescriptionId) {
+      prescription = await Prescription.findOne({ _id: prescriptionId, user: req.user._id });
+    }
+    if (!prescription || prescription.order || prescription.status === 'Rejected') {
+      return next(new AppError('Upload a valid prescription before placing this order.', 400));
+    }
   }
 
   const stockResult = await decrementStockOrRollback(validItems);
@@ -121,8 +125,16 @@ const createOrder = catchAsync(async (req, res, next) => {
     paymentStatus: paymentMethod === 'UPI' ? 'Paid' : 'Pending',
     orderStatus: 'Pending',
     invoiceNumber: generateInvoiceNumber(),
-    prescriptionConfirmed: rxItems.length > 0 ? prescriptionConfirmed : false,
+    prescriptionRequired: rxItems.length > 0,
+    prescriptionStatus:
+      rxItems.length === 0 ? 'Not Required' : prescription.status === 'Approved' ? 'Approved' : 'Pending Review',
+    prescription: prescription ? prescription._id : null,
   });
+
+  if (prescription) {
+    prescription.order = order._id;
+    await prescription.save();
+  }
 
   await Cart.updateOne({ user: req.user._id }, { $set: { items: [] } });
 
@@ -252,4 +264,5 @@ module.exports = {
   downloadInvoice,
   adminListOrders,
   adminUpdateOrderStatus,
+  restockItems,
 };

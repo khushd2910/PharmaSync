@@ -14,6 +14,7 @@ const medicineRoutes = require('./routes/medicineRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const posRoutes = require('./routes/posRoutes');
+const prescriptionRoutes = require('./routes/prescriptionRoutes');
 
 const app = express();
 
@@ -62,6 +63,7 @@ app.use('/api/medicines', medicineRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin/pos', posRoutes);
+app.use('/api/prescriptions', prescriptionRoutes);
 
 // 404 handler for unmatched routes
 app.all('*', (req, res, next) => {

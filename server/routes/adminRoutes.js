@@ -16,6 +16,7 @@ const {
   bulkImportMedicines,
 } = require('../controllers/medicineController');
 const { validate, addMedicineRules, updateMedicineRules } = require('../middleware/validators');
+const { adminListPrescriptions, adminReviewPrescription } = require('../controllers/prescriptionController');
 
 router.use(protect, adminOnly); // every admin route requires an admin login
 
@@ -115,5 +116,15 @@ router.patch('/medicines/:id/restock', restockMedicine);
 // @desc  Delete a medicine — removed from inventory entirely
 // @route DELETE /api/admin/medicines/:id
 router.delete('/medicines/:id', deleteMedicine);
+
+// @desc  List uploaded prescriptions for review, optionally filtered by
+//        status (Module 10 — Prescription Medicine Alert)
+// @route GET /api/admin/prescriptions?status=Pending
+router.get('/prescriptions', adminListPrescriptions);
+
+// @desc  Approve or reject an uploaded prescription. Approving unblocks
+//        its linked order; rejecting cancels and restocks it.
+// @route PATCH /api/admin/prescriptions/:id/review
+router.patch('/prescriptions/:id/review', adminReviewPrescription);
 
 module.exports = router;

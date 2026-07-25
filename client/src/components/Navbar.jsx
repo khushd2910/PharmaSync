@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Pill, LogOut, ShoppingCart, User as UserIcon, ClipboardList, LayoutDashboard, ScanBarcode, BarChart3, FileSpreadsheet,
+  Pill, LogOut, ShoppingCart, User as UserIcon, ClipboardList, LayoutDashboard, ScanBarcode, BarChart3, FileSpreadsheet, ShieldAlert,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -65,6 +65,9 @@ const Navbar = () => {
             </Link>
             <Link to="/admin/orders" className="navbar-link icon-link">
               <ClipboardList size={16} strokeWidth={2} /> Orders
+            </Link>
+            <Link to="/admin/prescriptions" className="navbar-link icon-link">
+              <ShieldAlert size={16} strokeWidth={2} /> Prescriptions
             </Link>
             <Link to="/admin/pos" className="navbar-link icon-link">
               <ScanBarcode size={16} strokeWidth={2} /> POS
