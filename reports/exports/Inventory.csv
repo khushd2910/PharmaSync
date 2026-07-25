@@ -1,0 +1,1151 @@
+medicineId,name,manufacturer,brand,category,stock,price,isDiscontinued,requiresPrescription,expiryDate
+6a651337e75d7a30ba685994,A Doxid 100mg Capsule,Eskon Pharma,,Antibiotic,88,26.3,False,True,2027-12-04 06:16:39.522
+6a651337e75d7a30ba6859dd,A Doxid L 100mg Capsule,Eskon Pharma,,Antibiotic,22,60.0,False,True,2028-03-07 07:58:30.147
+6a651337e75d7a30ba685b25,A Fresh Mouth Wash,Arika Healthcare,,Skin Care,20,42.0,False,False,2028-01-30 04:09:54.714
+6a651337e75d7a30ba6859cd,A Mol 650mg Tablet,Aan Pharma Pvt Ltd,,Pain Relief,23,9.0,False,False,2027-12-23 22:25:17.721
+6a651337e75d7a30ba685ac4,A Nil Tablet,Pan Pharmaceuticals Ltd,,Antibiotic,26,6.72,False,True,2027-05-01 13:37:30.066
+6a651337e75d7a30ba685b60,A Tron 4mg Tablet MD,American Biocare,,Gastro & Digestion,69,49.0,False,True,2027-01-25 11:44:44.240
+6a651337e75d7a30ba685ba5,A-Win 5 Injection,Asterisk Laboratories India Pvt Ltd,,Vitamins & Supplements,112,250.0,False,False,2026-11-01 01:42:33.400
+6a651337e75d7a30ba685a2e,AB-Rozu 10 Tablet,Abbott,,Heart & Blood Pressure,27,135.62,False,True,2027-08-06 04:15:54.989
+6a651337e75d7a30ba685a3d,AB-Rozu 20 Tablet,Abbott,,Heart & Blood Pressure,44,224.87,False,True,2026-11-24 11:04:04.420
+6a651337e75d7a30ba685b7b,ACHOPHEN 400MG/325MG TABLET,Jackson Laboratories Pvt Ltd,,Pain Relief,131,8.87,False,False,2027-06-27 23:07:44.061
+6a651337e75d7a30ba685935,ACTION OR 1000mg Tablet,Apex Laboratories Pvt Ltd,,Pain Relief,138,42.3,False,False,2028-02-16 17:37:50.875
+6a651337e75d7a30ba685afc,AD Fun 1% Cream,Aditya Pharmaceuticals,,Skin Care,140,15.0,False,False,2027-03-27 23:11:40.364
+6a651337e75d7a30ba685982,AF -C Dusting Powder,Systopic Laboratories Pvt Ltd,,Skin Care,36,87.0,False,False,2027-01-04 22:28:29.607
+6a651337e75d7a30ba68584e,AF Kit Tablet,Systopic Laboratories Pvt Ltd,,Antibiotic,105,110.0,False,True,2027-01-08 22:32:49.187
+6a651337e75d7a30ba6859a7,AFM Tablet,Lemford Biotech Pvt Ltd,,Allergy,47,170.0,False,True,2027-12-25 08:03:38.849
+6a651337e75d7a30ba685a36,AIG 20mg Capsule,Pharmacopius Drugs Pvt Ltd,,Gastro & Digestion,133,39.0,False,False,2027-06-19 02:31:55.553
+6a651337e75d7a30ba685a24,AIG D 10mg/20mg Capsule,Pharmacopius Drugs Pvt Ltd,,Gastro & Digestion,71,48.0,False,False,2027-08-07 10:33:46.034
+6a651337e75d7a30ba685a58,AL-D3 Soft Gelatin Capsule,Alde Medi Impex Ltd,,Vitamins & Supplements,120,72.0,False,False,2027-07-01 03:26:40.045
+6a651337e75d7a30ba685abb,ALFAM 400MG TABLET,Albert David Ltd,,Pain Relief,125,5.93,False,False,2027-02-22 15:58:59.493
+6a651337e75d7a30ba685ad9,APD Capsule,Shrion Pharmaceuticals,,Gastro & Digestion,71,36.0,False,False,2027-07-07 04:55:14.306
+6a651337e75d7a30ba685987,ASA 50mg Tablet,Zydus Cadila,,Pain Relief,47,3.7,False,False,2026-11-13 01:01:40.344
+6a651337e75d7a30ba68592d,AT SP Tablet,Atopic Laboratories,,Pain Relief,76,62.0,False,True,2027-07-30 03:18:59.350
+6a651337e75d7a30ba6858e2,ATM 200 Oral Suspension,Indoco Remedies Ltd,,Antibiotic,35,57.46,False,True,2027-03-10 23:51:11.947
+6a651337e75d7a30ba6858f2,ATM 250 Tablet,Indoco Remedies Ltd,,Antibiotic,73,118.5,False,True,2027-01-24 03:09:06.345
+6a651337e75d7a30ba68587d,ATM 500 Tablet,Indoco Remedies Ltd,,Antibiotic,12,132.38,False,True,2027-10-13 19:52:43.359
+6a651337e75d7a30ba685b8a,Aanid Ointment,Aan Pharma Pvt Ltd,,Skin Care,36,24.0,False,False,2028-01-21 18:43:16.634
+6a651337e75d7a30ba685a48,Abcef O 200mg/200mg Tablet,BestoChem Formulations  India  Ltd,,Antibiotic,120,146.86,False,True,2027-08-17 04:50:21.779
+6a651337e75d7a30ba685a5c,Abcid 20mg Capsule,Arbro Pharmaceuticals Pvt Ltd,,Gastro & Digestion,27,36.25,False,False,2027-09-29 23:18:29.782
+6a651337e75d7a30ba685b16,Abdine Ointment,I.I.F.A Health Care,,Skin Care,9,72.0,False,False,2028-01-02 05:40:20.734
+6a651337e75d7a30ba685b0e,Abetabact Ointment,Abetar Healthcare,,Skin Care,54,145.0,False,True,2027-04-18 15:26:01.280
+6a651337e75d7a30ba685b0d,Abetrol 20mg Tablet,Abettor Life Sciences Pvt Ltd,,Gastro & Digestion,31,70.0,False,False,2027-01-14 10:11:38.570
+6a651337e75d7a30ba685abe,Abex 20mg Tablet,Unikind Pharma,,Gastro & Digestion,35,41.5,False,False,2026-12-12 02:55:24.619
+6a651337e75d7a30ba685902,Abixim 200mg Tablet,Abbott,,Antibiotic,112,104.85,False,True,2027-08-09 12:25:23.713
+6a651337e75d7a30ba685a25,Abixim CV 200mg/125mg Tablet,Abbott,,Antibiotic,1,248.53,False,True,2028-01-16 12:05:04.557
+6a651337e75d7a30ba685948,Abixim O Tablet,Abbott,,Antibiotic,147,265.28,False,True,2027-02-13 14:27:51.573
+6a651337e75d7a30ba685a17,Ablif LB 200mg Tablet,Pharma Plus,,Antibiotic,93,175.0,False,True,2028-02-25 17:02:54.084
+6a651337e75d7a30ba685977,Abmont 3D 10mg/120mg/200mg Tablet,Matrixx Formulation,,Allergy,51,199.0,False,True,2027-12-01 19:08:27.382
+6a651337e75d7a30ba6859f4,Abnex Forte 10mg/120mg/200mg Tablet,Jarun Pharmaceuticals,,Allergy,67,230.0,False,True,2028-02-27 17:34:41.177
+6a651337e75d7a30ba685a20,Aboros 20mg Tablet,La Renon Healthcare Pvt Ltd,,Heart & Blood Pressure,117,275.0,False,True,2027-05-30 00:27:46.706
+6a651337e75d7a30ba685a2f,Above 5 Tablet,Pfizer Ltd,,Gastro & Digestion,132,41.1,False,False,2028-01-10 13:45:04.152
+6a651337e75d7a30ba685a28,Absopan 40mg Tablet,Jupiter Biolabs Pvt Ltd,,Gastro & Digestion,91,54.0,False,False,2028-01-22 02:35:57.787
+6a651337e75d7a30ba685b29,Absoz 40 Tablet,Gms Biomax Medicare Pvt Ltd,,Gastro & Digestion,80,110.0,False,False,2027-09-03 23:04:04.377
+6a651337e75d7a30ba685b7f,Abufen-C Tablet,Shinto Organics (P) Limited,,Pain Relief,15,13.0,False,False,2027-08-27 16:54:32.659
+6a651337e75d7a30ba685959,Abvida 100mg Tablet SR,Abbott,,Diabetes,81,214.48,False,True,2027-11-14 21:18:02.212
+6a651337e75d7a30ba685939,Abvida 50mg Tablet,Abbott,,Diabetes,41,181.46,False,True,2026-12-14 09:10:42.480
+6a651337e75d7a30ba685a8f,Abvida-M 50/1000 Eazy Glide Tablet SR,Abbott,,Diabetes,40,254.04,False,True,2027-03-12 04:36:08.207
+6a651337e75d7a30ba685961,Abvida-M 50/500 Eazy Glide Tablet SR,Abbott,,Diabetes,4,217.75,False,True,2028-01-02 20:42:17.649
+6a651337e75d7a30ba6859bc,Abvida-M 50mg/1000mg Eazy Glide Tablet,Abbott,,Diabetes,21,254.04,False,True,2027-08-16 03:56:21.180
+6a651337e75d7a30ba685a45,Abzorb 1% Cream,Sun Pharmaceutical Industries Ltd,,Skin Care,14,94.5,False,False,2027-01-24 15:48:45.838
+6a651337e75d7a30ba685a4e,Abzorb Syndet Bar,Sun Pharmaceutical Industries Ltd,,Skin Care,21,131.75,False,False,2027-10-03 03:43:06.942
+6a651337e75d7a30ba685b4a,Acaldo Capsule,Accilex Nutricorp,,Vitamins & Supplements,40,185.0,False,False,2027-03-15 02:51:23.125
+6a651337e75d7a30ba6859b4,Acbro 3D 10mg/120mg/200mg Tablet SR,WellOK Pharma,,Allergy,79,179.0,False,True,2028-03-02 04:39:33.328
+6a651337e75d7a30ba6858e9,Acceclowoc-P Tablet,Wockhardt Ltd,,Pain Relief,16,60.09,False,True,2027-10-25 19:37:34.015
+6a651337e75d7a30ba6858d2,Acceclowoc-SP Tablet,Tridoss Laboratories Pvt Ltd,,Pain Relief,90,121.1,False,True,2027-11-21 19:13:10.373
+6a651337e75d7a30ba6859dc,Accurate 10 mg/150 mg Tablet,Dew Drops Lab,,Gastro & Digestion,83,18.71,False,False,2027-12-18 12:00:22.158
+6a651337e75d7a30ba685b8d,Accurate 25mg Injection,Dew Drops Lab,,Gastro & Digestion,11,4.9,False,False,2027-05-02 07:56:48.105
+6a651337e75d7a30ba685a12,Acdof 40mg Injection,Alkem Laboratories Ltd,,Gastro & Digestion,70,41.23,False,False,2026-11-14 10:10:37.420
+6a651337e75d7a30ba685860,Ace Proxyvon Tablet,Dr Reddy's Laboratories Ltd,,Pain Relief,112,72.5,False,True,2026-11-23 16:13:41.870
+6a651337e75d7a30ba685980,Ace Tablet,Hallmark Chemicals,,Pain Relief,31,43.0,False,False,2028-02-01 03:57:49.423
+6a651337e75d7a30ba685886,Ace-Proxyvon CR Tablet,Dr Reddy's Laboratories Ltd,,Pain Relief,111,143.25,False,True,2027-07-31 19:54:54.546
+6a651337e75d7a30ba685af2,Acease 20mg Tablet,Nutrifirm therapeutics,,Gastro & Digestion,57,80.0,False,False,2026-12-08 14:32:04.957
+6a651337e75d7a30ba685a52,Acebid SP Tablet,Shield Health Care Pvt Ltd,,Antibiotic,125,48.1,False,True,2028-02-08 08:58:03.570
+6a651337e75d7a30ba6859ea,Acebronk MFX 10mg/120mg/200mg Tablet,Citizen Remedies Private Limited,,Allergy,108,175.0,False,True,2027-02-17 14:32:29.055
+6a651337e75d7a30ba685847,Aceclo Plus Tablet,Aristo Pharmaceuticals Pvt Ltd,,Pain Relief,36,90.85,False,True,2027-12-12 05:34:54.275
+6a651337e75d7a30ba6858be,Aceclo SR Tablet,Aristo Pharmaceuticals Pvt Ltd,,Pain Relief,110,77.3,False,True,2027-06-01 18:06:05.331
+6a651337e75d7a30ba6858b3,Aceclo Tablet,Aristo Pharmaceuticals Pvt Ltd,,Pain Relief,128,52.55,False,True,2027-02-20 08:44:26.785
+6a651337e75d7a30ba685861,Aceclo-MR Tablet,Aristo Pharmaceuticals Pvt Ltd,,Pain Relief,67,88.65,False,True,2028-01-27 19:59:04.157
+6a651337e75d7a30ba685a3b,Acef 200mg Tablet,Adventure Life Sciences Pvt Ltd,,Antibiotic,73,185.0,False,True,2027-12-07 07:23:50.939
+6a651337e75d7a30ba685a19,Acefen 100 mg/125 mg Tablet,Salud Care India Pvt Ltd,,Pain Relief,82,29.0,False,False,2027-02-26 10:11:26.751
+6a651337e75d7a30ba685aa1,Acefen Gel,Salud Care India Pvt Ltd,,Pain Relief,39,33.48,False,False,2026-12-05 20:00:39.037
+6a651337e75d7a30ba6859d6,Acefenac SP Tablet,Medichem Pharmceuticals Ltd,,Pain Relief,95,70.0,False,False,2028-04-07 01:56:54.178
+6a651337e75d7a30ba6858d7,Aceflam P 100mg/325mg Tablet,Micro Labs Ltd,,Pain Relief,126,58.25,False,True,2027-12-19 03:33:13.186
+6a651337e75d7a30ba685910,Acegrow 3D Tablet,Foregen Healthcare Ltd,,Allergy,15,231.0,False,True,2026-12-30 15:40:38.548
+6a651337e75d7a30ba685856,Acemiz -MR Tablet,Lupin Ltd,,Pain Relief,113,99.5,False,True,2027-04-27 14:52:11.342
+6a651337e75d7a30ba685846,Acemiz Plus Tablet,Lupin Ltd,,Pain Relief,86,99.5,False,True,2027-02-18 08:37:23.583
+6a651337e75d7a30ba685863,Acemiz-S Tablet,Lupin Ltd,,Pain Relief,111,115.44,False,True,2027-05-29 04:09:48.742
+6a651337e75d7a30ba6858dd,Acenac SP 100mg/325mg/15mg Tablet,Medley Pharmaceuticals,,Pain Relief,52,101.0,False,True,2026-12-31 18:48:06.740
+6a651337e75d7a30ba68585e,Acenac-P  Tablet,Medley Pharmaceuticals,,Pain Relief,1,61.0,False,True,2027-08-19 00:59:49.105
+6a651337e75d7a30ba685889,Acenext P 100mg/325mg Tablet,Cadila Pharmaceuticals Ltd,,Pain Relief,141,58.0,False,True,2028-02-28 06:08:33.577
+6a651337e75d7a30ba685b37,Acep 500mg Tablet,Apple Biotech,,Antibiotic,83,62.0,False,True,2028-02-12 16:22:03.307
+6a651337e75d7a30ba685a38,Acephyl-FM Tablet,Atlantis Formulations Pvt Ltd,,Allergy,22,215.0,False,True,2028-03-24 09:09:21.144
+6a651337e75d7a30ba685b52,Acer 20mg Capsule,Vision Medilink,,Gastro & Digestion,145,36.0,False,False,2027-04-18 12:08:12.344
+6a651337e75d7a30ba685955,Acera 20 Capsule,Ipca Laboratories Ltd,,Gastro & Digestion,116,90.65,False,False,2027-06-26 00:18:35.351
+6a651337e75d7a30ba6858b5,Acera-D Capsule SR,Ipca Laboratories Ltd,,Gastro & Digestion,36,118.45,False,False,2027-09-27 05:38:42.147
+6a651337e75d7a30ba685b0b,Acerab 10mg Tablet,Sienna Formulations Pvt Ltd,,Gastro & Digestion,114,62.0,False,False,2026-12-14 05:25:52.779
+6a651337e75d7a30ba685b02,Acerab 20mg Tablet,Park Pharmaceuticals,,Gastro & Digestion,53,78.0,False,False,2027-10-12 03:04:06.947
+6a651337e75d7a30ba685a40,Acethama-FM Tablet SR,Care Formulation Labs Pvt Ltd,,Allergy,20,215.0,False,True,2027-04-15 12:58:28.750
+6a651337e75d7a30ba685965,Acetyl Salicylic Acid 50mg Tablet,Zydus Cadila,,Pain Relief,12,3.27,False,False,2027-03-14 05:34:11.431
+6a651337e75d7a30ba685ab4,Acevilda 50mg Tablet,Mattox Healthcare Pvt Ltd,,Diabetes,76,100.0,False,True,2027-09-29 14:16:28.989
+6a651337e75d7a30ba685af0,Acevilda M 500mg/50mg Tablet,Mattox Healthcare Pvt Ltd,,Diabetes,1,108.0,False,True,2027-09-03 19:30:19.686
+6a651337e75d7a30ba685b01,Achol-D3 Softgel Capsule,Agn Healthcare,,Vitamins & Supplements,67,146.89,False,False,2028-04-12 14:13:12.127
+6a651337e75d7a30ba685ba7,Aci Deject 50mg Injection,Indus Pharma Pvt Ltd,,Gastro & Digestion,138,3.2,False,False,2027-03-31 10:47:26.340
+6a651337e75d7a30ba685bad,Aciba 25mg Injection,Systacare Remedies,,Gastro & Digestion,52,3.08,False,False,2027-02-11 22:25:13.700
+6a651337e75d7a30ba685957,Aciban 20 Tablet,Cadila Pharmaceuticals Ltd,,Gastro & Digestion,24,40.5,False,False,2026-10-31 06:40:04.354
+6a651337e75d7a30ba68594a,Aciban 40 Tablet,Cadila Pharmaceuticals Ltd,,Gastro & Digestion,95,73.1,False,False,2027-09-14 10:42:48.728
+6a651337e75d7a30ba68598d,Aciban DSR Capsule,Cadila Pharmaceuticals Ltd,,Gastro & Digestion,89,141.5,False,False,2026-11-10 02:55:46.961
+6a651337e75d7a30ba685b93,Acibloc 150mg Tablet,Marc Laboratories Pvt Ltd,,Gastro & Digestion,135,7.16,False,False,2028-04-18 12:38:06.633
+6a651337e75d7a30ba685ba2,Acibloc 300mg Tablet,Marc Laboratories Pvt Ltd,,Gastro & Digestion,142,12.75,False,False,2027-05-02 20:15:11.118
+6a651337e75d7a30ba685a33,Acicare 40mg Tablet,Siochem Pharma Pvt Ltd,,Gastro & Digestion,145,65.0,False,False,2027-05-10 08:00:01.354
+6a651337e75d7a30ba685afa,Acicheck 20mg Tablet,Mackenzie Pharmaceuticals Pvt Ltd,,Gastro & Digestion,44,70.0,False,False,2028-02-16 21:07:25.191
+6a651337e75d7a30ba685a2d,Acicheck D Capsule SR,Mackenzie Pharmaceuticals Pvt Ltd,,Gastro & Digestion,128,97.0,False,False,2027-05-15 14:35:54.360
+6a651337e75d7a30ba685ac0,Acicure 20mg Capsule,Capri Pharmaceuticals,,Gastro & Digestion,42,36.0,False,False,2027-05-26 21:26:52.876
+6a651337e75d7a30ba6859b9,Acid 20 Capsule,Akme Biotec,,Gastro & Digestion,145,33.0,False,False,2026-11-25 00:52:59.548
+6a651337e75d7a30ba685a91,Acidcut Tablet,Hebert Biotech,,Gastro & Digestion,131,65.0,False,False,2027-06-15 06:45:55.110
+6a651337e75d7a30ba685a7d,Aciden 40mg Tablet,Eden Pharmaceuticals Limited,,Gastro & Digestion,13,60.0,False,False,2027-12-06 15:18:23.268
+6a651337e75d7a30ba685b46,Acidof 20mg Capsule,Chemo Biological,,Gastro & Digestion,96,39.0,False,False,2026-11-13 17:46:25.105
+6a651337e75d7a30ba685b2a,Acidom 150mg Syrup,Siesta Pharmaceuticals,,Gastro & Digestion,32,46.18,False,False,2027-06-21 08:25:39.261
+6a651337e75d7a30ba685b6c,Acidom O 4 mg/150 mg Tablet,Siesta Pharmaceuticals,,Gastro & Digestion,31,16.33,False,True,2027-11-05 05:46:31.301
+6a651337e75d7a30ba685a76,Acidoseal 40mg Tablet,Merganzer Pharma Private Limited,,Gastro & Digestion,93,80.0,False,False,2027-02-05 14:36:33.380
+6a651337e75d7a30ba685ae4,Aciflam 400mg/325mg Tablet,Acichem Laboratories,,Pain Relief,1,7.5,False,False,2026-11-03 15:41:56.231
+6a651337e75d7a30ba685b63,Aciflam Kid 100mg/125mg Tablet,Acichem Laboratories,,Pain Relief,87,2.0,False,False,2027-07-17 09:58:39.135
+6a651337e75d7a30ba685af3,Aciflux 20 mg/150 mg Capsule,S H Pharmaceuticals Ltd,,Gastro & Digestion,3,124.16,False,False,2028-02-26 21:41:30.759
+6a651337e75d7a30ba685836,Aciloc 150 Tablet,Cadila Pharmaceuticals Ltd,,Gastro & Digestion,82,40.94,False,False,2026-12-01 03:48:52.341
+6a651337e75d7a30ba68585f,Aciloc 300 Tablet,Cadila Pharmaceuticals Ltd,,Gastro & Digestion,1,50.0,False,False,2027-06-06 08:49:48.976
+6a651337e75d7a30ba6858a7,Aciloc Injection,Cadila Pharmaceuticals Ltd,,Gastro & Digestion,72,6.03,False,False,2027-08-02 08:25:38.403
+6a651337e75d7a30ba685936,Aciloc Only Oral Liquid,Cadila Pharmaceuticals Ltd,,Gastro & Digestion,42,133.98,False,False,2027-06-05 21:15:51.270
+6a651337e75d7a30ba68583e,Aciloc RD 20 Tablet,Cadila Pharmaceuticals Ltd,,Gastro & Digestion,59,77.0,False,False,2027-07-22 22:10:58.231
+6a651337e75d7a30ba6858f7,Acimol 100 mg/325 mg Tablet,Leeford Healthcare Ltd,,Pain Relief,91,35.0,False,True,2027-09-02 03:15:33.853
+6a651337e75d7a30ba6859b7,Acimol 500mg Tablet,Allied Chemicals & Pharmaceuticals Pvt Ltd,,Pain Relief,108,6.0,False,False,2027-10-08 20:25:17.350
+6a651337e75d7a30ba6858db,Acimol MR 100mg/325mg/250mg Tablet,Leeford Healthcare Ltd,,Pain Relief,95,65.0,False,True,2027-07-27 12:53:30.108
+6a651337e75d7a30ba685a92,Acio Insta Powder for Oral Suspension,Bennet Pharmaceuticals Limited,,Gastro & Digestion,20,8.0,False,False,2028-03-19 09:39:46.945
+6a651337e75d7a30ba685a9d,Acip 500mg Tablet,Aust Ind Labs,,Antibiotic,116,58.0,False,True,2028-02-28 16:22:57.189
+6a651337e75d7a30ba6859e7,Acipan 40mg Tablet,Oneiro Pharmaceuticals,,Gastro & Digestion,137,54.0,False,False,2028-03-03 01:06:37.988
+6a651337e75d7a30ba685abd,Acipause 20mg Tablet,Medisun Pharma,,Gastro & Digestion,107,57.0,False,False,2027-04-20 06:55:56.971
+6a651337e75d7a30ba685a78,Acipro 500mg Tablet,Anoco Pharmaceuticals India Pvt Ltd,,Antibiotic,132,67.0,False,True,2027-08-06 04:29:57.358
+6a651337e75d7a30ba685a77,Acirab 20mg Tablet,Mestra Pharma Pvt Ltd,,Gastro & Digestion,107,39.9,False,False,2026-12-17 21:13:11.846
+6a651337e75d7a30ba685b14,Acirox 500mg Tablet,Comex Pharma,,Antibiotic,32,59.0,False,True,2027-01-29 01:01:30.519
+6a651337e75d7a30ba685ae6,Acitec 20mg Capsule,Symbiosis Pharmaceuticals Pvt Ltd,,Gastro & Digestion,44,80.0,False,False,2027-05-19 11:10:15.252
+6a651337e75d7a30ba685b12,Acitech 150mg Tablet,Vivid Labs Pvt Ltd,,Gastro & Digestion,37,18.0,False,False,2027-03-11 02:46:01.487
+6a651337e75d7a30ba685b17,Acizo 20mg Tablet,Solace Biotech Ltd,,Gastro & Digestion,116,69.0,False,False,2027-03-14 06:09:36.137
+6a651337e75d7a30ba685a1f,Aclizac 75mg Tablet,Ajanta Pharma Ltd,,Heart & Blood Pressure,61,70.63,False,True,2027-03-06 07:18:40.264
+6a651337e75d7a30ba685a14,Aclotil 75mg Tablet,Bal Pharma Ltd,,Heart & Blood Pressure,87,37.95,False,True,2028-02-26 13:50:52.873
+6a651337e75d7a30ba685a7e,Acnedox-LB Capsule,Shinto Organics (P) Limited,,Antibiotic,142,28.0,False,True,2027-03-20 07:03:29.412
+6a651337e75d7a30ba6859c6,Acolate M Tablet,Gujarat Terce Laboratories Ltd,,Allergy,139,79.0,False,False,2026-12-07 20:12:53.124
+6a651337e75d7a30ba685927,Acolate P Plus Tablet,Gujarat Terce Laboratories Ltd,,"Cough, Cold & Respiratory",16,52.0,False,False,2028-01-22 03:19:30.734
+6a651337e75d7a30ba6858e6,Acolate Plus Tablet,Gujarat Terce Laboratories Ltd,,Allergy,30,52.0,False,False,2027-11-17 11:06:24.474
+6a651337e75d7a30ba685b62,Aconred 5 Injection,Aconwell Pharma Pvt Ltd,,Vitamins & Supplements,35,260.0,False,False,2027-01-29 01:46:54.955
+6a651337e75d7a30ba685acc,Acorise-D3 Soft Gelatin Capsule,Acmedix Pharma LLP,,Vitamins & Supplements,97,40.0,False,False,2028-03-18 14:36:44.166
+6a651337e75d7a30ba685bac,Acrogyl 200mg/5ml Suspension,Acron Pharmaceuticals,,Antibiotic,102,30.68,False,True,2027-12-19 20:24:59.597
+6a651337e75d7a30ba685b64,Acrogyl DF 400mg/500mg Tablet,Acron Pharmaceuticals,,Antibiotic,26,19.0,False,True,2027-07-30 12:44:29.097
+6a651337e75d7a30ba685ac9,Acrolax-LS Syrup,Medikem Pharmaceuticals,,"Cough, Cold & Respiratory",28,69.0,False,False,2027-10-14 17:26:47.211
+6a651337e75d7a30ba6859b3,Act Syrup,Caplet India Pvt Ltd,,Allergy,79,56.8,False,False,2027-05-17 04:05:24.976
+6a651337e75d7a30ba6859a3,Actidol-DP Tablet,Obsurge Biotech Ltd,,Gastro & Digestion,52,112.2,False,False,2027-10-30 03:56:11.369
+6a651337e75d7a30ba685a9f,Actiflam Plus Tablet,Mihika Pharmaceutical,,Pain Relief,39,25.0,False,False,2027-05-08 09:46:16.969
+6a651337e75d7a30ba685b1a,Actiglipt M 1000mg/20mg Tablet,Akesiss Pharma Pvt Ltd,,Diabetes,55,129.0,False,True,2026-10-28 13:48:56.302
+6a651337e75d7a30ba6859d2,Actiglipt M 500mg/20mg Tablet,Akesiss Pharma Pvt Ltd,,Diabetes,11,122.0,False,True,2028-02-18 09:27:59.408
+6a651337e75d7a30ba685a34,Actimol 50 mg/500 mg Tablet,Pharmed Ltd,,Pain Relief,14,10.1,False,True,2028-03-21 21:02:19.520
+6a651337e75d7a30ba685b1f,Actimol F Tablet,Pharmed Ltd,,Pain Relief,78,13.8,False,False,2026-12-26 08:19:15.611
+6a651337e75d7a30ba685a87,Actinic D3 Nano Shots (5ml Each) Orange Flavour Sugar Free,Maxis Healthcare,,Vitamins & Supplements,19,79.0,False,False,2027-08-15 07:43:35.727
+6a651337e75d7a30ba6859e4,Activa 50mg Tablet,Zydus Healthcare Limited,,Pain Relief,95,68.2,False,True,2027-06-29 17:02:02.642
+6a651337e75d7a30ba685a74,Activa P Tablet,Zydus Healthcare Limited,,Pain Relief,116,5.81,False,True,2026-12-08 07:51:38.803
+6a651337e75d7a30ba685a0c,Activa Plus Tablet,Zydus Cadila,,Pain Relief,141,29.56,False,True,2027-05-18 04:28:25.212
+6a651337e75d7a30ba685937,Acton-OR Plus+ Tablet,Apex Laboratories Pvt Ltd,,Pain Relief,103,164.9,False,False,2027-09-27 06:52:47.738
+6a651337e75d7a30ba68586a,Acton-OR Tablet SR,Apex Laboratories Pvt Ltd,,Pain Relief,40,50.55,False,False,2028-02-27 00:07:07.075
+6a651337e75d7a30ba685a41,Actopan 40mg Tablet,In Med Therapeutics,,Gastro & Digestion,3,65.4,False,False,2027-03-20 11:10:06.415
+6a651337e75d7a30ba685a98,Actorab 20 Tablet,Fitwel Pharmaceuticals Private Limited,,Gastro & Digestion,69,45.0,False,False,2027-04-16 11:01:44.133
+6a651337e75d7a30ba6859ee,Actorab-D Capsule SR,Fitwel Pharmaceuticals Private Limited,,Gastro & Digestion,27,70.0,False,False,2027-02-15 19:42:16.333
+6a651337e75d7a30ba685ad2,Actozinc Syrup,Spc Healthcare Private Limited,,Vitamins & Supplements,77,85.0,False,False,2027-06-09 01:52:55.081
+6a651337e75d7a30ba6858b4,Actrapid 100 IU/ml Flexpen,Novo Nordisk India Pvt Ltd,,Diabetes,58,569.8,False,True,2026-11-21 19:14:39.861
+6a651337e75d7a30ba68587e,Actrapid HM 100IU/ml Penfill,Novo Nordisk India Pvt Ltd,,Diabetes,34,350.9,False,True,2028-03-23 05:52:42.529
+6a651337e75d7a30ba685ad5,Acutus-LS Syrup,Cascade India Pharmaceuticals,,"Cough, Cold & Respiratory",74,88.0,False,False,2026-12-06 19:40:03.681
+6a651337e75d7a30ba685874,Acuvin Tablet,Abbott,,Pain Relief,49,227.66,False,False,2027-07-30 02:55:12.561
+6a651337e75d7a30ba685b06,Acvilda 50mg Tablet,Acmedix Pharma LLP,,Diabetes,116,39.0,False,True,2027-09-01 23:13:09.529
+6a651337e75d7a30ba685ace,Acvilda-M 500mg/50mg Tablet,Acmedix Pharma LLP,,Diabetes,54,46.0,False,True,2027-02-15 16:37:10.278
+6a651337e75d7a30ba685b9f,Acvlglip 50 Tablet,Accilex Diacardo,,Diabetes,75,89.0,False,True,2027-07-27 15:49:06.597
+6a651337e75d7a30ba685aec,Adblock LH 50mg/5mg/12.5mg Tablet,Olcare Laboratories,,Heart & Blood Pressure,10,65.0,False,True,2027-01-27 03:02:30.587
+6a651337e75d7a30ba685b30,Adbrox LS Syrup,Aden Healthcare,,"Cough, Cold & Respiratory",139,75.0,False,False,2027-09-02 00:48:31.032
+6a651337e75d7a30ba685b7a,Adcob 100mg Injection,Kinedex Healthcare Pvt Ltd,,Vitamins & Supplements,87,266.0,False,False,2027-04-06 18:22:06.514
+6a651337e75d7a30ba685afb,Adcov 50mg Injection,Adley Formulations,,Vitamins & Supplements,55,250.0,False,False,2027-11-26 11:08:03.545
+6a651337e75d7a30ba685b2f,Adflox OZ Tablet,Adonis Laboratories Pvt Ltd,,Antibiotic,78,74.25,False,True,2027-08-06 01:32:06.387
+6a651337e75d7a30ba685b48,Adgril Tablet,Aretaeus Pharmaceuticals,,Heart & Blood Pressure,8,77.5,False,True,2028-03-11 05:51:22.806
+6a651337e75d7a30ba685a7b,Adicid 40 Tablet,Apex Diagnostic And Imaging Pvt Ltd,,Gastro & Digestion,38,95.0,False,False,2027-05-02 15:02:48.194
+6a651337e75d7a30ba685a94,Adidox 100mg Capsule,Adison Pharmaceuticals,,Antibiotic,128,46.0,False,True,2027-02-10 05:53:32.013
+6a651337e75d7a30ba6859cc,Adiflam 1% Gel,Leben Life Sciences Pvt Ltd,,Pain Relief,71,37.0,False,True,2027-01-10 17:05:29.570
+6a651337e75d7a30ba6859a2,Adiflam 50mg Tablet,Leben Life Sciences Pvt Ltd,,Pain Relief,114,8.37,False,True,2027-10-13 19:14:17.691
+6a651337e75d7a30ba685933,Adiflam Plus 400 mg/500 mg Tablet,Leben Life Sciences Pvt Ltd,,Pain Relief,79,19.5,False,False,2027-01-08 19:30:09.416
+6a651337e75d7a30ba685958,Adiflam Plus Suspension,Leben Life Sciences Pvt Ltd,,Pain Relief,10,30.25,False,False,2027-05-15 09:33:06.186
+6a651337e75d7a30ba685975,Adine-Plus Tablet,Dr. Johns Laboratories Pvt Ltd,,Pain Relief,69,96.2,False,True,2028-04-03 03:12:39.435
+6a651337e75d7a30ba685b95,Adiwill Tablet,Adisys Healthcare,,Diabetes,20,55.0,False,True,2026-10-24 08:51:50.573
+6a651337e75d7a30ba6859a0,Admol 1g Tablet SR,Kepler Health Care,,Pain Relief,72,50.0,False,False,2027-02-24 23:59:42.697
+6a651337e75d7a30ba685a18,Admol 250 DT Tablet,Kepler Health Care,,Pain Relief,89,25.0,False,False,2027-11-18 22:28:48.073
+6a651337e75d7a30ba6859d7,Admol 650 Tablet DT,Kepler Health Care,,Pain Relief,54,22.85,False,False,2028-02-13 09:17:49.150
+6a651337e75d7a30ba685941,Admol 650mg Tablet,Ethicare Pharma,,Pain Relief,117,22.85,False,False,2028-01-25 00:34:04.980
+6a651337e75d7a30ba6859d5,Admol Drop,Kepler Health Care,,Pain Relief,5,60.14,False,False,2028-01-06 21:23:02.666
+6a651337e75d7a30ba685997,Admol Junior 125mg Tablet,Ethicare Pharma,,Pain Relief,129,19.25,False,False,2027-05-18 20:41:59.442
+6a651337e75d7a30ba6859cb,Adol 200mg Tablet,Legend Advanced Biomedicinals,,Pain Relief,11,42.43,False,False,2028-04-19 19:35:45.370
+6a651337e75d7a30ba685b31,Adoloc 20mg Capsule,Adoc Pharma,,Gastro & Digestion,1,35.0,False,False,2027-08-26 20:53:23.081
+6a651337e75d7a30ba685aaf,Adorcal-CC Tablet,Cheminnova Life Sciences,,Vitamins & Supplements,7,240.0,False,False,2027-07-27 15:18:38.692
+6a651337e75d7a30ba685a80,Adox Tablet,Thrift Pharmaceuticals,,Antibiotic,36,180.0,False,True,2027-12-10 20:58:22.975
+6a651337e75d7a30ba685a4d,Adoxa LB Tablet,Aethicz Biolife,,Antibiotic,122,97.0,False,True,2028-02-12 10:47:32.303
+6a651337e75d7a30ba685967,Adoxy LB Capsule,Atopic Laboratories,,Antibiotic,140,62.0,False,True,2027-02-27 02:47:16.888
+6a651337e75d7a30ba685b39,Adplatt 75mg Tablet,Strides shasun Ltd,,Heart & Blood Pressure,84,46.33,False,True,2027-10-27 22:52:00.666
+6a651337e75d7a30ba685b36,Adron 4 Tablet MD,Advance Revive,,Gastro & Digestion,134,46.0,False,True,2027-05-14 01:16:49.692
+6a651337e75d7a30ba685b67,Adron-Kid Oral Solution,Advance Revive,,Gastro & Digestion,55,33.0,False,True,2027-09-19 02:58:17.465
+6a651337e75d7a30ba685a6f,Adrovit Z Syrup,Adley Formulations,,Vitamins & Supplements,73,34.15,False,False,2027-08-12 12:58:37.698
+6a651337e75d7a30ba6858c9,Adtrol XT Tablet,Wanbury Ltd,,Vitamins & Supplements,53,302.7,False,False,2027-05-04 18:59:17.545
+6a651337e75d7a30ba6858cc,Advanced LCF Kid Expectorant,Lupin Ltd,,"Cough, Cold & Respiratory",51,51.7,False,False,2027-02-04 18:01:10.192
+6a651337e75d7a30ba68593d,Advastat 10 Tablet,Fusion Healthcare Pvt Ltd,,Heart & Blood Pressure,23,139.0,False,True,2027-10-06 12:09:02.493
+6a651337e75d7a30ba685a00,Advastat 20 Tablet,Fusion Healthcare Pvt Ltd,,Heart & Blood Pressure,52,252.0,False,True,2027-04-30 04:12:33.105
+6a651337e75d7a30ba685969,Advastat CV 10 Capsule,Fusion Healthcare Pvt Ltd,,Heart & Blood Pressure,58,191.0,False,True,2027-04-30 13:11:31.570
+6a651337e75d7a30ba685999,Advastat Gold 75mg/10mg/75mg Capsule,Fusion Healthcare Pvt Ltd,,Pain Relief,134,204.0,False,False,2028-03-09 09:52:35.817
+6a651337e75d7a30ba685881,Advent 228.5mg Dry Syrup,Cipla Ltd,,Antibiotic,28,67.2,False,True,2027-12-09 17:25:08.113
+6a651337e75d7a30ba68588b,Advent 625 Tablet,Cipla Ltd,,Antibiotic,89,223.44,False,True,2026-12-16 15:41:17.340
+6a651337e75d7a30ba6858d4,Advent 91.4mg Drops Tangy Orange,Cipla Ltd,,Antibiotic,25,105.8,False,True,2028-03-25 19:56:26.933
+6a651337e75d7a30ba685877,Advent Forte 457mg Syrup Tangy Orange,Cipla Ltd,,Antibiotic,101,193.74,False,True,2028-01-20 12:11:29.694
+6a651337e75d7a30ba685a7f,Advog M 0.2 Plus Tablet,Eris Lifesciences Ltd,,Diabetes,133,97.92,False,True,2027-08-19 00:23:55.510
+6a651337e75d7a30ba685a30,Advog M 0.2 Tablet SR,Eris Lifesciences Ltd,,Diabetes,37,97.92,False,True,2027-03-09 23:24:55.669
+6a651337e75d7a30ba6859c8,Advog M 0.3 Plus Tablet,Eris Lifesciences Ltd,,Diabetes,8,125.51,False,True,2027-08-30 09:54:22.623
+6a651337e75d7a30ba685a73,Advog M 0.3 Tablet SR,Eris Lifesciences Ltd,,Diabetes,149,114.1,False,True,2027-12-21 11:02:55.765
+6a651337e75d7a30ba685ba0,Adwiron Injection,Saksham Pharmaceuticals India Ltd,,Vitamins & Supplements,127,279.9,False,False,2027-07-30 21:27:01.249
+6a651337e75d7a30ba685a59,Adyom 40mg Tablet,Hauz Pharma Pvt Ltd,,Gastro & Digestion,57,80.0,False,False,2028-04-13 06:27:40.064
+6a651337e75d7a30ba685b84,Adzobact 2% Ointment,ADZO Lifesciences Pvt Ltd,,Skin Care,7,160.0,False,True,2027-12-16 02:27:03.665
+6a651337e75d7a30ba685b90,Adzocal Tablet,ADZO Lifesciences Pvt Ltd,,Vitamins & Supplements,25,65.0,False,False,2027-07-14 19:46:18.564
+6a651337e75d7a30ba685b56,Adzovit 12 Combipack Injection,ADZO Lifesciences Pvt Ltd,,Vitamins & Supplements,17,28.0,False,False,2027-01-03 12:48:06.283
+6a651337e75d7a30ba685a65,Aedit EP Soap,Remember India Medicos,,Skin Care,20,81.0,False,False,2027-11-04 13:07:50.963
+6a651337e75d7a30ba68599e,Aeknil Injection,Therapeutic Pharmaceuticals,,Pain Relief,129,22.4,False,False,2026-12-30 17:14:12.724
+6a651337e75d7a30ba6858c5,Aerocort Forte Rotacap,Cipla Ltd,,"Cough, Cold & Respiratory",124,95.16,False,False,2026-11-29 23:41:09.634
+6a651337e75d7a30ba685857,Aerocort Inhaler,Cipla Ltd,,"Cough, Cold & Respiratory",75,273.77,False,False,2027-02-28 22:57:31.552
+6a651337e75d7a30ba6858b6,Aerodil SF Expectorant,Zydus Cadila,,"Cough, Cold & Respiratory",45,118.5,False,False,2028-01-01 08:21:31.315
+6a651337e75d7a30ba68591f,Aerodil-LS Expectorant,German Remedies,,"Cough, Cold & Respiratory",50,114.9,False,False,2027-10-30 17:56:56.095
+6a651337e75d7a30ba685b50,Aerodol 4mg Injection,Aerochem Neutron,,Gastro & Digestion,113,21.0,False,True,2027-08-26 09:38:00.801
+6a651337e75d7a30ba685b35,Aerotide 200 mcg/100 mcg Inhaler,Sun Pharmaceutical Industries Ltd,,"Cough, Cold & Respiratory",71,59.2,False,False,2027-07-21 06:36:47.437
+6a651337e75d7a30ba685aed,Aerotide Forte 400mcg/200mcg Diskette,Sun Pharmaceutical Industries Ltd,,"Cough, Cold & Respiratory",16,14.57,False,False,2028-01-24 20:42:33.974
+6a651337e75d7a30ba685b0a,Aerotide Inhaler,Sun Pharmaceutical Industries Ltd,,"Cough, Cold & Respiratory",98,11.12,False,False,2027-03-07 10:35:02.055
+6a651337e75d7a30ba685af6,Aerozest 0.31mg Respules (2.5 ml each),Macleods Pharmaceuticals Pvt Ltd,,"Cough, Cold & Respiratory",116,14.09,False,False,2027-02-10 03:47:08.848
+6a651337e75d7a30ba685b0f,Aerozest 100mcg Rotacap,Macleods Pharmaceuticals Pvt Ltd,,"Cough, Cold & Respiratory",58,32.0,False,False,2027-08-21 16:13:31.799
+6a651337e75d7a30ba685a32,Aerozest 50mcg Inhaler,Macleods Pharmaceuticals Pvt Ltd,,"Cough, Cold & Respiratory",76,82.9,False,False,2027-12-22 12:00:14.308
+6a651337e75d7a30ba685bb4,Afcorbate S 100mg Injection,Amplec Healthcare Pvt. Ltd.,,Vitamins & Supplements,6,252.0,False,False,2027-03-19 03:27:49.483
+6a651337e75d7a30ba685a75,Afdiloc 300mg Tablet,Anglo-French Drugs & Industries Ltd,,Gastro & Digestion,106,2.81,False,False,2027-08-25 15:06:21.296
+6a651337e75d7a30ba685b9e,Afdiloc Injection,Anglo-French Drugs & Industries Ltd,,Gastro & Digestion,119,2.36,False,False,2027-09-10 18:34:34.645
+6a651337e75d7a30ba685bb2,Afdipovidone N Ointment,Anglo-French Drugs & Industries Ltd,,Skin Care,45,12.5,False,False,2027-02-07 22:05:12.415
+6a651337e75d7a30ba6859e6,Afineday Tablet,Indchemie Health Specialities Pvt Ltd,,Allergy,143,213.0,False,True,2027-12-24 09:26:28.711
+6a651337e75d7a30ba6859ed,Afix 200mg Tablet,Alpic Biotech Ltd,,Antibiotic,90,129.5,False,True,2027-04-11 15:34:00.791
+6a651337e75d7a30ba685925,Afoglip M  1000 Tablet ER,Torrent Pharmaceuticals Ltd,,Diabetes,24,267.35,False,True,2027-03-24 05:01:42.805
+6a651337e75d7a30ba6858e4,Afoglip M  500 Tablet ER,Torrent Pharmaceuticals Ltd,,Diabetes,57,255.8,False,True,2027-08-14 06:30:56.427
+6a651337e75d7a30ba685b11,Afon 4mg Tablet MD,Genesis Biotech Inc,,Gastro & Digestion,9,39.0,False,True,2028-02-17 00:36:04.913
+6a651337e75d7a30ba685b74,Aftron S 100 Injection,Astraea Life Sciences Pvt Ltd,,Vitamins & Supplements,99,250.0,False,False,2026-11-10 23:10:21.827
+6a651337e75d7a30ba685afe,Ag-Bact Ointment,Algen Healthcare Limited,,Skin Care,147,92.5,False,True,2028-04-20 02:20:33.879
+6a651337e75d7a30ba685b89,Agedox 100mg Injection,Agex Laboratories Pvt Ltd,,Antibiotic,50,516.0,False,True,2027-04-03 20:40:22.063
+6a651337e75d7a30ba685aa4,Agelite-LS Syrup,Rekin Pharma Pvt. Ltd.,,"Cough, Cold & Respiratory",123,94.9,False,False,2027-05-20 23:34:55.273
+6a651337e75d7a30ba685aa7,Agile 50 mg/500 mg Tablet,Ind Swift Laboratories Ltd,,Pain Relief,91,14.78,False,True,2028-04-06 15:37:33.533
+6a651337e75d7a30ba685a69,Agivog M 0.3 Tablet SR,Jubilant Life Sciences,,Diabetes,101,105.77,False,True,2027-05-30 04:31:59.367
+6a651337e75d7a30ba68592f,Agmacet 10mg Tablet,Amore Health Essentials Pvt Ltd,,Allergy,103,16.0,False,False,2027-01-22 12:51:36.881
+6a651337e75d7a30ba685962,Agmamol 500mg Tablet,Amore Health Essentials Pvt Ltd,,Pain Relief,146,14.0,False,False,2027-02-23 08:24:39.850
+6a651337e75d7a30ba685ba6,Agradine 5% Lotion,Agrawal Drugs Pvt. Ltd.,,Skin Care,19,42.0,False,False,2028-01-09 22:29:31.336
+6a651337e75d7a30ba685b82,Agradine 5% Ointment,Agrawal Drugs Pvt. Ltd.,,Skin Care,65,195.0,False,False,2027-11-16 11:12:51.979
+6a651337e75d7a30ba685ba1,Agradine Scrub,Agrawal Drugs Pvt. Ltd.,,Skin Care,80,350.0,False,False,2027-10-17 07:37:29.016
+6a651337e75d7a30ba685bb7,Aiken 100mg Injection,Afive Pharma,,Vitamins & Supplements,53,250.0,False,False,2027-07-25 07:03:19.628
+6a651337e75d7a30ba685875,Air-M Tablet,Systopic Laboratories Pvt Ltd,,Allergy,63,69.0,False,True,2027-07-05 19:58:20.591
+6a651337e75d7a30ba6859fc,Airflow HD Tablet,Diicor Healthcare,,Allergy,9,229.0,False,True,2027-10-17 10:36:26.490
+6a651337e75d7a30ba685a86,Airise 60k Softgel Capsule,Ai Health Care LLP,,Vitamins & Supplements,116,124.0,False,False,2026-11-26 06:54:45.769
+6a651337e75d7a30ba685b26,Airomol PD 2 mg/50 mg Liquid,Zydus Cadila,,"Cough, Cold & Respiratory",14,17.4,False,False,2027-03-24 16:43:44.489
+6a651337e75d7a30ba685a68,Airwin-LB Respules (2ml Each),Ultimate Healthcare,,"Cough, Cold & Respiratory",41,176.0,False,False,2027-08-17 04:09:04.601
+6a651337e75d7a30ba6858fa,Akair LC Tablet,J B Chemicals and Pharmaceuticals Ltd,,Allergy,11,160.0,False,False,2026-10-24 10:55:35.218
+6a651337e75d7a30ba685b2c,Akcip TZ 500 mg/600 mg Tablet,Scott Edil Pharmacia Ltd,,Antibiotic,49,72.17,False,True,2027-09-15 17:41:25.867
+6a651337e75d7a30ba685996,Akem Tablet DT,Medoz Pharmaceutical Pvt. Ltd,,Antibiotic,126,64.9,False,True,2027-06-24 10:01:18.689
+6a651337e75d7a30ba685aab,Akfer-XT Tablet,Akiez Healthcare,,Vitamins & Supplements,122,135.0,False,False,2027-12-14 03:31:30.798
+6a651337e75d7a30ba6858d0,Akilos-P Tablet,Unison Pharmaceuticals Pvt Ltd,,Pain Relief,38,22.7,False,True,2026-12-28 22:58:48.723
+6a651337e75d7a30ba6858f3,Akilos-SP Tablet,Unison Pharmaceuticals Pvt Ltd,,Pain Relief,136,43.3,False,True,2027-06-11 09:27:03.199
+6a651337e75d7a30ba685981,Akme CT 10 Tablet,Akme Biotec,,Allergy,51,16.5,False,False,2026-11-13 13:52:19.237
+6a651337e75d7a30ba685a0d,Akme Clobetacon-GM Skin Cream,Akme Biotec,,Skin Care,124,72.5,False,False,2027-03-31 15:15:18.333
+6a651337e75d7a30ba685a16,Akroz Tablet,Akesiss Pharma Pvt Ltd,,Heart & Blood Pressure,124,82.0,False,True,2027-04-21 17:32:10.195
+6a651337e75d7a30ba685ad3,Aktilor 5mg Tablet,Aktis Pharma India Pvt Ltd,,Allergy,70,70.0,False,False,2027-12-08 20:43:54.151
+6a651337e75d7a30ba685baa,Aktirose 20mg Injection,Aktimas Bio Pharmaceuticals Pvt Ltd,,Vitamins & Supplements,6,222.0,False,False,2027-04-08 23:44:33.444
+6a651337e75d7a30ba685972,Alakast FA 10mg/120mg/200mg Tablet,Avel Life Sciences,,Allergy,134,279.0,False,True,2027-03-31 23:50:42.733
+6a651337e75d7a30ba68590e,Alaspan AG Syrup,Fulford India Ltd,,Allergy,122,134.0,False,False,2027-07-20 15:08:22.662
+6a651337e75d7a30ba68586b,Alaspan AM Tablet,Bayer Pharmaceuticals Pvt Ltd,,"Cough, Cold & Respiratory",55,98.8,False,False,2027-12-12 18:56:25.905
+6a651337e75d7a30ba685a27,Alastin AG Syrup,Leeford Healthcare Ltd,,Allergy,87,100.0,False,False,2026-10-28 17:11:24.573
+6a651337e75d7a30ba6859b1,Albical Plus Tablet,Albinis Biotech Pvt Ltd,,Vitamins & Supplements,77,220.0,False,False,2027-06-28 06:32:27.243
+6a651337e75d7a30ba685b3e,Albidox LB 100mg Capsule,Albia Biocare,,Antibiotic,147,140.0,False,True,2026-12-14 11:38:02.221
+6a651337e75d7a30ba685aee,Albodyne M Ointment,Albia Biocare,,Antibiotic,118,70.0,False,True,2027-02-10 03:59:11.672
+6a651337e75d7a30ba685bb1,Albofer 100mg Injection,Albia Biocare,,Vitamins & Supplements,18,255.0,False,False,2027-03-17 04:19:37.321
+6a651337e75d7a30ba685a3f,Albutamol Plus Syrup,Centaur Pharmaceuticals Pvt Ltd,,"Cough, Cold & Respiratory",101,65.39,False,False,2028-03-25 11:40:33.426
+6a651337e75d7a30ba685938,Albutamol Plus Tablet,Centaur Pharmaceuticals Pvt Ltd,,"Cough, Cold & Respiratory",137,46.16,False,False,2027-01-04 07:02:33.268
+6a651337e75d7a30ba68591b,Albutamol Syrup,Centaur Pharmaceuticals Pvt Ltd,,"Cough, Cold & Respiratory",63,65.4,False,False,2026-10-24 10:59:36.898
+6a651337e75d7a30ba685ad6,Albuvit-Fe Tablet,Cellic Healthcare Pvt Ltd,,Vitamins & Supplements,95,105.0,False,False,2028-02-12 13:21:00.630
+6a651337e75d7a30ba685af8,Alcadin 2% Gargle,Ajanta Pharma Ltd,,Skin Care,39,155.0,False,False,2028-03-22 06:56:26.954
+6a651337e75d7a30ba6858e0,Alcet 5mg Tablet,Prism Life Sciences Ltd,,Allergy,27,91.0,False,False,2027-06-07 00:15:26.877
+6a651337e75d7a30ba685995,Alcet 5mg/5ml Syrup,Acron Pharmaceuticals,,Allergy,98,14.87,False,False,2027-11-08 20:10:28.821
+6a651337e75d7a30ba685b5f,Alcibard Forte Tablet,B M Medico Pvt Ltd,,Vitamins & Supplements,35,29.0,False,False,2028-03-12 04:59:44.599
+6a651337e75d7a30ba685b42,Alcid 20mg Capsule,Algen Healthcare Limited,,Gastro & Digestion,145,24.5,False,False,2027-09-23 01:35:23.575
+6a651337e75d7a30ba6859eb,Alciflox 250mg Tablet,Alkem Laboratories Ltd,,Antibiotic,130,23.28,False,True,2028-01-17 22:25:00.207
+6a651337e75d7a30ba6858b9,Alciflox 500mg Tablet,Alkem Laboratories Ltd,,Antibiotic,128,45.29,False,True,2027-02-19 06:17:54.404
+6a651337e75d7a30ba68593c,Alciflox D Eye/Ear Drops,Alkem Laboratories Ltd,,Antibiotic,48,45.0,False,True,2028-02-04 07:58:20.710
+6a651337e75d7a30ba685a6a,Alcin TZ 500mg/600mg Tablet,Anvik Biotech,,Antibiotic,50,75.0,False,True,2028-01-18 06:48:21.190
+6a651337e75d7a30ba685abc,Alcipro 1000mg Tablet,Alkem Laboratories Ltd,,Antibiotic,61,75.0,False,True,2027-08-21 20:15:28.706
+6a651337e75d7a30ba685a1a,Alcipro 250mg Tablet,Alkem Laboratories Ltd,,Antibiotic,7,23.28,False,True,2027-12-02 15:13:18.604
+6a651337e75d7a30ba685a35,Alcipro 2mg Infusion,Alkem Laboratories Ltd,,Antibiotic,9,17.14,False,True,2028-04-02 16:08:05.537
+6a651337e75d7a30ba685b59,Alcipro 750mg Tablet,Alkem Laboratories Ltd,,Antibiotic,147,96.68,False,True,2026-12-22 07:44:30.213
+6a651337e75d7a30ba685ac8,Alcold Plus Tablet,Legend Pharma Technologies,,Allergy,60,25.0,False,False,2027-03-23 18:18:31.861
+6a651337e75d7a30ba685a03,Alcure FM 10mg/120mg Tablet,Wafture Healthcare Pvt Ltd,,Allergy,22,122.9,False,True,2027-12-19 01:50:02.212
+6a651337e75d7a30ba685aa9,Aldase OD 100 mg/30 mg Tablet,Lincoln Pharmaceuticals Ltd,,Pain Relief,46,144.9,False,True,2026-11-25 15:05:47.814
+6a651337e75d7a30ba6859f7,Aldase-D 50mg/10mg Tablet,Lincoln Pharmaceuticals Ltd,,Pain Relief,136,86.9,False,True,2027-06-27 03:18:31.563
+6a651337e75d7a30ba68599f,Alday AM Tablet SR,S H Pharmaceuticals Ltd,,Allergy,58,60.6,False,False,2026-11-29 03:42:03.007
+6a651337e75d7a30ba6859a6,Alday Duo 5mg/10mg Tablet,S H Pharmaceuticals Ltd,,Allergy,10,72.5,False,False,2027-02-21 22:21:44.456
+6a651337e75d7a30ba685945,Alday Kid 5mg/5ml Syrup,S H Pharmaceuticals Ltd,,Allergy,145,55.0,False,False,2027-10-20 06:56:35.907
+6a651337e75d7a30ba68596f,Alday Kid Syrup,S H Pharmaceuticals Ltd,,Allergy,116,72.0,False,False,2027-06-18 06:39:18.973
+6a651337e75d7a30ba6859ef,Alde 5mg Tablet,Cubit Healthcare,,Allergy,147,59.75,False,False,2027-01-24 09:07:48.879
+6a651337e75d7a30ba685b66,Aldezol 200mg Tablet,Albert David Ltd,,Antibiotic,102,14.93,False,True,2027-08-05 00:45:51.989
+6a651337e75d7a30ba685a70,Aldezol 400mg Tablet,Albert David Ltd,,Antibiotic,12,9.45,False,True,2027-07-23 00:54:44.637
+6a651337e75d7a30ba685aaa,Aldezol DF 400mg/500mg Tablet,Albert David Ltd,,Antibiotic,97,22.94,False,True,2027-01-07 09:36:32.854
+6a651337e75d7a30ba685ae3,Aldezol DF Syrup,Albert David Ltd,,Antibiotic,45,11.94,False,True,2027-05-13 08:23:50.554
+6a651337e75d7a30ba685bab,Aldezole 500mg Infusion,Alde Medi Impex Ltd,,Antibiotic,17,13.11,False,True,2027-03-06 05:02:48.004
+6a651337e75d7a30ba685840,Aldigesic P 100mg/325mg Tablet,Alkem Laboratories Ltd,,Pain Relief,33,110.0,False,True,2028-01-25 11:24:05.972
+6a651337e75d7a30ba685845,Aldigesic-SP Tablet,Alkem Laboratories Ltd,,Pain Relief,110,120.0,False,True,2027-04-06 15:06:12.426
+6a651337e75d7a30ba685b87,Aldine 10% Ointment,Alpic Biotech Ltd,,Skin Care,116,89.0,False,False,2028-03-01 11:02:39.776
+6a651337e75d7a30ba68598f,Aldo TL 40 mg/5 mg Tablet,Shine Pharmaceuticals Ltd,,Heart & Blood Pressure,145,89.5,False,True,2027-08-11 20:22:04.721
+6a651337e75d7a30ba6859ff,Aldol Tablet,Altar Healthcare Pvt Ltd,,Pain Relief,129,14.0,False,True,2028-01-08 02:33:35.117
+6a651337e75d7a30ba685ab7,Aldon 2mg Oral Drops,Alde Medi Impex Ltd,,Gastro & Digestion,32,35.0,False,True,2027-08-20 16:39:04.689
+6a651337e75d7a30ba685b54,Aldoxyl LB 100mg Tablet,Cista Medicorp,,Antibiotic,27,77.0,False,True,2028-04-20 10:01:07.439
+6a651337e75d7a30ba685a49,Alencef 200mg Tablet DT,Alencure Biotech Pvt Ltd,,Antibiotic,49,89.0,False,True,2027-03-20 03:43:55.419
+6a651337e75d7a30ba685976,Alenix 10mg Tablet,Canixa Life Sciences Pvt,,Allergy,129,66.0,False,False,2027-04-27 12:22:57.982
+6a651337e75d7a30ba68593e,Alenix 5 Tablet,Canixa Life Sciences Pvt,,Allergy,9,48.0,False,False,2027-01-09 13:10:01.007
+6a651337e75d7a30ba6859d8,Alenix-M Tablet,Canixa Life Sciences Pvt,,Allergy,88,114.0,False,False,2027-03-19 10:30:41.781
+6a651337e75d7a30ba685a53,Alentra 40mg Tablet,Aurum Life Science Pvt Ltd,,Gastro & Digestion,10,72.45,False,False,2027-07-26 01:59:21.407
+6a651337e75d7a30ba68597e,Alerab-DSR Capsule,Alester Pharma Pvt Ltd,,Gastro & Digestion,110,85.0,False,False,2027-10-21 09:20:29.578
+6a651337e75d7a30ba685940,Alerfix Tablet,Eris Lifesciences Ltd,,Allergy,24,52.27,False,False,2026-11-28 14:24:47.339
+6a651337e75d7a30ba68587c,Alerfix Total Tablet SR,Eris Lifesciences Ltd,,"Cough, Cold & Respiratory",91,262.02,False,False,2027-05-14 03:37:31.780
+6a651337e75d7a30ba685954,Alerfri SF 650 mg/60 mg/2.5 mg Tablet,Navil Laboratories Pvt Ltd,,Pain Relief,110,59.25,False,False,2026-10-28 22:04:20.207
+6a651337e75d7a30ba6859b8,Alergard-M Tablet,Biomax Biotechnics Pvt Ltd,,Allergy,143,147.62,False,True,2026-11-05 21:42:44.027
+6a651337e75d7a30ba685952,Alergin 10mg Tablet,Cipla Ltd,,Allergy,84,19.7,False,False,2027-04-06 22:04:11.872
+6a651337e75d7a30ba685953,Alergin Cold Total Tablet,Cipla Ltd,,Pain Relief,131,51.5,False,False,2027-05-15 04:19:28.642
+6a651337e75d7a30ba68590d,Alerid Cold Tablet,Cipla Ltd,,Allergy,58,65.5,False,False,2027-06-05 21:48:14.999
+6a651337e75d7a30ba68585b,Alerid Syrup,Cipla Ltd,,Allergy,68,21.84,False,False,2027-06-30 15:03:54.303
+6a651337e75d7a30ba68585c,Alerid Tablet,Cipla Ltd,,Allergy,73,20.48,False,False,2027-05-15 09:39:08.437
+6a651337e75d7a30ba685862,Alerid-D Tablet,Cipla Ltd,,Allergy,138,57.97,False,False,2027-07-21 11:52:33.083
+6a651337e75d7a30ba6859e9,Alerta D Tablet,Gary Pharmaceuticals Pvt Ltd,,Allergy,129,36.0,False,False,2026-11-08 03:13:42.804
+6a651337e75d7a30ba6859d4,Alertac 10mg Tablet,Seagull Pharmaceutical Pvt Ltd,,Allergy,13,9.7,False,False,2028-01-09 16:46:58.974
+6a651337e75d7a30ba68593f,Aleva 5mg Tablet,Aronex Life Sciences Pvt Ltd,,Allergy,126,29.0,False,False,2028-04-05 12:47:52.826
+6a651337e75d7a30ba685848,Alex Cough Lozenges Lemon Ginger,Glenmark Pharmaceuticals Ltd,,"Cough, Cold & Respiratory",95,108.0,False,False,2027-04-26 05:35:04.013
+6a651337e75d7a30ba6858bc,Alex Cough Lozenges Sugar Free,Glenmark Pharmaceuticals Ltd,,"Cough, Cold & Respiratory",115,111.0,False,False,2028-03-30 15:17:11.942
+6a651337e75d7a30ba6859e8,Alexcet 10mg Tablet,Glenmark Pharmaceuticals Ltd,,Allergy,132,18.53,False,False,2027-10-27 18:43:24.657
+6a651337e75d7a30ba6859aa,Alexofer-XT Tablet,Druto Laboratories,,Vitamins & Supplements,34,120.0,False,False,2027-12-28 08:51:52.378
+6a651337e75d7a30ba685a5f,Alexza Tablet,Sulzderma Pharmaceuticals Pvt Ltd,,Allergy,116,68.0,False,False,2027-03-25 07:10:25.700
+6a651337e75d7a30ba685b51,Alfadox 100mg Capsule,Betamax Remedies,,Antibiotic,113,35.0,False,True,2027-03-04 19:03:04.378
+6a651337e75d7a30ba685a67,Alfapsin D 50mg/50000IU Tablet,Hetero Drugs Ltd,,Pain Relief,116,52.21,False,True,2027-07-25 03:05:22.192
+6a651337e75d7a30ba685b88,Alferon XT 20mg Injection,Alarius Healthcare,,Vitamins & Supplements,72,205.0,False,False,2026-12-09 08:03:29.451
+6a651337e75d7a30ba685a5d,Alfexo M 10mg/120mg Tablet,Ernst Pharmacia,,Allergy,56,125.0,False,True,2027-12-04 14:55:31.456
+6a651337e75d7a30ba685b77,Alfolic 5mg Tablet,Altak Pharmaceuticals Pvt Ltd,,Vitamins & Supplements,118,12.9,False,False,2027-07-17 21:50:12.295
+6a651337e75d7a30ba6858ab,Algesia CR 200mg/20mg Capsule,Macleods Pharmaceuticals Pvt Ltd,,Pain Relief,145,121.0,False,True,2027-07-30 19:39:51.774
+6a651337e75d7a30ba68597f,Algina 650 Tablet,Geno Pharmaceuticals Ltd,,Pain Relief,41,11.25,False,False,2027-11-01 04:40:20.475
+6a651337e75d7a30ba685a56,Algirest M Syrup,Mac Millon Pharmaceuticals Pvt Ltd,,Allergy,62,108.0,False,True,2028-01-08 22:08:20.158
+6a651337e75d7a30ba685a62,Algo 10mg Tablet,Rapross Pharmaceuticals Pvt Ltd,,Allergy,122,29.79,False,False,2027-04-04 05:42:45.220
+6a651337e75d7a30ba685a64,Ali M 500mg Tablet,Mefro Pharmaceuticals Pvt Ltd,,Diabetes,146,10.5,False,True,2027-05-19 22:01:41.850
+6a651337e75d7a30ba685930,Alides 5mg Tablet,Leeford Healthcare Ltd,,Allergy,88,65.0,False,False,2028-01-03 22:34:34.468
+6a651337e75d7a30ba685a01,Alidox LB 100mg Tablet,Allien Pharmaceuticals,,Antibiotic,12,110.0,False,True,2026-11-09 19:17:18.307
+6a651337e75d7a30ba685a39,Alifix CV 200mg/125mg Tablet,Alisier Drugs Pvt Ltd,,Antibiotic,28,260.0,False,True,2027-04-06 22:52:10.938
+6a651337e75d7a30ba685a72,Alispan 10mg Tablet,Fulford India Ltd,,Allergy,13,117.0,False,False,2027-05-29 05:36:05.906
+6a651337e75d7a30ba685a4c,Alkali-P Tablet,Entrust Healthcare Pvt Ltd,,Gastro & Digestion,57,80.0,False,False,2027-08-07 08:11:45.268
+6a651337e75d7a30ba685917,Alkem Cold 5 mg/500 mg/5 mg Tablet,Alkem Laboratories Ltd,,Allergy,142,28.0,False,False,2028-02-03 17:10:12.077
+6a651337e75d7a30ba68595d,Alkem Cold Suspension,Alkem Laboratories Ltd,,Allergy,8,53.0,False,False,2027-10-21 01:21:00.528
+6a651337e75d7a30ba685904,Alkof LS Syrup,Alkem Laboratories Ltd,,Allergy,31,99.0,False,False,2027-06-21 11:59:11.430
+6a651337e75d7a30ba685833,Allegra-M Tablet,Sanofi India  Ltd,,Allergy,140,241.48,False,True,2027-05-15 03:00:55.184
+6a651337e75d7a30ba685b10,Allerban 10mg Tablet,Saga Laboratories,,Allergy,95,29.5,False,False,2027-07-06 07:08:18.594
+6a651337e75d7a30ba685aad,Allercalcin Tablet,Retort  Pharma Pvt Ltd,,Vitamins & Supplements,88,49.5,False,False,2028-02-26 21:34:42.006
+6a651337e75d7a30ba685896,Allercet Cold Tablet,Micro Labs Ltd,,Allergy,114,77.0,False,False,2027-08-25 08:06:35.096
+6a651337e75d7a30ba6859c9,Allercet Paed 5mg Tablet,Micro Labs Ltd,,Allergy,131,32.5,False,False,2028-03-05 22:39:16.108
+6a651337e75d7a30ba685864,Allercet-DC Tablet,Micro Labs Ltd,,Allergy,103,80.0,False,False,2027-04-29 03:14:51.873
+6a651337e75d7a30ba685922,Allercet-L Tablet,Micro Labs Ltd,,Allergy,124,59.0,False,False,2027-06-08 23:00:48.763
+6a651337e75d7a30ba6858ca,Allercet-M Syrup,Micro Labs Ltd,,Allergy,121,104.0,False,False,2027-07-28 08:32:01.056
+6a651337e75d7a30ba6858af,Allercet-M Tablet,Micro Labs Ltd,,Allergy,33,152.0,False,False,2027-12-25 08:49:16.763
+6a651337e75d7a30ba68599c,Allerde 5mg Tablet,East West Pharma,,Allergy,120,74.8,False,False,2027-03-13 06:43:35.154
+6a651337e75d7a30ba6859bf,Allerde M Tablet,East West Pharma,,Allergy,21,163.9,False,False,2028-03-16 17:36:57.734
+6a651337e75d7a30ba685a3e,Allerfast M Tablet,Nri Vision Care India Limited,,Allergy,50,129.0,False,True,2027-08-06 01:11:09.445
+6a651337e75d7a30ba685ab0,Allergesic 5mg Tablet,Meridian Medicare Ltd,,Allergy,90,36.5,False,False,2027-10-16 01:23:07.262
+6a651337e75d7a30ba685991,Allergin 10mg Tablet,Jenburkt Pharmaceuticals Ltd,,Allergy,135,95.0,False,False,2027-06-08 14:10:45.527
+6a651337e75d7a30ba68591d,Allerkast LC Tablet,Lupin Ltd,,Allergy,5,148.5,False,False,2027-03-04 07:55:22.618
+6a651337e75d7a30ba685979,Allerone-M Tablet,Gladstone Pharma India Pvt Ltd,,Allergy,2,155.1,False,False,2028-02-10 11:16:55.662
+6a651337e75d7a30ba685b80,Allerpar Tablet,Paripurna Healthcare,,Vitamins & Supplements,103,38.0,False,False,2026-12-07 13:12:51.838
+6a651337e75d7a30ba685a55,Allerwell FX 10mg/120mg Tablet,WellOK Pharma,,Allergy,57,119.0,False,True,2027-11-07 21:55:43.967
+6a651337e75d7a30ba68595f,Allerzine L 5mg Tablet,Jenburkt Pharmaceuticals Ltd,,Allergy,12,27.9,False,False,2027-05-15 21:55:00.172
+6a651337e75d7a30ba685b21,Allflam 400 mg/500 mg Tablet,Allentis Pharmaceuticals Pvt Ltd,,Pain Relief,0,8.06,False,False,2028-01-12 15:53:02.784
+6a651337e75d7a30ba685b00,Allmet 500mg Tablet SR,Surge Biotech Pvt Ltd,,Diabetes,29,25.0,False,True,2028-03-16 17:55:21.060
+6a651337e75d7a30ba685a8d,Allocid 20 Tablet,Allegiant Biotech,,Gastro & Digestion,26,125.0,False,False,2026-11-30 03:26:27.472
+6a651337e75d7a30ba6858de,Allrite DC Tablet ER,Zydus Cadila,,Allergy,81,127.95,False,False,2027-12-01 08:01:04.108
+6a651337e75d7a30ba685971,Allrite Tablet,Zydus Cadila,,Allergy,66,90.47,False,False,2027-06-07 10:57:47.217
+6a651337e75d7a30ba685a54,Alltide D 5mg Tablet,Eumedica Pharmaceuticals,,Allergy,108,67.2,False,False,2027-05-18 16:53:30.920
+6a651337e75d7a30ba6859fe,Almetfor 500mg Tablet,Alkem Laboratories Ltd,,Diabetes,30,26.84,False,True,2027-03-20 23:33:24.009
+6a651337e75d7a30ba685a05,Almocef 200mg Tablet,Gujarat Terce Laboratories Ltd,,Antibiotic,36,106.0,False,True,2026-12-22 00:50:17.543
+6a651337e75d7a30ba685a0a,Almocef O 200 mg/200 mg Tablet,Gujarat Terce Laboratories Ltd,,Antibiotic,71,155.0,False,True,2028-01-26 09:40:56.688
+6a651337e75d7a30ba685a08,Almont FX 10mg/120mg Tablet,Unicure Remedies Pvt  Ltd,,Allergy,114,90.0,False,True,2027-11-15 22:47:03.126
+6a651337e75d7a30ba68597b,Almont LC 5mg/10mg Tablet,Unicure Remedies Pvt  Ltd,,Allergy,96,70.0,False,False,2027-01-27 01:57:07.906
+6a651337e75d7a30ba68589b,Almox 250 Capsule,Alkem Laboratories Ltd,,Antibiotic,89,24.72,False,True,2027-03-14 08:26:27.074
+6a651337e75d7a30ba68583d,Almox 500 Capsule,Alkem Laboratories Ltd,,Antibiotic,102,80.26,False,True,2026-12-19 15:26:17.352
+6a651337e75d7a30ba685883,Almox-CV 625 Tablet,Cachet Pharmaceuticals Pvt Ltd,,Antibiotic,8,116.51,False,True,2027-10-18 05:20:33.609
+6a651337e75d7a30ba685a37,Alnamet Myo 500mg/600mg Tablet,Alna Biotech Pvt Ltd,,Diabetes,103,176.0,False,True,2027-09-10 07:24:22.767
+6a651337e75d7a30ba6859e5,Alocet-XL 2.5mg/5ml/30mg/5ml Syrup,Viilbery Healthcare Pvt Ltd,,Allergy,58,40.0,False,False,2027-03-28 18:17:03.737
+6a651337e75d7a30ba685b3d,Alodox 500mg Tablet,Adcco Limited,,Antibiotic,23,62.0,False,True,2027-08-18 01:10:16.388
+6a651337e75d7a30ba685b05,Alodyne Ointment,Dynamed Pharmaceuticals Pvt Ltd,,Antibiotic,142,54.0,False,True,2027-10-28 06:49:10.579
+6a651337e75d7a30ba685b27,Alom 20mg Capsule,Alvid-Indo Corporation,,Gastro & Digestion,48,39.0,False,False,2027-05-03 09:30:57.084
+6a651337e75d7a30ba685b3a,Alorex A Cream,Maneesh Pharmaceuticals Ltd,,Skin Care,52,66.35,False,False,2028-01-12 04:38:06.245
+6a651337e75d7a30ba685a04,Alorex Cream,Maneesh Pharmaceuticals Ltd,,Skin Care,68,60.35,False,False,2027-11-03 13:28:01.733
+6a651337e75d7a30ba685924,Alorti Tablet,Mohrish Pharmaceuticals,,Allergy,107,64.0,False,False,2027-03-25 16:53:30.095
+6a651337e75d7a30ba6859ac,Alorti-M Tablet,Mohrish Pharmaceuticals,,Allergy,83,135.0,False,False,2027-08-20 17:32:57.771
+6a651337e75d7a30ba685a57,Alpan 40mg Tablet,Altak Pharmaceuticals Pvt Ltd,,Gastro & Digestion,90,60.0,False,False,2027-08-31 20:38:52.193
+6a651337e75d7a30ba685a2c,Alpus LS Syrup,Vrinda Life,,"Cough, Cold & Respiratory",104,80.0,False,False,2028-02-28 14:35:51.670
+6a651337e75d7a30ba6859a5,Alrgee M 10mg/120mg Tablet,Morepen Laboratories Ltd,,Allergy,28,47.62,False,True,2028-02-15 00:35:25.476
+6a651337e75d7a30ba68599b,Alsar D 10mg/20mg Tablet,Candrin Pharma Pvt Ltd,,Gastro & Digestion,88,59.0,False,False,2027-12-08 14:41:29.837
+6a651337e75d7a30ba6859a4,Alsartan 50 Tablet,Aristo Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,55,75.5,False,True,2027-08-10 20:39:41.440
+6a651337e75d7a30ba685998,Alsartan AM Tablet,Aristo Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,94,85.0,False,True,2027-01-07 10:38:20.673
+6a651337e75d7a30ba685960,Alsartan-H Tablet,Aristo Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,139,91.95,False,True,2027-01-03 04:44:12.676
+6a651337e75d7a30ba685990,Alsera D 50 mg/10 mg Tablet,Alkem Laboratories Ltd,,Pain Relief,74,58.0,False,True,2027-12-10 20:01:49.973
+6a651337e75d7a30ba685b7d,Alset 2mg Syrup,Alpha Lab,,Gastro & Digestion,99,27.0,False,True,2027-06-17 12:53:59.887
+6a651337e75d7a30ba685ab2,Alset 4mg Tablet,Alpha Lab,,Gastro & Digestion,25,35.0,False,True,2027-10-03 18:40:01.346
+6a651337e75d7a30ba685acb,Alshine D3 Softgel Capsule,Alathea Biotec Pvt Ltd,,Vitamins & Supplements,27,124.0,False,False,2028-02-15 22:49:07.722
+6a651337e75d7a30ba685a11,Alt-FM Tablet,Indoco Remedies Ltd,,Allergy,47,169.4,False,True,2027-01-31 16:28:19.566
+6a651337e75d7a30ba685978,Altax-O 200 Tablet DT,Galpha Laboratories Ltd,,Antibiotic,89,94.17,False,True,2027-04-03 05:49:52.350
+6a651337e75d7a30ba685ae0,Alto 20mg Tablet,Uniorange group,,Gastro & Digestion,69,25.3,False,False,2028-02-25 04:09:37.766
+6a651337e75d7a30ba685ad8,Altodin 10mg Tablet,Bonsai Pharma,,Allergy,18,39.6,False,False,2027-04-05 16:38:52.134
+6a651337e75d7a30ba685a95,Altracid 40mg Tablet,Alter Ego Pharmaceuticals,,Gastro & Digestion,43,51.0,False,False,2027-11-03 15:29:15.239
+6a651337e75d7a30ba68583a,Altraday Capsule SR,Sun Pharmaceutical Industries Ltd,,Pain Relief,105,128.0,False,True,2027-02-06 10:37:35.640
+6a651337e75d7a30ba6859ab,Altram Tablet,Axon Drugs Pvt Ltd,,Pain Relief,93,49.97,False,False,2027-02-11 18:59:47.195
+6a651337e75d7a30ba685983,Altriz-M Tablet,Asterisk Laboratories India Pvt Ltd,,Allergy,61,130.9,False,False,2027-07-24 15:53:28.045
+6a651337e75d7a30ba685aea,Alvirab 20mg Tablet,Alvid Biocare,,Gastro & Digestion,50,54.0,False,False,2027-09-14 02:11:19.677
+6a651337e75d7a30ba6859ca,Alviroz 10 Tablet,Salud Care India Pvt Ltd,,Heart & Blood Pressure,97,140.0,False,True,2027-06-08 22:38:58.194
+6a651337e75d7a30ba685b8c,Alvitral  Tablet,East West Pharma,,Vitamins & Supplements,149,59.4,False,False,2027-07-23 11:36:08.969
+6a651337e75d7a30ba68593a,Alzero M Syrup,Indchemie Health Specialities Pvt Ltd,,Allergy,139,111.0,False,False,2027-10-14 19:24:28.260
+6a651337e75d7a30ba685907,Alzero M Tablet,Indchemie Health Specialities Pvt Ltd,,Allergy,94,104.5,False,False,2026-11-16 13:11:21.583
+6a651337e75d7a30ba685a26,Amalzol-DSR Capsule,Superlative Healthcare,,Gastro & Digestion,143,87.0,False,False,2027-01-26 17:50:18.485
+6a651337e75d7a30ba685852,Amaryl 1mg Tablet,Sanofi India  Ltd,,Diabetes,45,133.81,False,True,2027-09-20 06:04:34.342
+6a651337e75d7a30ba685866,Amaryl 2mg Tablet,Sanofi India  Ltd,,Diabetes,40,212.65,False,True,2027-03-18 19:40:17.195
+6a651337e75d7a30ba6858d8,Amaryl 3mg Tablet,Sanofi India  Ltd,,Diabetes,71,438.43,False,True,2027-11-22 02:19:23.812
+6a651337e75d7a30ba685944,Amaryl 4mg Tablet,Sanofi India  Ltd,,Diabetes,103,397.0,False,True,2027-03-11 20:53:38.758
+6a651337e75d7a30ba68586e,Amaryl M  1mg Tablet PR,Sanofi India  Ltd,,Diabetes,20,242.84,False,True,2027-03-02 05:00:13.804
+6a651337e75d7a30ba685873,Amaryl M  2mg Tablet PR,Sanofi India  Ltd,,Diabetes,134,363.34,False,True,2027-07-08 17:48:16.926
+6a651337e75d7a30ba6858e1,Amaryl M Forte 1mg Tablet PR,Sanofi India  Ltd,,Diabetes,22,211.3,False,True,2027-10-26 05:58:41.773
+6a651337e75d7a30ba6858aa,Amaryl M Forte 2mg Tablet PR,Sanofi India  Ltd,,Diabetes,48,276.3,False,True,2027-11-06 04:40:49.690
+6a651337e75d7a30ba68597c,Amaryl MP 2mg Tablet ER,Sanofi India  Ltd,,Diabetes,81,489.5,False,True,2027-06-26 16:37:22.066
+6a651337e75d7a30ba6858a6,Amaryl MV 1mg Tablet SR,Sanofi India  Ltd,,Diabetes,120,168.39,False,True,2027-09-19 18:54:35.762
+6a651337e75d7a30ba68588d,Amaryl MV 2mg Tablet SR,Sanofi India  Ltd,,Diabetes,23,213.42,False,True,2027-04-28 05:40:27.989
+6a651337e75d7a30ba685a4b,Amaze 20mg Capsule,Anvik Biotech,,Gastro & Digestion,23,76.0,False,False,2027-03-15 10:57:17.068
+6a651337e75d7a30ba6859af,Ambcet Syrup,Fourrts India Laboratories Pvt Ltd,,Allergy,33,69.0,False,False,2026-12-09 15:49:47.495
+6a651337e75d7a30ba685ab8,Ambiflam 400mg/500mg Tablet,Affy Pharma Pvt Ltd,,Pain Relief,123,13.0,False,False,2027-04-06 15:17:49.452
+6a651337e75d7a30ba6859a1,Ambolev 5mg Tablet,Intra Life,,Allergy,130,37.8,False,False,2026-10-27 03:07:12.820
+6a651337e75d7a30ba685b3c,Amborxel-LS Syrup,Styla Pharmaceutical Private Limited,,"Cough, Cold & Respiratory",124,80.0,False,False,2028-01-31 20:36:03.385
+6a651337e75d7a30ba685b38,Ambrocof-LS Expectorant,Care Formulation Labs Pvt Ltd,,"Cough, Cold & Respiratory",114,97.0,False,False,2028-04-01 02:27:07.586
+6a651337e75d7a30ba685b49,Ambrodex A Syrup,Uniphar Biotech Private Limited,,"Cough, Cold & Respiratory",3,70.0,False,False,2027-07-03 01:51:11.982
+6a651337e75d7a30ba685ac3,Ambrodex L Syrup,Uniphar Biotech Private Limited,,"Cough, Cold & Respiratory",13,80.0,False,False,2027-08-02 03:44:26.078
+6a651337e75d7a30ba685859,Ambrodil Syrup,Aristo Pharmaceuticals Pvt Ltd,,"Cough, Cold & Respiratory",126,69.75,False,False,2028-02-12 11:42:06.537
+6a651337e75d7a30ba685851,Ambrodil-LX Syrup,Aristo Pharmaceuticals Pvt Ltd,,"Cough, Cold & Respiratory",69,90.85,False,False,2027-01-09 11:21:54.214
+6a651337e75d7a30ba685868,Ambrodil-Plus RF Syrup,Aristo Pharmaceuticals Pvt Ltd,,"Cough, Cold & Respiratory",116,89.75,False,False,2027-05-20 02:33:49.395
+6a651337e75d7a30ba685838,Ambrodil-S Syrup,Aristo Pharmaceuticals Pvt Ltd,,"Cough, Cold & Respiratory",44,30.2,False,False,2028-01-31 08:29:02.484
+6a651337e75d7a30ba685a83,Ambrolid LS Syrup,MayGriss Healthcare Pvt. Ltd,,"Cough, Cold & Respiratory",134,73.0,False,False,2027-05-03 06:46:16.058
+6a651337e75d7a30ba6858a9,Ambrolite Levo Syrup,Tablets India Limited,,"Cough, Cold & Respiratory",20,107.0,False,False,2026-11-17 13:46:27.861
+6a651337e75d7a30ba685891,Ambrolite Syrup,Tablets India Limited,,"Cough, Cold & Respiratory",69,82.0,False,False,2027-02-23 10:34:58.846
+6a651337e75d7a30ba685871,Ambrolite-S Expectorant,Tablets India Limited,,"Cough, Cold & Respiratory",34,106.0,False,False,2027-10-07 07:12:08.257
+6a651337e75d7a30ba685a8c,Ambrosal LS Syrup,Capri Pharmaceuticals,,"Cough, Cold & Respiratory",132,72.0,False,False,2028-03-09 22:32:06.055
+6a651337e75d7a30ba685a6b,Ambroxen-LS Syrup,Raxon Lifesciences Pvt Ltd,,"Cough, Cold & Respiratory",138,60.0,False,False,2026-12-12 08:40:13.822
+6a651337e75d7a30ba685b03,Ambroxen-LS Syrup Sugar Free,Raxon Lifesciences Pvt Ltd,,"Cough, Cold & Respiratory",41,90.0,False,False,2027-05-13 16:47:08.704
+6a651337e75d7a30ba6859d0,Amcard-LP Tablet,Systopic Laboratories Pvt Ltd,,Heart & Blood Pressure,96,50.0,False,True,2028-01-09 05:50:06.678
+6a651337e75d7a30ba685a3a,Amcef 200mg Tablet,Amplec Healthcare Pvt. Ltd.,,Antibiotic,117,105.0,False,True,2027-04-27 22:17:23.133
+6a651337e75d7a30ba6859f6,Amchek-Z Tablet,Indoco Remedies Ltd,,Heart & Blood Pressure,7,121.0,False,True,2027-11-29 03:55:38.499
+6a651337e75d7a30ba685993,Amcold 5 mg/60 mg Tablet,Cipla Ltd,,Allergy,28,19.1,False,False,2027-12-03 12:53:18.879
+6a651337e75d7a30ba685b78,Amdoxy Capsule,Ampira Biotechnics Pvt Ltd,,Antibiotic,10,99.0,False,True,2027-03-13 15:56:03.700
+6a651337e75d7a30ba685b3f,Amedil 4mg Tablet,Gujarat Terce Laboratories Ltd,,Gastro & Digestion,67,22.11,False,True,2027-04-20 22:05:05.233
+6a651337e75d7a30ba685b71,Ameebee 200mg/250mg Tablet,TOSC International Pvt Ltd,,Antibiotic,143,7.0,False,True,2027-01-31 12:16:22.198
+6a651337e75d7a30ba685af1,Ameebee DF 400mg/500mg Tablet,TOSC International Pvt Ltd,,Antibiotic,82,13.0,False,True,2027-09-07 03:25:18.953
+6a651337e75d7a30ba685adf,Amefur 100 mg/100 mg Syrup,Numed,,Antibiotic,141,33.43,False,True,2027-11-06 16:13:51.649
+6a651337e75d7a30ba685af7,Amerin-LS Syrup,Cista Medicorp,,"Cough, Cold & Respiratory",100,66.0,False,False,2028-04-18 14:04:57.617
+6a651337e75d7a30ba685b24,Ameto 1000 Tablet ER,Salud Care India Pvt Ltd,,Diabetes,143,63.0,False,True,2026-10-30 07:48:33.206
+6a651337e75d7a30ba685a85,Ameto 500 Tablet ER,Salud Care India Pvt Ltd,,Diabetes,89,34.0,False,True,2027-03-08 02:45:31.124
+6a651337e75d7a30ba685af9,Ameto-LS Syrup,Shinto Organics (P) Limited,,"Cough, Cold & Respiratory",127,65.0,False,False,2027-11-19 18:45:24.104
+6a651337e75d7a30ba685b4b,Amezole 20mg Capsule,B L Pharma Limited,,Gastro & Digestion,72,39.0,False,False,2028-02-12 21:45:52.646
+6a651337e75d7a30ba685acf,Amgargl,Nri Vision Care India Limited,,Skin Care,99,90.0,False,False,2027-08-01 18:26:40.723
+6a651337e75d7a30ba6858f0,Amicet 5 mg/60 mg Tablet,Leeford Healthcare Ltd,,Allergy,49,49.0,False,False,2026-11-14 18:15:34.639
+6a651337e75d7a30ba685921,Amicet Plus Tablet,Leeford Healthcare Ltd,,"Cough, Cold & Respiratory",109,50.0,False,False,2028-03-03 04:32:56.737
+6a651337e75d7a30ba685a96,Amidase D 50mg/10mg Tablet,Adley Formulations,,Pain Relief,117,63.03,False,True,2028-03-17 09:24:05.037
+6a651337e75d7a30ba685ba3,Amiral 0.2% Mouth Wash,Amista Labs Pvt Ltd,,Skin Care,103,75.0,False,False,2028-04-16 01:46:30.797
+6a651337e75d7a30ba685b04,Amizole 20 Capsule,Zephon Life Sciences,,Gastro & Digestion,115,26.2,False,False,2026-11-12 23:19:21.390
+6a651337e75d7a30ba68585a,Amlip 5 Tablet,Cipla Ltd,,Heart & Blood Pressure,53,32.36,False,True,2028-03-27 02:52:04.959
+6a651337e75d7a30ba68587a,Amlip AT Tablet,Cipla Ltd,,Heart & Blood Pressure,125,72.6,False,True,2027-02-04 17:53:20.316
+6a651337e75d7a30ba6858c0,Amlo 5mg Tablet,Mano Pharma Pvt Ltd,,Heart & Blood Pressure,53,24.4,False,True,2028-02-29 02:59:33.382
+6a651337e75d7a30ba685878,Amlodac 5 Tablet,Zydus Cadila,,Heart & Blood Pressure,94,97.1,False,True,2027-01-21 15:41:13.915
+6a651337e75d7a30ba68591e,Amlodac T 40 mg/5 mg Tablet,Zydus Cadila,,Heart & Blood Pressure,122,206.5,False,True,2027-04-01 09:37:37.912
+6a651337e75d7a30ba6858a5,Amlogard 5mg Tablet,Pfizer Ltd,,Heart & Blood Pressure,122,91.86,False,True,2026-11-06 23:53:24.412
+6a651337e75d7a30ba68584f,Amlokind 5 Tablet,Mankind Pharma Ltd,,Heart & Blood Pressure,45,22.15,False,True,2027-01-10 21:47:48.834
+6a651337e75d7a30ba68598c,Amlokind TM 40mg/5mg Tablet,Mankind Pharma Ltd,,Heart & Blood Pressure,133,57.31,False,True,2027-10-15 17:37:45.523
+6a651337e75d7a30ba68583f,Amlokind-AT Tablet,Mankind Pharma Ltd,,Heart & Blood Pressure,70,44.7,False,True,2028-03-13 03:56:22.392
+6a651337e75d7a30ba6858ae,Amlong 10 Tablet,Micro Labs Ltd,,Heart & Blood Pressure,111,94.58,False,True,2027-03-25 06:40:46.864
+6a651337e75d7a30ba6858a2,Amlong 2.5 Tablet,Micro Labs Ltd,,Heart & Blood Pressure,68,30.91,False,True,2027-11-03 22:13:32.521
+6a651337e75d7a30ba685850,Amlong Tablet,Micro Labs Ltd,,Heart & Blood Pressure,51,48.55,False,True,2027-04-04 07:05:00.362
+6a651337e75d7a30ba6858a0,Amlong-A Tablet,Micro Labs Ltd,,Heart & Blood Pressure,24,145.0,False,True,2027-12-15 04:30:41.624
+6a651337e75d7a30ba6858c3,Amlong-H Tablet,Micro Labs Ltd,,Heart & Blood Pressure,104,115.0,False,True,2027-04-03 15:38:22.760
+6a651337e75d7a30ba685913,Amlong-TL 40 Tablet,Micro Labs Ltd,,Heart & Blood Pressure,13,144.0,False,True,2027-02-26 08:25:10.731
+6a651337e75d7a30ba68598e,Amlong-Trio Tablet,Micro Labs Ltd,,Heart & Blood Pressure,37,155.0,False,True,2027-08-14 16:07:44.422
+6a651337e75d7a30ba685ade,Amlonis H Tablet,Adonis Laboratories Pvt Ltd,,Heart & Blood Pressure,38,89.0,False,True,2027-05-22 16:04:12.250
+6a651337e75d7a30ba6858b8,Amlopin 5 Tablet,USV Ltd,,Heart & Blood Pressure,8,32.37,False,True,2027-04-12 21:18:44.710
+6a651337e75d7a30ba68589e,Amlopres 5 Tablet,Cipla Ltd,,Heart & Blood Pressure,97,97.1,False,True,2028-02-04 06:04:49.232
+6a651337e75d7a30ba6858d3,Amlopres AT 25 Tablet,Cipla Ltd,,Heart & Blood Pressure,111,110.52,False,True,2027-05-22 17:34:14.805
+6a651337e75d7a30ba685890,Amlopres TL Tablet,Cipla Ltd,,Heart & Blood Pressure,149,121.97,False,True,2027-12-14 06:17:05.401
+6a651337e75d7a30ba685869,Amlopres-AT Tablet,Cipla Ltd,,Heart & Blood Pressure,50,148.59,False,True,2026-12-26 02:36:10.953
+6a651337e75d7a30ba685ab6,Amlopres-Z 50mg/5mg Tablet,Cipla Ltd,,Heart & Blood Pressure,84,75.0,False,True,2027-11-01 05:21:15.437
+6a651337e75d7a30ba685956,Amlosafe 3D 80 Tablet,Aristo Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,115,104.3,False,True,2028-03-22 06:56:26.696
+6a651337e75d7a30ba685888,Amlosafe 3D Tablet,Aristo Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,4,67.2,False,True,2028-01-14 19:25:24.614
+6a651337e75d7a30ba6858d6,Amlosafe TM 40 Tablet,Aristo Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,84,83.0,False,True,2028-02-15 18:09:21.573
+6a651337e75d7a30ba68596e,Amlosafe TM 80 Tablet,Aristo Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,2,130.0,False,True,2026-11-05 07:15:48.938
+6a651337e75d7a30ba6858bd,Amlosafe-AT Tablet,Aristo Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,63,102.0,False,True,2027-10-22 21:23:18.078
+6a651337e75d7a30ba685ada,Amlosar H 50mg/5mg/12.5mg Tablet,Hochest Biotech India,,Heart & Blood Pressure,109,113.0,False,True,2027-04-09 03:44:26.036
+6a651337e75d7a30ba68586d,Amlovas 5 Tablet,Macleods Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,25,48.55,False,True,2027-01-12 14:44:35.684
+6a651337e75d7a30ba685985,Amlovas LS Tablet,Macleods Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,131,128.0,False,True,2027-11-30 16:15:45.870
+6a651337e75d7a30ba685880,Amlovas-AT Tablet,Macleods Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,148,106.0,False,True,2028-01-01 21:43:52.632
+6a651337e75d7a30ba6859b5,Amloz TS Tablet,Shreya Life Sciences Pvt Ltd,,Heart & Blood Pressure,124,159.0,False,True,2028-02-02 11:02:31.569
+6a651337e75d7a30ba685a9a,Amlozaar 25 mg/5 mg Tablet,Micro Labs Ltd,,Heart & Blood Pressure,54,32.76,False,True,2027-12-12 23:59:12.511
+6a651337e75d7a30ba6858e5,Amlozaar Tablet,Micro Labs Ltd,,Heart & Blood Pressure,100,166.0,False,True,2028-03-29 12:29:30.134
+6a651337e75d7a30ba6858f4,Amlozaar-H Tablet,Micro Labs Ltd,,Heart & Blood Pressure,92,143.0,False,True,2027-04-13 08:07:34.955
+6a651337e75d7a30ba68594d,Amodep-TMH Tablet,FDC Ltd,,Heart & Blood Pressure,17,79.75,False,True,2026-11-21 11:06:22.541
+6a651337e75d7a30ba6859c3,Amol 500mg Tablet,Torrent Pharmaceuticals Ltd,,Pain Relief,124,3.56,False,False,2027-09-09 18:42:03.023
+6a651337e75d7a30ba685aba,Amoril-L Tablet,Clanthis Lifesciences  Pvt Ltd,,Heart & Blood Pressure,35,78.0,False,True,2027-07-11 05:38:02.490
+6a651337e75d7a30ba685b3b,Amotic Tablet,Signature Phytochemical Industries,,Gastro & Digestion,120,49.0,False,True,2026-11-08 23:40:33.054
+6a651337e75d7a30ba685898,Amox 500mg Capsule,Synchem Lab,,Antibiotic,1,60.48,False,True,2027-09-08 13:27:20.409
+6a651337e75d7a30ba6858f5,Amoxclav 500 mg/125 mg Tablet,Parasol Laboratories,,Antibiotic,33,230.77,False,True,2028-04-15 22:06:32.708
+6a651337e75d7a30ba6858ed,Amoxy 500mg Capsule,Blue Cross Laboratories Ltd,,Antibiotic,145,55.0,False,True,2026-12-11 05:11:29.351
+6a651337e75d7a30ba6858dc,Amoxycillin  250mg Capsule,Torque Pharmaceuticals Pvt Ltd,,Antibiotic,61,38.0,False,True,2027-05-14 03:24:50.741
+6a651337e75d7a30ba6858cb,Amoxycillin 125mg Oral Suspension,Nestor Pharmaceuticals,,Antibiotic,1,7.5,False,True,2027-07-13 22:53:30.216
+6a651337e75d7a30ba6858a1,Amoxyclav 375 Tablet,Abbott,,Antibiotic,99,356.92,False,True,2027-03-30 01:30:12.828
+6a651337e75d7a30ba685834,Amoxyclav 625 Tablet,Abbott,,Antibiotic,118,223.27,False,True,2027-10-07 11:19:14.241
+6a651337e75d7a30ba685a46,Ample 200mg Tablet,Kaps3 Life Sciences,,Antibiotic,113,89.0,False,True,2027-11-11 07:43:04.660
+6a651337e75d7a30ba685a81,Ampra 40mg Tablet,Amplec Healthcare Pvt. Ltd.,,Gastro & Digestion,87,60.0,False,False,2026-12-25 07:05:33.343
+6a651337e75d7a30ba6859f5,Amrizol-DSR Capsule,Nuorik Healthcare,,Gastro & Digestion,23,135.0,False,False,2028-02-26 15:22:59.628
+6a651337e75d7a30ba685b4f,Amrocin Ointment,Amsure Healthcare,,Skin Care,73,130.0,False,True,2027-05-19 03:07:32.633
+6a651337e75d7a30ba6858f1,Amrox Junior Syrup,Leeford Healthcare Ltd,,"Cough, Cold & Respiratory",22,65.0,False,False,2027-07-29 08:55:52.452
+6a651337e75d7a30ba6858ff,Amrox-LS Junior Syrup,Leeford Healthcare Ltd,,"Cough, Cold & Respiratory",53,75.0,False,False,2027-10-16 03:01:28.011
+6a651337e75d7a30ba685895,Amrox-LS Syrup,Leeford Healthcare Ltd,,"Cough, Cold & Respiratory",129,75.0,False,False,2026-12-10 20:44:58.593
+6a651337e75d7a30ba685894,Amtas 5 Tablet,Intas Pharmaceuticals Ltd,,Heart & Blood Pressure,135,97.1,False,True,2027-02-22 08:47:35.074
+6a651337e75d7a30ba6858cd,Amtas-AT Tablet,Intas Pharmaceuticals Ltd,,Heart & Blood Pressure,23,141.0,False,True,2027-04-25 19:10:11.376
+6a651337e75d7a30ba6858cf,Amtas-M 50 Tablet PR,Intas Pharmaceuticals Ltd,,Heart & Blood Pressure,16,204.0,False,True,2028-03-19 23:34:21.374
+6a651337e75d7a30ba685b4c,Amtron 4mg Tablet,Ambit Bio Medix,,Gastro & Digestion,85,46.75,False,True,2027-09-10 21:02:10.739
+6a651337e75d7a30ba685b6a,Amvtron 4mg Tablet DT,Amvia Biotech,,Gastro & Digestion,131,29.0,False,True,2028-02-02 07:13:14.734
+6a651337e75d7a30ba6858d9,Amyclox-LB Capsule,Ind Swift Laboratories Ltd,,Antibiotic,68,149.3,False,True,2027-04-04 02:15:05.958
+6a651337e75d7a30ba685b40,Amyvit Plus Injection,Man Serve Pharma,,Vitamins & Supplements,71,52.76,False,False,2027-10-28 08:37:12.446
+6a651337e75d7a30ba685b22,Amzen LP 50mg/5mg Tablet,Welbe Life Sciences,,Heart & Blood Pressure,70,45.0,False,True,2028-01-28 06:22:19.905
+6a651337e75d7a30ba685b19,Amzole 20mg Capsule,Staneil Pharma,,Gastro & Digestion,68,40.0,False,False,2027-06-07 16:25:10.507
+6a651337e75d7a30ba685970,Anadom 10mg/500mg Tablet,Icon Life Sciences,,Gastro & Digestion,66,60.0,False,False,2027-08-06 21:20:38.470
+6a651337e75d7a30ba685b96,Anadox 100mg Tablet,Banson Pharmaceuticals Pvt Ltd,,Antibiotic,90,45.0,False,True,2028-01-12 02:36:27.384
+6a651337e75d7a30ba685942,Anaero Gel,Amwill Healthcare,,Antibiotic,129,180.0,False,True,2026-11-29 23:35:28.511
+6a651337e75d7a30ba68598a,Anaflam 400mg/325mg Tablet,Albert David Ltd,,Pain Relief,136,8.0,False,False,2027-06-09 05:58:50.217
+6a651337e75d7a30ba685a1b,Anaflam P 100 mg/125 mg Suspension,Albert David Ltd,,Pain Relief,32,32.0,False,False,2027-06-04 13:58:19.110
+6a651337e75d7a30ba685a0b,Anavilda M500 Tablet,Guillain Pharma Private Limited,,Diabetes,124,90.0,False,True,2027-09-21 17:50:17.995
+6a651337e75d7a30ba6859de,Ancet 10mg Tablet,Angel Laboratories Pvt Ltd,,Allergy,50,23.0,False,False,2027-10-01 14:57:03.105
+6a651337e75d7a30ba685b9c,Ancid 150mg Syrup,Angeas Healthcare Ltd,,Gastro & Digestion,31,16.0,False,False,2026-12-16 13:48:30.323
+6a651337e75d7a30ba685b15,Ancid 150mg Tablet,Pifer Pharmaceuticals Pvt Ltd,,Gastro & Digestion,97,7.0,False,False,2028-04-06 18:01:32.742
+6a651337e75d7a30ba685b85,Andox 100mg Tablet,Aan Pharma Pvt Ltd,,Antibiotic,131,25.0,False,True,2027-02-06 23:16:45.726
+6a651337e75d7a30ba685ac6,Andox Tablet,Marc Laboratories Pvt Ltd,,Antibiotic,141,37.5,False,True,2027-09-03 23:35:06.791
+6a651337e75d7a30ba685ae1,Andoxy 100mg Injection,Andee Lifesciences,,Antibiotic,0,89.0,False,True,2028-01-18 03:24:32.338
+6a651337e75d7a30ba685abf,Anefol XT Injection,Mac Millon Pharmaceuticals Pvt Ltd,,Vitamins & Supplements,21,39.6,False,False,2026-11-25 21:08:36.670
+6a651337e75d7a30ba6859db,Anetol 1000mg Infusion,Abbott,,Pain Relief,39,283.5,False,False,2028-04-10 09:03:54.754
+6a651337e75d7a30ba685b6b,Anflox M Suspension,Angel Laboratories Pvt Ltd,,Antibiotic,149,27.5,False,True,2027-07-09 08:12:10.834
+6a651337e75d7a30ba685951,Angicam LT 50 mg/5 mg Tablet,Blue Cross Laboratories Ltd,,Heart & Blood Pressure,107,60.0,False,True,2027-10-08 19:33:44.617
+6a651337e75d7a30ba6858a8,Angicam-Beta Tablet,Blue Cross Laboratories Ltd,,Heart & Blood Pressure,17,37.0,False,True,2028-03-15 11:08:47.965
+6a651337e75d7a30ba685ba8,Angigrel 75mg Tablet,Arkas Pharma Pvt Ltd,,Heart & Blood Pressure,91,62.5,False,True,2028-03-19 22:25:20.920
+6a651337e75d7a30ba685aa3,Angilo 50 Tablet,Nitro Organics,,Heart & Blood Pressure,15,50.0,False,True,2027-11-23 16:58:17.755
+6a651337e75d7a30ba685b2b,Angio 25mg Tablet,Manas Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,129,26.2,False,True,2027-05-03 01:10:28.427
+6a651337e75d7a30ba685b23,Angiset 4mg Tablet MD,Angiolife Healthcare Pvt Ltd,,Gastro & Digestion,96,45.0,False,True,2028-04-16 02:58:49.445
+6a651337e75d7a30ba6859c0,Angizaar 25 Tablet,Micro Labs Ltd,,Heart & Blood Pressure,111,39.0,False,True,2027-04-15 16:48:19.200
+6a651337e75d7a30ba685966,Angizaar 50 Tablet,Micro Labs Ltd,,Heart & Blood Pressure,48,67.0,False,True,2028-03-08 05:54:54.389
+6a651337e75d7a30ba68595e,Angizaar-H Tablet,Micro Labs Ltd,,Heart & Blood Pressure,134,155.0,False,True,2027-04-22 11:35:18.222
+6a651337e75d7a30ba6859e1,Anglocet Plus Tablet,Anglo-French Drugs & Industries Ltd,,Pain Relief,48,9.87,False,False,2027-12-16 16:25:29.692
+6a651337e75d7a30ba6859d1,Anglocet Tablet,Anglo-French Drugs & Industries Ltd,,Allergy,96,1.98,False,False,2028-01-31 13:41:10.867
+6a651337e75d7a30ba685b2e,Anglocip 500mg Tablet,Anglo-French Drugs & Industries Ltd,,Antibiotic,28,17.18,False,True,2027-04-24 03:34:43.080
+6a651337e75d7a30ba685a8b,Anical D Tablet,Anikem Laboratories,,Vitamins & Supplements,5,24.0,False,False,2028-01-26 09:48:59.987
+6a651337e75d7a30ba685aca,Anifer Syrup,Smilax Pharmaceuticals,,Vitamins & Supplements,98,59.5,False,False,2027-08-09 16:00:20.240
+6a651337e75d7a30ba685a1d,Anleo-D Tablet,AN Pharmaceuticals Pvt Ltd,,Gastro & Digestion,121,90.01,False,False,2027-03-16 00:05:05.216
+6a651337e75d7a30ba685928,Anleo-DSR Capsule,AN Pharmaceuticals Pvt Ltd,,Gastro & Digestion,48,120.0,False,False,2028-01-21 02:27:27.297
+6a651337e75d7a30ba685a23,Ann 40mg Tablet,Accurate Pharmaceuticals,,Gastro & Digestion,139,45.0,False,False,2027-06-08 00:48:08.615
+6a651337e75d7a30ba685a7a,Anofer 100mg Injection,Sun Pharmaceutical Industries Ltd,,Vitamins & Supplements,111,274.5,False,False,2027-09-09 10:32:25.254
+6a651337e75d7a30ba6859ec,Anofer S 100mg Injection,Sun Pharmaceutical Industries Ltd,,Vitamins & Supplements,124,317.83,False,False,2027-03-15 18:12:57.662
+6a651337e75d7a30ba685b70,Anofer S 50mg Injection,Sun Pharmaceutical Industries Ltd,,Vitamins & Supplements,30,152.0,False,False,2027-02-04 04:17:33.049
+6a651337e75d7a30ba685b9a,Anogyl 400mg Tablet,Anoco Pharmaceuticals India Pvt Ltd,,Antibiotic,144,8.3,False,True,2027-12-01 20:31:48.587
+6a651337e75d7a30ba685b7e,Ansecare 4mg Tablet MD,Evershine Lifesciences Pvt Ltd,,Gastro & Digestion,129,40.0,False,True,2027-08-03 00:18:43.913
+6a651337e75d7a30ba685a93,Anset OR 4mg/150mg Tablet,Bennet Mypher Pharmaceuticals LLP,,Gastro & Digestion,120,59.0,False,True,2028-02-18 12:54:11.899
+6a651337e75d7a30ba685b72,Anstron 4mg Tablet MD,Ansel Healthcare,,Gastro & Digestion,90,52.5,False,True,2028-03-11 15:10:48.228
+6a651337e75d7a30ba685b99,Ansurose 20mg Injection,Ancalima Lifesciences Ltd,,Vitamins & Supplements,73,48.0,False,False,2027-11-12 03:16:16.916
+6a651337e75d7a30ba685934,Answell 400 mg/325 mg Tablet,Cadila Pharmaceuticals Ltd,,Pain Relief,83,8.06,False,False,2027-04-05 16:20:46.947
+6a651337e75d7a30ba685ae7,Antac 150mg Tablet,Angel Laboratories Pvt Ltd,,Gastro & Digestion,32,10.0,False,False,2028-03-21 01:51:22.406
+6a651337e75d7a30ba685b18,Antac Injection,Zee Laboratories,,Gastro & Digestion,149,2.75,False,False,2027-04-14 23:37:21.139
+6a651337e75d7a30ba685b9b,Antec 150mg Tablet,Acichem Laboratories,,Gastro & Digestion,145,7.0,False,False,2027-02-09 22:40:30.509
+6a651337e75d7a30ba685b76,Antiba 200mg/250mg Tablet,Smilax Pharmaceuticals,,Antibiotic,17,12.0,False,True,2026-12-15 11:36:29.845
+6a651337e75d7a30ba685b69,Antiban 75 Tablet,Blue Cross Laboratories Ltd,,Heart & Blood Pressure,84,38.0,False,True,2027-09-06 11:57:59.893
+6a651337e75d7a30ba685a66,Anticlot 75 Tablet,Scott Edil Pharmacia Ltd,,Heart & Blood Pressure,44,8.5,False,True,2028-03-25 18:11:06.760
+6a651337e75d7a30ba685ba4,Anticog 75mg Tablet,Marc Laboratories Pvt Ltd,,Heart & Blood Pressure,6,59.0,False,True,2026-11-01 01:48:29.608
+6a651337e75d7a30ba685ac5,Antidol 100 mg/125 mg Tablet,Omega Pharmaceuticals Pvt Ltd,,Pain Relief,100,10.8,False,False,2027-01-11 18:30:06.124
+6a651337e75d7a30ba685b47,Antidol Kid Tablet,Omega Pharmaceuticals Pvt Ltd,,Pain Relief,80,4.5,False,False,2026-11-01 21:10:25.963
+6a651337e75d7a30ba685a99,Antiflam 400 mg/650 mg Tablet,Klar Sehen Pvt Ltd,,Pain Relief,9,10.63,False,False,2026-11-15 14:13:26.497
+6a651337e75d7a30ba685a4a,Antiplar 75mg Tablet,Emcure Pharmaceuticals Ltd,,Heart & Blood Pressure,10,39.99,False,True,2027-02-21 15:02:20.426
+6a651337e75d7a30ba685b43,Antiplatt Tablet,Troikaa Pharmaceuticals Ltd,,Heart & Blood Pressure,81,40.15,False,True,2027-01-07 07:13:08.776
+6a651337e75d7a30ba685a15,Anto 40mg Tablet,Malody Healthcare Ltd,,Gastro & Digestion,24,48.0,False,False,2027-03-23 10:51:59.010
+6a651337e75d7a30ba685986,Antrum-DSR Capsule Capsule SR,Codon Pharma Private Limited,,Gastro & Digestion,29,95.0,False,False,2026-10-29 22:13:22.746
+6a651337e75d7a30ba6859f1,Anurab DSR Capsule,Drukst Biotech Private Limited,,Gastro & Digestion,99,80.0,False,False,2027-10-19 14:47:09.028
+6a651337e75d7a30ba685a9b,Anziolet 75mg Tablet,Ergos Life Sciences,,Heart & Blood Pressure,8,129.7,False,True,2027-06-09 19:26:03.579
+6a651337e75d7a30ba685a10,Anzipan-DSR Capsule,Angiolife Healthcare Pvt Ltd,,Gastro & Digestion,44,69.0,False,False,2027-11-25 05:25:34.833
+6a651337e75d7a30ba685b41,Anzole 20 Capsule,Aingo Pharma Pvt Ltd,,Gastro & Digestion,23,42.5,False,False,2027-03-02 05:03:02.379
+6a651337e75d7a30ba685984,Apale Tablet,Uniza Healthcare LLP,,Vitamins & Supplements,59,132.5,False,False,2027-08-21 04:17:20.488
+6a651337e75d7a30ba685baf,Apfresh Mouth Wash,Apkavit Lifesciences,,Skin Care,138,68.0,False,False,2027-05-06 17:54:33.398
+6a651337e75d7a30ba6859da,Aphexine 200mg Tablet,Ajanta Pharma Ltd,,Antibiotic,118,100.9,False,True,2026-11-17 04:17:27.671
+6a651337e75d7a30ba685a02,Aphexine O 200mg/200mg Tablet,Ajanta Pharma Ltd,,Antibiotic,39,110.4,False,True,2028-03-04 19:15:43.344
+6a651337e75d7a30ba685ae2,Api 20mg Tablet,Vanguard Therapeutics Pvt Ltd,,Gastro & Digestion,63,38.46,False,False,2028-01-24 22:28:27.029
+6a651337e75d7a30ba6859f8,Apidine Eye Drop,Appasamy Ocular Device Pvt Ltd,,Skin Care,66,27.83,False,False,2028-04-18 22:36:26.237
+6a651337e75d7a30ba685a51,Apidox 100mg Capsule,Alicon Pharmaceutical Pvt Ltd,,Antibiotic,125,19.5,False,True,2026-10-28 04:38:08.568
+6a651337e75d7a30ba685887,Apidra 100IU Cartridge,Sanofi India  Ltd,,Diabetes,135,761.0,False,True,2027-08-02 18:40:39.203
+6a651337e75d7a30ba685914,Apidra 100IU/ml Solution for Injection,Sanofi India  Ltd,,Diabetes,78,1534.0,False,True,2027-07-21 04:22:48.206
+6a651337e75d7a30ba6858e3,Apidra Solostar 100IU/ml Injection,Sanofi India  Ltd,,Diabetes,77,880.36,False,True,2028-03-25 16:37:13.929
+6a651337e75d7a30ba685b86,Aplatin 75 Tablet,Saga Laboratories,,Heart & Blood Pressure,38,39.0,False,True,2027-02-11 09:59:12.136
+6a651337e75d7a30ba685b44,Aplet 75mg Tablet,Alka Pharma,,Heart & Blood Pressure,149,59.0,False,True,2027-10-24 06:15:33.689
+6a651337e75d7a30ba685943,Aplev M 5mg/10mg Tablet,Ajanta Pharma Ltd,,Allergy,142,95.0,False,False,2028-03-19 02:38:31.222
+6a651337e75d7a30ba685bb6,Apmupi Ointment,Apkavit Lifesciences,,Skin Care,7,120.0,False,True,2027-03-19 15:35:46.168
+6a651337e75d7a30ba6859ce,Apnicid 40mg Tablet,Ajanta Pharma Ltd,,Gastro & Digestion,90,85.0,False,False,2027-12-23 14:37:25.181
+6a651337e75d7a30ba685a9e,Apra 40mg Tablet,Kritikos Care,,Gastro & Digestion,109,50.0,False,False,2027-06-01 20:32:14.184
+6a651337e75d7a30ba68596c,Apriglim-MV 2 Tablet SR,Aprica Pharmaceuticals Pvt Ltd,,Diabetes,40,288.14,False,True,2027-03-10 05:02:27.829
+6a651337e75d7a30ba68596a,Apriglim-MV 303 Tablet SR,Aprica Pharmaceuticals Pvt Ltd,,Diabetes,57,155.5,False,True,2028-03-27 20:13:27.032
+6a651337e75d7a30ba685bb0,Aprose 100mg Injection,Apkavit Lifesciences,,Vitamins & Supplements,78,250.0,False,False,2028-03-09 08:18:06.712
+6a651337e75d7a30ba685bbb,Aptogrel 75mg Tablet,Mcneil & Argus Pharmaceuticals Ltd,,Heart & Blood Pressure,25,49.5,False,True,2027-02-09 15:29:55.601
+6a651337e75d7a30ba685b6e,Aqua D3 2K Soft Gelatin Capsule,Winmark Pharmaceuticals Pvt Ltd,,Vitamins & Supplements,98,110.0,False,False,2027-01-13 10:08:52.787
+6a651337e75d7a30ba685a84,Aqua D3 60K Soft Gelatin Capsule,Winmark Pharmaceuticals Pvt Ltd,,Vitamins & Supplements,113,130.0,False,False,2028-03-28 10:11:30.677
+6a651337e75d7a30ba685acd,Aqua Joy Mouth Wash,Leeford Healthcare Ltd,,Skin Care,97,95.0,False,False,2027-04-05 16:58:57.420
+6a651337e75d7a30ba6859b0,Aquadol 75mg Injection,Themis Medicare Ltd,,Pain Relief,129,23.5,False,True,2027-05-19 08:57:39.005
+6a651337e75d7a30ba685a07,Aquashine 24 Tablet,GH Vision Care Life Science,,Vitamins & Supplements,131,180.25,False,False,2027-05-10 17:48:12.162
+6a651337e75d7a30ba6859f0,Aquasol C Oral Drops,Lifeon Paediatrics Ltd,,Vitamins & Supplements,76,20.27,False,False,2027-10-19 12:38:47.949
+6a651337e75d7a30ba685911,Arachitol 3L Injection,Abbott,,Vitamins & Supplements,72,291.54,False,False,2028-01-17 23:54:13.086
+6a651337e75d7a30ba685841,Arachitol 6L Injection,Abbott,,Vitamins & Supplements,104,407.76,False,False,2027-02-12 07:45:25.210
+6a651337e75d7a30ba6859e2,Aramol AM 10mg/120mg/200mg Tablet SR,Syndicate Life Sciences Pvt Ltd,,Allergy,149,189.0,False,True,2027-12-26 11:25:24.811
+6a651337e75d7a30ba685923,Arbitel 20 Tablet,Micro Labs Ltd,,Heart & Blood Pressure,130,40.99,False,True,2027-09-14 07:24:49.406
+6a651337e75d7a30ba6859a8,Arbitel 80 Tablet,Micro Labs Ltd,,Heart & Blood Pressure,8,124.88,False,True,2027-09-09 23:06:33.813
+6a651337e75d7a30ba6858da,Arbitel-AM Tablet,Micro Labs Ltd,,Heart & Blood Pressure,86,156.0,False,True,2027-07-06 05:33:28.633
+6a651337e75d7a30ba68594f,Arbitel-AMH Tablet,Micro Labs Ltd,,Heart & Blood Pressure,141,169.0,False,True,2027-09-22 16:18:38.891
+6a651337e75d7a30ba685920,Arbitel-AV Tablet,Micro Labs Ltd,,Heart & Blood Pressure,145,196.0,False,True,2026-11-18 10:01:35.216
+6a651337e75d7a30ba685909,Arbitel-CT 40 Tablet,Micro Labs Ltd,,Heart & Blood Pressure,104,118.0,False,True,2027-02-07 11:55:31.464
+6a651337e75d7a30ba685901,Arbitel-H Tablet,Micro Labs Ltd,,Heart & Blood Pressure,117,151.0,False,True,2027-11-08 21:36:59.777
+6a651337e75d7a30ba68591c,Arbitel-MT 25 Tablet ER,Micro Labs Ltd,,Heart & Blood Pressure,103,116.0,False,True,2028-03-10 06:51:04.416
+6a651337e75d7a30ba685903,Arbitel-MT 50 Tablet ER,Micro Labs Ltd,,Heart & Blood Pressure,25,129.0,False,True,2027-09-28 00:13:09.736
+6a651337e75d7a30ba685b4e,Arcip 500mg Tablet,Raphael Pharmaceuticals Pvt Ltd,,Antibiotic,42,54.0,False,True,2027-06-09 14:13:21.763
+6a651337e75d7a30ba685a09,Arcopan D 10mg/40mg Tablet,General Pharmaceuticals Pvt Ltd,,Gastro & Digestion,83,70.0,False,False,2026-11-01 18:47:49.377
+6a651337e75d7a30ba685ad4,Arcure 400mg/500mg Tablet,NuLife Pharmaceuticals,,Pain Relief,64,9.42,False,False,2027-07-05 00:19:30.366
+6a651337e75d7a30ba685988,Arden 500mg Tablet,Adonis Laboratories Pvt Ltd,,Pain Relief,44,16.92,False,False,2027-04-18 01:19:12.451
+6a651337e75d7a30ba6859c2,Arden 650mg Tablet,Adonis Laboratories Pvt Ltd,,Pain Relief,71,28.06,False,False,2027-05-19 11:12:50.315
+6a651337e75d7a30ba685ae5,Arden Plus 400 mg/500 mg Tablet,Adonis Laboratories Pvt Ltd,,Pain Relief,117,7.95,False,False,2028-01-26 23:48:31.865
+6a651337e75d7a30ba685b0c,Areflux-IT 20mg/150mg Capsule,Aegis Prescriptions Pvt Ltd,,Gastro & Digestion,14,149.95,False,False,2027-09-24 22:25:57.918
+6a651337e75d7a30ba685b33,Arfen 100mg Oral Suspension,Centaur Pharmaceuticals Pvt Ltd,,Pain Relief,6,14.0,False,False,2028-02-26 14:24:08.131
+6a651337e75d7a30ba6858c4,Arflur 3D Tablet,FDC Ltd,,Pain Relief,14,74.75,False,True,2026-12-29 05:19:03.785
+6a651337e75d7a30ba6858fd,Arflur-P Tablet,FDC Ltd,,Pain Relief,75,41.5,False,True,2027-12-04 15:03:21.567
+6a651337e75d7a30ba685b83,Argedin-P Cream,Dales Pharmaceuticals Ltd,,Skin Care,147,45.71,False,False,2028-04-17 06:40:43.757
+6a651337e75d7a30ba685aa5,Argical HD Tablet,Torway Pharmacia Pvt Ltd,,Vitamins & Supplements,114,232.0,False,False,2027-04-26 23:52:08.164
+6a651337e75d7a30ba685ad1,Ariba 20mg Tablet,Grapple Life Sciences Pvt Ltd,,Gastro & Digestion,43,55.0,False,False,2027-02-11 11:35:49.425
+6a651337e75d7a30ba68592e,Aricef O 50mg/5ml Dry Syrup,Micro Labs Ltd,,Antibiotic,28,44.01,False,True,2027-04-22 07:36:03.615
+6a651337e75d7a30ba685ae9,Aricip 500mg Tablet,Arika Healthcare,,Antibiotic,141,70.0,False,True,2027-01-17 15:14:37.702
+6a651337e75d7a30ba685bba,Ariclop 75mg Tablet,Ambreyo Lifesciences,,Heart & Blood Pressure,96,57.0,False,True,2028-04-13 11:31:42.387
+6a651337e75d7a30ba685a06,Arifix 200mg Tablet DT,Sarian Healthcare,,Antibiotic,137,99.0,False,True,2026-11-20 11:24:05.342
+6a651337e75d7a30ba685a5e,Aripant 40mg Tablet,Arion Healthcare,,Gastro & Digestion,46,55.6,False,False,2027-09-10 09:08:48.274
+6a651337e75d7a30ba685bb9,Arisors S 100mg Injection,Ethyrial Pharmaceuticals,,Vitamins & Supplements,54,260.0,False,False,2027-07-08 02:56:23.292
+6a651337e75d7a30ba685ab5,Aristogyl Plus Tablet,Aristo Pharmaceuticals Pvt Ltd,,Antibiotic,69,12.21,False,True,2027-11-23 03:11:04.631
+6a651337e75d7a30ba685a13,Aristogyl Suspension,Aristo Pharmaceuticals Pvt Ltd,,Antibiotic,71,10.04,False,True,2028-02-08 05:57:17.265
+6a651337e75d7a30ba685a0e,Ark 100mg Tablet SR,Apex Laboratories Pvt Ltd,,Pain Relief,148,62.6,False,True,2028-02-11 12:57:06.109
+6a651337e75d7a30ba685a42,Ark 75mg Tablet,Apex Laboratories Pvt Ltd,,Pain Relief,72,45.0,False,True,2027-02-16 00:51:20.043
+6a651337e75d7a30ba6859cf,Ark 75mg Tablet SR,Apex Laboratories Pvt Ltd,,Pain Relief,122,45.0,False,True,2028-04-06 17:22:08.250
+6a651337e75d7a30ba685a7c,Arkamet Ipr 850mg Tablet SR,Arkas Pharma Pvt Ltd,,Diabetes,58,36.0,False,True,2027-08-21 19:34:03.738
+6a651337e75d7a30ba685b92,Armer Ointment,Stadchem Of India,,Antibiotic,18,38.1,False,True,2027-11-28 15:05:08.022
+6a651337e75d7a30ba685b79,Armer Solution,Stadchem Of India,,Antibiotic,72,95.0,False,True,2028-01-16 13:40:41.262
+6a651337e75d7a30ba685b1b,Armez 20mg Capsule,Artel Laboratories,,Gastro & Digestion,130,54.51,False,False,2026-11-28 23:13:20.262
+6a651337e75d7a30ba6859fd,Arofen Plus Gel,Makers Laboratories Ltd,,Pain Relief,100,78.68,False,True,2027-01-03 01:17:45.684
+6a651337e75d7a30ba685b55,Arofil 0.2% Mouth Wash,Symbiosis Pharmaceuticals Pvt Ltd,,Skin Care,128,38.0,False,False,2028-01-02 07:48:00.359
+6a651337e75d7a30ba685b8b,Aroma Soap,Nidus Pharma Pvt Ltd,,Skin Care,53,55.0,False,False,2027-05-27 05:32:12.207
+6a651337e75d7a30ba685932,Arophyll HD 10mg/120mg/200mg Tablet,Aareen Healthcare Pvt Ltd,,Allergy,67,219.0,False,True,2027-11-01 19:57:28.304
+6a651337e75d7a30ba685ae8,Arorab 20 Tablet,Aareen Healthcare Pvt Ltd,,Gastro & Digestion,121,84.64,False,False,2027-11-16 14:49:15.197
+6a651337e75d7a30ba6859ae,Arorab 40mg Tablet,Aareen Healthcare Pvt Ltd,,Gastro & Digestion,126,149.0,False,False,2026-10-30 03:06:31.402
+6a651337e75d7a30ba68594c,Arorab HD 30mg/40mg Capsule SR,Aareen Healthcare Pvt Ltd,,Gastro & Digestion,100,159.0,False,False,2027-01-03 03:33:07.602
+6a651337e75d7a30ba685ab3,Arorab IT 20mg/150mg Capsule SR,Aareen Healthcare Pvt Ltd,,Gastro & Digestion,121,150.0,False,False,2028-03-01 05:52:36.534
+6a651337e75d7a30ba685989,Arorab-DSR Capsule,Aareen Healthcare Pvt Ltd,,Gastro & Digestion,88,89.9,False,False,2027-05-18 13:19:28.678
+6a651337e75d7a30ba68597a,Arostat 10mg Tablet,Aareen Healthcare Pvt Ltd,,Heart & Blood Pressure,66,99.0,False,True,2027-01-11 10:05:14.612
+6a651337e75d7a30ba685a2b,Aroxim 200mg Tablet,Aronex Life Sciences Pvt Ltd,,Antibiotic,9,18.0,False,True,2027-10-11 12:27:19.193
+6a651337e75d7a30ba685a1c,Arpan 40mg Tablet,Aryan Biotech Pvt Ltd,,Gastro & Digestion,111,59.9,False,False,2028-02-17 07:26:04.733
+6a651337e75d7a30ba68596b,Arreno Capsule ER,Intas Pharmaceuticals Ltd,,Pain Relief,96,35.0,False,False,2028-02-06 02:49:57.968
+6a651337e75d7a30ba6859df,Arropan 40mg Tablet,Ardent Life Sciences Pvt Ltd,,Gastro & Digestion,1,74.0,False,False,2026-12-02 21:21:07.661
+6a651337e75d7a30ba685b8f,Artidine Tablet,Overseas Pharma Pvt Ltd,,Gastro & Digestion,55,12.3,False,False,2027-12-15 02:48:41.753
+6a651337e75d7a30ba685a31,Artigesic 100 mg/162.5 mg Suspension,Glenmark Pharmaceuticals Ltd,,Pain Relief,46,27.0,False,False,2026-12-17 11:38:17.010
+6a651337e75d7a30ba6859e0,Arumin 50 mg/500 mg Tablet,Empiai Pharmaceuticals Pvt Ltd,,Pain Relief,135,35.8,False,True,2027-12-23 17:48:05.100
+6a651337e75d7a30ba6858f6,Arvast 10 Tablet,Intas Pharmaceuticals Ltd,,Heart & Blood Pressure,43,243.0,False,True,2027-02-01 07:21:55.363
+6a651337e75d7a30ba685a4f,Arvast 15 Tablet,Intas Pharmaceuticals Ltd,,Heart & Blood Pressure,57,256.0,False,True,2026-11-16 10:02:42.054
+6a651337e75d7a30ba685949,Arvast 20 Tablet,Intas Pharmaceuticals Ltd,,Heart & Blood Pressure,101,329.0,False,True,2027-03-31 18:12:02.536
+6a651337e75d7a30ba685a6d,Arvast 30 Tablet,Intas Pharmaceuticals Ltd,,Heart & Blood Pressure,114,390.0,False,True,2027-05-22 06:14:50.670
+6a651337e75d7a30ba6859d9,Arvast 40 Tablet,Intas Pharmaceuticals Ltd,,Heart & Blood Pressure,53,588.0,False,True,2027-04-30 22:45:51.884
+6a651337e75d7a30ba685950,Arvast 5 Tablet,Intas Pharmaceuticals Ltd,,Heart & Blood Pressure,52,103.0,False,True,2027-12-25 05:17:25.806
+6a651337e75d7a30ba68599d,Arvast CV 10 Capsule,Intas Pharmaceuticals Ltd,,Heart & Blood Pressure,11,186.0,False,True,2027-04-20 09:37:49.482
+6a651337e75d7a30ba685a60,Arvast CV 20mg/75mg Capsule,Intas Pharmaceuticals Ltd,,Heart & Blood Pressure,85,217.0,False,True,2026-12-06 05:27:25.831
+6a651337e75d7a30ba6859c5,Arvast Gold 10 Capsule,Intas Pharmaceuticals Ltd,,Pain Relief,33,149.0,False,False,2026-10-27 22:02:06.226
+6a651337e75d7a30ba6859a9,Arvast Gold 75mg/20mg/75mg Capsule,Intas Pharmaceuticals Ltd,,Pain Relief,86,225.0,False,False,2027-04-19 14:10:34.244
+6a651337e75d7a30ba685a1e,Arvast-A 150 Capsule,Intas Pharmaceuticals Ltd,,Heart & Blood Pressure,72,70.5,False,True,2028-01-22 02:31:12.321
+6a651337e75d7a30ba68590c,Arvast-A 75 Capsule,Intas Pharmaceuticals Ltd,,Heart & Blood Pressure,54,65.5,False,True,2027-09-21 02:40:06.323
+6a651337e75d7a30ba685a0f,Asarab-DSR Capsule,Plena Remedies,,Gastro & Digestion,92,87.0,False,False,2027-07-23 13:41:00.704
+6a651337e75d7a30ba685b20,Asart 25mg Tablet,Stadmed Pvt Ltd,,Heart & Blood Pressure,33,27.91,False,True,2027-03-13 00:51:40.065
+6a651337e75d7a30ba685aa2,Asart 50mg Tablet,Stadmed Pvt Ltd,,Heart & Blood Pressure,12,59.42,False,True,2028-01-13 21:53:56.911
+6a651337e75d7a30ba685ab1,Asart HT 50 mg/12.5 mg Tablet,Stadmed Pvt Ltd,,Heart & Blood Pressure,104,67.58,False,True,2027-07-11 16:19:56.404
+6a651337e75d7a30ba685b2d,Ascochew Chewable Tablet Orange,Elder Projects Ltd,,Vitamins & Supplements,18,45.0,False,False,2027-02-10 04:14:52.520
+6a651337e75d7a30ba6859c7,Ascodex Junior LS Oral Drops,Glenmark Pharmaceuticals Ltd,,"Cough, Cold & Respiratory",140,65.5,False,False,2028-01-04 04:44:30.824
+6a651337e75d7a30ba685964,Ascodex LS Expectorant,Glenmark Pharmaceuticals Ltd,,"Cough, Cold & Respiratory",144,108.0,False,False,2027-10-04 08:08:12.622
+6a651337e75d7a30ba685ac7,Ascodil LS Syrup,M.M.A.F Pharma Private Limited,,"Cough, Cold & Respiratory",122,95.0,False,False,2028-03-25 11:45:32.983
+6a651337e75d7a30ba685bb8,Ascorcee 1500mg Injection,Scotmed Care Pvt Ltd,,Vitamins & Supplements,126,296.0,False,False,2027-11-05 21:01:31.091
+6a651337e75d7a30ba68584d,Ascoril LS Drops,Glenmark Pharmaceuticals Ltd,,"Cough, Cold & Respiratory",1,72.0,False,False,2027-05-01 13:36:30.129
+6a651337e75d7a30ba68583b,Ascoril LS Junior Syrup,Glenmark Pharmaceuticals Ltd,,"Cough, Cold & Respiratory",29,96.0,False,False,2028-03-24 17:20:53.881
+6a651337e75d7a30ba685832,Ascoril LS Syrup,Glenmark Pharmaceuticals Ltd,,"Cough, Cold & Respiratory",138,118.0,False,False,2027-10-29 03:48:57.844
+6a651337e75d7a30ba685bae,Ascospey 1500mg Injection,Strathspey Labs Pvt Ltd,,Vitamins & Supplements,51,350.0,False,False,2028-04-06 21:59:15.428
+6a651337e75d7a30ba685ad7,Ascovar Injection,Varenyam Healthcare Pvt Ltd,,Vitamins & Supplements,75,495.0,False,False,2026-11-20 14:42:46.753
+6a651337e75d7a30ba685a82,Ascovit C 1500mg Injection,Novo Medi Sciences Pvt Ltd,,Vitamins & Supplements,118,400.0,False,False,2028-02-22 14:14:23.958
+6a651337e75d7a30ba68594e,Asert D Tablet ER,Abbott,,Antibiotic,147,318.56,False,True,2027-11-21 10:06:36.851
+6a651337e75d7a30ba685aef,Ashmet 500mg Infusion,Aishwarya Healthcare,,Antibiotic,14,11.07,False,True,2026-12-30 23:39:40.008
+6a651337e75d7a30ba685af5,Asibloc Syrup,Cista Medicorp,,Gastro & Digestion,140,63.0,False,False,2026-11-13 22:07:31.334
+6a651337e75d7a30ba685b97,Asiclok 150mg Tablet,Anista Healthcare,,Gastro & Digestion,65,10.53,False,False,2027-01-10 11:03:32.411
+6a651337e75d7a30ba685b07,Asidrop 20mg Tablet,Indian Drugs & Pharmaceuticals Ltd,,Gastro & Digestion,45,73.0,False,False,2027-02-04 12:29:05.423
+6a651337e75d7a30ba685b9d,Asitac 150mg Tablet,Smilax Pharmaceuticals,,Gastro & Digestion,87,7.2,False,False,2028-01-18 15:38:14.579
+6a651337e75d7a30ba685a79,Asloc Tablet,Akme Biotec,,Gastro & Digestion,63,24.55,False,False,2028-02-22 15:55:34.094
+6a651337e75d7a30ba685b75,Asogrel 75mg Tablet,AS Pharmaceutical (India) Pvt Ltd,,Heart & Blood Pressure,4,45.0,False,True,2027-11-21 16:39:09.071
+6a651337e75d7a30ba685aa6,Asolt Tablet,Profic Organic Ltd,,Pain Relief,9,31.8,False,True,2026-11-22 02:29:01.266
+6a651337e75d7a30ba68593b,Asolt-AT Tablet,Profic Organic Ltd,,Pain Relief,144,118.0,False,True,2027-03-30 18:21:02.951
+6a651337e75d7a30ba68588a,Asomex 2.5 Tablet,Emcure Pharmaceuticals Ltd,,Heart & Blood Pressure,136,100.2,False,True,2028-03-17 09:10:57.712
+6a651337e75d7a30ba6858ad,Asomex 5 Tablet,Emcure Pharmaceuticals Ltd,,Heart & Blood Pressure,32,156.2,False,True,2026-12-21 15:14:56.458
+6a651337e75d7a30ba68594b,Asomex-LT Tablet,Emcure Pharmaceuticals Ltd,,Heart & Blood Pressure,141,326.25,False,True,2026-11-18 13:10:33.187
+6a651337e75d7a30ba68596d,Asomex-TM 5 Tablet,Emcure Pharmaceuticals Ltd,,Heart & Blood Pressure,77,261.1,False,True,2028-03-29 22:08:13.343
+6a651337e75d7a30ba685a22,Aspa 500mg/250mg Tablet,Chemech Laboratories Ltd,,Pain Relief,17,26.0,False,False,2027-10-29 17:05:57.195
+6a651337e75d7a30ba6859e3,Aspan-DSR Capsule,Aspire Remedies,,Gastro & Digestion,64,80.0,False,False,2027-06-11 07:35:08.007
+6a651337e75d7a30ba685ac1,Aspidol 75 Tablet,Lifecare Neuro Products Ltd,,Heart & Blood Pressure,131,58.0,False,True,2027-03-12 16:02:48.341
+6a651337e75d7a30ba685992,Aspirin  50mg Tablet DR,Zydus Cadila,,Pain Relief,65,3.7,False,False,2026-10-25 19:12:44.080
+6a651337e75d7a30ba685915,Aspirin 300mg Tablet,Bini Laboratories Pvt Ltd,,Pain Relief,79,2.0,False,False,2027-05-12 12:04:59.541
+6a651337e75d7a30ba6859fb,Aspirose 10mg/75mg Capsule,Alde Medi Impex Ltd,,Heart & Blood Pressure,4,60.0,False,True,2028-01-31 14:36:53.417
+6a651337e75d7a30ba685968,Aspisol 150 Tablet,Shreya Life Sciences Pvt Ltd,,Pain Relief,117,14.25,False,False,2026-11-30 23:02:40.648
+6a651337e75d7a30ba685a6e,Astadin 10mg Tablet,Asterisk Laboratories India Pvt Ltd,,Allergy,17,46.0,False,False,2027-02-10 23:43:17.417
+6a651337e75d7a30ba685aae,Astarest Syrup,Darwin Formulations Pvt Ltd,,"Cough, Cold & Respiratory",38,31.0,False,False,2027-01-09 08:16:59.252
+6a651337e75d7a30ba685a43,Astecef 200mg Tablet,Aster Medipharm Pvt Ltd,,Antibiotic,117,145.9,False,True,2027-10-10 14:59:04.954
+6a651337e75d7a30ba685a50,Astecef O 200mg/200mg Tablet,Aster Medipharm Pvt Ltd,,Antibiotic,33,159.9,False,True,2027-02-02 11:03:39.316
+6a651337e75d7a30ba685a5a,Aster-X Mouth Wash,Sandika Pharmaceuticals Pvt Ltd,,Skin Care,79,99.0,False,False,2027-04-10 18:44:23.787
+6a651337e75d7a30ba685a71,Asterab 20 Tablet,Aster Medipharm Pvt Ltd,,Gastro & Digestion,112,55.0,False,False,2026-10-30 17:53:51.279
+6a651337e75d7a30ba6859f3,Asterab DSR Capsule,Aster Medipharm Pvt Ltd,,Gastro & Digestion,83,63.9,False,False,2027-06-18 17:35:49.784
+6a651337e75d7a30ba685ab9,Astesol-D3 60K Chewable Tablet,Asterism Pharmaceuticals Pvt  Ltd,,Vitamins & Supplements,34,132.5,False,False,2027-01-20 15:27:11.060
+6a651337e75d7a30ba685ac2,Asthabon 2mg Syrup,Ikon Remedies Pvt Ltd,,"Cough, Cold & Respiratory",90,16.22,False,False,2028-03-12 17:56:08.119
+6a651337e75d7a30ba685adb,Asthacip 2mg Tablet,Himanshu Pharmaceuticals Pvt Ltd,,"Cough, Cold & Respiratory",132,1.79,False,False,2028-02-25 03:39:19.114
+6a651337e75d7a30ba685a9c,Asthacure Plus Syrup,Swiss Pharma Pvt Ltd,,"Cough, Cold & Respiratory",104,15.0,False,False,2028-01-02 20:05:46.540
+6a651337e75d7a30ba6858bb,Asthakind-LS Drop,Mankind Pharma Ltd,,"Cough, Cold & Respiratory",99,60.0,False,False,2027-06-18 07:02:27.940
+6a651337e75d7a30ba68584c,Asthakind-LS Expectorant Cola Sugar Free,Mankind Pharma Ltd,,"Cough, Cold & Respiratory",32,93.5,False,False,2027-06-10 02:31:01.179
+6a651337e75d7a30ba68587b,Asthakind-P Drops,Mankind Pharma Ltd,,"Cough, Cold & Respiratory",117,62.0,False,False,2027-07-25 00:16:58.403
+6a651337e75d7a30ba68583c,Asthalin 100mcg Inhaler,Cipla Ltd,,"Cough, Cold & Respiratory",64,157.85,False,False,2028-01-02 23:56:05.920
+6a651337e75d7a30ba6858df,Asthalin 2 Tablet,Cipla Ltd,,"Cough, Cold & Respiratory",97,6.04,False,False,2028-03-27 18:35:11.598
+6a651337e75d7a30ba685872,Asthalin 4 Tablet,Cipla Ltd,,"Cough, Cold & Respiratory",39,9.06,False,False,2026-12-13 06:36:56.173
+6a651337e75d7a30ba68590f,Asthalin AX JR Expectorant,Cipla Ltd,,"Cough, Cold & Respiratory",21,78.65,False,False,2027-11-20 03:14:21.107
+6a651337e75d7a30ba68587f,Asthalin AX Syrup,Cipla Ltd,,"Cough, Cold & Respiratory",79,104.67,False,False,2027-11-02 14:59:40.507
+6a651337e75d7a30ba6858c1,Asthalin Plus Expectorant,Cipla Ltd,,"Cough, Cold & Respiratory",56,95.16,False,False,2027-04-11 02:26:23.960
+6a651337e75d7a30ba68589a,Asthalin Respirator Solution,Cipla Ltd,,"Cough, Cold & Respiratory",149,13.1,False,False,2027-08-18 18:28:36.421
+6a651337e75d7a30ba685849,Asthalin Respules,Cipla Ltd,,"Cough, Cold & Respiratory",70,7.07,False,False,2027-12-13 03:48:12.566
+6a651337e75d7a30ba6858e7,Asthalin Rotacaps,Cipla Ltd,,"Cough, Cold & Respiratory",67,52.31,False,False,2026-10-29 05:48:03.370
+6a651337e75d7a30ba685839,Asthalin Syrup,Cipla Ltd,,"Cough, Cold & Respiratory",58,19.04,False,False,2027-02-25 22:54:57.066
+6a651337e75d7a30ba68599a,Asthamon-L Tablet,East West Pharma,,Allergy,29,131.0,False,False,2028-03-01 06:13:58.822
+6a651337e75d7a30ba685a90,Astharid 2mg Tablet,Empiai Pharmaceuticals Pvt Ltd,,"Cough, Cold & Respiratory",76,10.82,False,False,2027-05-28 12:38:25.665
+6a651337e75d7a30ba685b13,Asthavent DP 4mg Capsule,Cipla Ltd,,"Cough, Cold & Respiratory",127,5.86,False,False,2027-08-16 14:04:55.423
+6a651337e75d7a30ba685add,Asthavent-BR Syrup,Ultramark Healthcare Pvt Ltd,,"Cough, Cold & Respiratory",71,27.4,False,False,2027-11-27 22:39:12.393
+6a651337e75d7a30ba685b6f,Asthavil Tablet,Vilco Laboratories Pvt Ltd,,"Cough, Cold & Respiratory",124,27.5,False,False,2027-06-25 11:45:43.303
+6a651337e75d7a30ba685b5c,Asthelite Forte 2 mg/100 mg Tablet,Litaka Pharmaceuticals Ltd,,"Cough, Cold & Respiratory",78,14.15,False,False,2027-09-21 06:32:01.578
+6a651337e75d7a30ba685aeb,Astron 2mg Oral Drops,Astam Health Care Pvt Ltd,,Gastro & Digestion,76,45.0,False,True,2027-11-03 13:39:33.912
+6a651337e75d7a30ba685b58,Asv-Zol 20 Tablet,Asvins Lifecare,,Gastro & Digestion,59,100.0,False,False,2026-12-23 10:03:29.207
+6a651337e75d7a30ba685adc,Atarol Tablet MD,Solace Biotech Ltd,,Allergy,50,44.9,False,False,2026-11-27 22:44:18.079
+6a651337e75d7a30ba6858eb,Atchol 20 Tablet,Aristo Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,14,50.89,False,True,2026-11-22 01:55:07.612
+6a651337e75d7a30ba6858c2,Atchol 40 Tablet,Aristo Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,118,96.22,False,True,2028-01-07 11:46:53.825
+6a651337e75d7a30ba68592c,Atchol Gold 10 Capsule,Aristo Pharmaceuticals Pvt Ltd,,Pain Relief,101,69.89,False,False,2028-01-23 00:11:30.936
+6a651337e75d7a30ba685946,Atchol Gold 20 Capsule,Aristo Pharmaceuticals Pvt Ltd,,Pain Relief,13,94.25,False,False,2027-04-23 13:39:18.299
+6a651337e75d7a30ba685900,Atchol-ASP Capsule,Aristo Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,88,49.0,False,True,2027-01-17 02:10:24.892
+6a651337e75d7a30ba6858b2,Atchol-F Tablet,Aristo Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,59,98.0,False,True,2027-05-11 04:56:39.020
+6a651337e75d7a30ba6859c4,Ateros 10mg Tablet,Icon Life Sciences,,Heart & Blood Pressure,3,148.0,False,True,2027-03-14 21:23:14.239
+6a651337e75d7a30ba685b7c,Atheroz 75mg Tablet,Klintoz Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,50,28.0,False,True,2027-10-01 11:20:42.873
+6a651337e75d7a30ba685aff,Athrab 20mg Tablet,Athens Wellness,,Gastro & Digestion,100,89.0,False,False,2027-07-25 02:09:40.511
+6a651337e75d7a30ba685a5b,Athrovas ASP 10mg/75mg Capsule,Oldmed Healthcare Pvt Ltd,,Heart & Blood Pressure,26,59.5,False,True,2027-04-27 07:07:17.423
+6a651337e75d7a30ba685b65,Atocip  TZ 500mg/600mg Tablet,A To Z Pharmaceuticals Pvt Ltd,,Antibiotic,0,95.0,False,True,2027-11-06 12:08:17.313
+6a651337e75d7a30ba685905,Atocor 40 Tablet,Dr Reddy's Laboratories Ltd,,Heart & Blood Pressure,89,352.66,False,True,2027-01-31 04:48:36.065
+6a651337e75d7a30ba68592a,Atocor Gold 20 Capsule,Dr Reddy's Laboratories Ltd,,Pain Relief,15,61.6,False,False,2028-01-16 15:27:35.636
+6a651337e75d7a30ba685893,Atorfit CV 10 Capsule,Ajanta Pharma Ltd,,Heart & Blood Pressure,140,297.0,False,True,2027-12-21 14:17:10.905
+6a651337e75d7a30ba685963,Atorfit CV Gold 20 Capsule,Ajanta Pharma Ltd,,Pain Relief,69,105.0,False,False,2027-09-20 10:48:54.439
+6a651337e75d7a30ba685897,Atorlip 10 Tablet,Cipla Ltd,,Heart & Blood Pressure,50,102.31,False,True,2027-01-03 21:56:37.975
+6a651337e75d7a30ba6858e8,Atorlip 20 Tablet,Cipla Ltd,,Heart & Blood Pressure,133,247.8,False,True,2027-02-21 16:27:53.833
+6a651337e75d7a30ba6858ef,Atorlip 40 Tablet,Cipla Ltd,,Heart & Blood Pressure,90,239.9,False,True,2028-02-15 15:21:03.579
+6a651337e75d7a30ba685919,Atorlip Gold 10 Capsule,Cipla Ltd,,Pain Relief,41,46.81,False,False,2027-03-11 10:10:39.247
+6a651337e75d7a30ba6858fe,Atorlip Gold 20 Capsule,Cipla Ltd,,Pain Relief,45,71.41,False,False,2027-04-16 20:04:28.012
+6a651337e75d7a30ba685876,Atorlip-F Tablet,Cipla Ltd,,Heart & Blood Pressure,94,366.75,False,True,2027-03-31 02:49:39.036
+6a651337e75d7a30ba68589f,Atormac CV10 Capsule,Macleods Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,37,203.0,False,True,2027-06-26 03:44:29.643
+6a651337e75d7a30ba685916,Atormac Gold 10 Capsule,Macleods Pharmaceuticals Pvt Ltd,,Pain Relief,45,87.0,False,False,2028-01-28 12:32:56.328
+6a651337e75d7a30ba68591a,Atormac Gold 20 Capsule,Macleods Pharmaceuticals Pvt Ltd,,Pain Relief,132,107.5,False,False,2027-10-28 11:15:56.388
+6a651337e75d7a30ba685870,Atorva 20 Tablet,Zydus Cadila,,Heart & Blood Pressure,27,247.78,False,True,2028-04-06 16:45:28.844
+6a651337e75d7a30ba685854,Atorva 40 Tablet,Zydus Cadila,,Heart & Blood Pressure,71,239.89,False,True,2028-03-11 07:00:26.397
+6a651337e75d7a30ba6858ac,Atorva 80 Tablet,Zydus Cadila,,Heart & Blood Pressure,19,644.25,False,True,2026-12-28 21:36:18.048
+6a651337e75d7a30ba6858c6,Atorva Asp 75 Capsule,Zydus Cadila,,Heart & Blood Pressure,139,44.35,False,True,2027-07-03 14:33:30.603
+6a651337e75d7a30ba685912,Atorva Gold 10 Capsule,Zydus Cadila,,Pain Relief,101,86.25,False,False,2027-09-12 07:06:50.226
+6a651337e75d7a30ba685906,Atorva Gold 20 Capsule,Zydus Cadila,,Pain Relief,31,116.6,False,False,2027-02-08 05:36:17.545
+6a651337e75d7a30ba68584b,Atorva Tablet,Zydus Cadila,,Heart & Blood Pressure,69,102.31,False,True,2027-11-18 18:26:15.885
+6a651337e75d7a30ba6859bb,Atosky Gold 20 Capsule,Daxia Healthcare,,Pain Relief,130,80.0,False,False,2027-11-29 23:47:29.752
+6a651337e75d7a30ba6859f2,Atoxim 200mg Tablet,Sois Formulations Pvt Ltd,,Antibiotic,88,140.0,False,True,2028-02-25 00:44:53.338
+6a651337e75d7a30ba685ad0,Aucti 100mg Injection,Bioaltus Pharmaceuticals Pvt Ltd,,Vitamins & Supplements,41,250.0,False,False,2027-07-20 13:38:53.061
+6a651337e75d7a30ba685aa8,Auctista M 500mg/20mg Tablet,Bioaltus Pharmaceuticals Pvt Ltd,,Diabetes,149,115.0,False,True,2027-02-05 02:45:22.072
+6a651337e75d7a30ba685b6d,Auditone 2mg Oral Drops,Ridhima Biocare,,Gastro & Digestion,79,32.0,False,True,2027-03-19 13:53:27.477
+6a651337e75d7a30ba685b28,Auditone 4mg Tablet MD,Ridhima Biocare,,Gastro & Digestion,18,49.0,False,True,2027-11-12 15:21:19.711
+6a651337e75d7a30ba685b34,Audon 4mg Tablet,Aurz Pharmaceuticals Pvt Ltd,,Gastro & Digestion,44,52.0,False,True,2027-02-28 15:06:43.484
+6a651337e75d7a30ba685867,Augmentin 1.2gm Injection,Glaxo SmithKline Pharmaceuticals Ltd,,Antibiotic,0,156.14,False,True,2027-05-20 06:24:58.955
+6a651337e75d7a30ba685858,Augmentin 1000 Duo Tablet,Glaxo SmithKline Pharmaceuticals Ltd,,Antibiotic,140,601.45,False,True,2027-08-30 23:16:36.632
+6a651337e75d7a30ba68585d,Augmentin 375 Tablet,Glaxo SmithKline Pharmaceuticals Ltd,,Antibiotic,19,229.0,False,True,2027-02-04 06:31:17.858
+6a651337e75d7a30ba685830,Augmentin 625 Duo Tablet,Glaxo SmithKline Pharmaceuticals Ltd,,Antibiotic,81,223.42,False,True,2027-07-14 23:26:26.368
+6a651337e75d7a30ba685843,Augmentin DDS Suspension,Glaxo SmithKline Pharmaceuticals Ltd,,Antibiotic,140,173.0,False,True,2028-04-11 04:13:26.830
+6a651337e75d7a30ba685837,Augmentin Duo Oral Suspension,Glaxo SmithKline Pharmaceuticals Ltd,,Antibiotic,88,67.2,False,True,2028-04-14 01:04:27.704
+6a651337e75d7a30ba68589d,Augmentin ES Oral Suspension,Glaxo SmithKline Pharmaceuticals Ltd,,Antibiotic,80,203.28,False,True,2027-07-29 22:58:11.019
+6a651337e75d7a30ba685947,Augmexin Gel,Nextgen Healthcare,,Skin Care,80,58.0,False,False,2027-11-24 04:58:57.506
+6a651337e75d7a30ba6858b0,Augpen -DS Suspension,Zuventus Healthcare Ltd,,Antibiotic,68,149.7,False,True,2028-04-06 20:07:37.715
+6a651337e75d7a30ba6858b1,Augpen 625 BID Tablet,Zuventus Healthcare Ltd,,Antibiotic,16,216.28,False,True,2028-03-03 14:19:39.908
+6a651337e75d7a30ba6858bf,Augpen LB 625 Tablet,Zuventus Healthcare Ltd,,Antibiotic,125,439.8,False,True,2027-12-22 18:28:15.863
+6a651337e75d7a30ba6859f9,Auriase 5mg Tablet,Surya Pharmaceutical Ltd,,Allergy,69,64.0,False,False,2027-04-12 16:09:51.323
+6a651337e75d7a30ba685a2a,Auriase M 5mg/10mg Tablet,Surya Pharmaceutical Ltd,,Allergy,137,145.0,False,False,2027-09-10 00:48:59.931
+6a651337e75d7a30ba685b5b,Auzidob 500mg Tablet,Aurel Biolife,,Vitamins & Supplements,50,119.0,False,False,2027-02-10 06:08:34.469
+6a651337e75d7a30ba685b91,Avakill Lotion,Avalanche Pharmaceuticals,,Skin Care,91,95.0,False,False,2027-07-02 06:56:11.251
+6a651337e75d7a30ba6858fc,Avas 20 Tablet,Micro Labs Ltd,,Heart & Blood Pressure,10,495.6,False,True,2028-04-07 23:21:59.160
+6a651337e75d7a30ba6858d1,Avas CV 10 Capsule,Micro Labs Ltd,,Heart & Blood Pressure,33,111.0,False,True,2027-02-24 14:14:31.446
+6a651337e75d7a30ba6859bd,Avas Gold 75mg/10mg/75mg Capsule,Micro Labs Ltd,,Pain Relief,67,46.0,False,False,2028-03-27 13:37:12.241
+6a651337e75d7a30ba68595c,Avas Gold 75mg/20mg/75mg Capsule,Micro Labs Ltd,,Pain Relief,2,64.0,False,False,2027-07-07 06:55:25.136
+6a651337e75d7a30ba685a8e,Avcal D3 Injection,Arvincare Pharma,,Vitamins & Supplements,135,62.37,False,False,2026-12-31 03:49:57.071
+6a651337e75d7a30ba685a63,Avd3 Softgel Capsule,H2H India Biotech Private Limited,,Vitamins & Supplements,140,120.0,False,False,2027-07-28 05:41:47.629
+6a651337e75d7a30ba685b81,Avetron 4mg Tablet MD,Jasco Labs Pvt Ltd,,Gastro & Digestion,74,46.0,False,True,2027-02-16 12:25:46.674
+6a651337e75d7a30ba685aa0,Avi 40mg Tablet,Auroswift Pharma,,Gastro & Digestion,60,55.65,False,False,2026-12-21 07:26:12.452
+6a651337e75d7a30ba685b68,Avical 625mg/125IU Tablet,Bhavishya Pharmaceuticals Pvt Ltd,,Vitamins & Supplements,39,184.0,False,False,2028-01-14 03:52:45.460
+6a651337e75d7a30ba685b09,Avidine-M Ointment,Allenge India,,Antibiotic,120,36.0,False,True,2027-03-04 01:19:18.693
+6a651337e75d7a30ba685b57,Avidox 100mg/100mg Tablet,Avalanche Pharmaceuticals,,Antibiotic,23,35.0,False,True,2026-11-16 22:25:55.181
+6a651337e75d7a30ba685bb3,Avidox-SP 100mg/10mg Tablet,Avalanche Pharmaceuticals,,Antibiotic,111,67.0,False,True,2028-01-11 14:05:39.747
+6a651337e75d7a30ba6859ad,Avil NU 10mg Tablet,Sanofi India  Ltd,,Allergy,102,27.66,False,False,2028-03-28 19:37:55.599
+6a651337e75d7a30ba685a61,Avilox 250mg Tablet,Avalanche Pharmaceuticals,,Antibiotic,104,38.0,False,True,2028-02-13 08:37:24.048
+6a651337e75d7a30ba685b08,Avilox Forte 500mg Tablet,Avalanche Pharmaceuticals,,Antibiotic,94,63.7,False,True,2027-12-08 02:25:15.104
+6a651337e75d7a30ba685bb5,Avimet 100mg Oral Suspension,Moraceae Pharmaceuticals Pvt Ltd,,Antibiotic,77,15.5,False,True,2026-12-30 18:29:22.869
+6a651337e75d7a30ba685b98,Aviron 50mg Injection,Arvincare Pharma,,Vitamins & Supplements,31,138.0,False,False,2028-04-06 05:17:15.582
+6a651337e75d7a30ba685b5d,Avocip 500mg Tablet,Avonic Life Sciences,,Antibiotic,30,59.0,False,True,2028-01-26 06:23:23.496
+6a651337e75d7a30ba685a88,Avodox 100mg Capsule,Avonic Life Sciences,,Antibiotic,69,70.0,False,True,2027-11-08 20:52:50.721
+6a651337e75d7a30ba685af4,Avoflox Syrup,Tenet Healthcare,,Antibiotic,124,50.5,False,True,2027-03-20 20:39:14.350
+6a651337e75d7a30ba685b73,Avomits 4mg Tablet,Mits Healthcare Pvt Ltd,,Gastro & Digestion,60,25.0,False,True,2026-12-30 06:24:05.241
+6a651337e75d7a30ba685b5a,Awnaron 4mg Tablet,Shawn & Co,,Gastro & Digestion,84,28.0,False,True,2027-01-28 09:16:58.213
+6a651337e75d7a30ba685b45,Axacip 2mg Infusion,AXA Parenterals Ltd,,Antibiotic,14,18.47,False,True,2027-12-04 08:02:34.949
+6a651337e75d7a30ba685b1c,Axamol 2.5mg Respules 2.5ml,AXA Parenterals Ltd,,"Cough, Cold & Respiratory",101,22.0,False,False,2027-09-07 02:23:56.233
+6a651337e75d7a30ba685a3c,Axant 50mg/400mg Tablet,Sigmund Promedica,,Pain Relief,130,115.0,False,True,2028-02-22 14:53:16.424
+6a651337e75d7a30ba6859b2,Axegliptin M 500mg/20mg Tablet SR,Ajanta Pharma Ltd,,Diabetes,18,107.7,False,True,2028-03-01 07:42:53.545
+6a651337e75d7a30ba685afd,Axibact 2% Ointment,Aurz Pharmaceuticals Pvt Ltd,,Skin Care,96,128.0,False,True,2027-06-17 12:06:51.839
+6a651337e75d7a30ba685b5e,Axifer 100mg Injection,Medihealth Lifesciences Pvt. Ltd.,,Vitamins & Supplements,102,160.0,False,False,2027-02-15 11:10:25.347
+6a651337e75d7a30ba685b94,Axigrel 75mg Tablet,Axis Life Science Pvt Ltd,,Heart & Blood Pressure,103,65.0,False,True,2027-09-14 00:39:37.921
+6a651337e75d7a30ba6859ba,Axim 200mg Tablet,Uni-Pex Pharmaceuticals Pvt Ltd,,Antibiotic,96,97.0,False,True,2027-01-02 13:20:50.420
+6a651337e75d7a30ba685a97,Axinac Nano Gel,Axenic Healthcare,,Pain Relief,139,99.0,False,True,2028-02-21 20:34:08.357
+6a651337e75d7a30ba685a47,Axipan 40mg Tablet,Axis Life Science Pvt Ltd,,Gastro & Digestion,42,75.0,False,False,2027-03-20 17:56:16.171
+6a651337e75d7a30ba685b61,Axiset 4mg Tablet,Axis Life Science Pvt Ltd,,Gastro & Digestion,64,45.95,False,True,2027-07-04 04:27:53.357
+6a651337e75d7a30ba685ba9,Axoderm 1% Dusting Powder,Aronex Life Sciences Pvt Ltd,,Skin Care,118,70.0,False,False,2027-03-06 20:30:38.538
+6a651337e75d7a30ba6858ba,Azax 250 Tablet,Sun Pharmaceutical Industries Ltd,,Antibiotic,136,71.02,False,True,2027-07-26 20:09:37.659
+6a651337e75d7a30ba685855,Azax 500 Tablet,Sun Pharmaceutical Industries Ltd,,Antibiotic,89,79.3,False,True,2028-02-01 01:34:58.592
+6a651337e75d7a30ba685b4d,Azcal 1250mg/250IU Tablet,Bioman Pharmaceuticals,,Vitamins & Supplements,88,23.0,False,False,2028-04-19 08:32:19.420
+6a651337e75d7a30ba685b32,Azcool 2% Dusting Powder,Biodyne Remedies Pvt Ltd,,Skin Care,9,45.0,False,False,2027-10-30 03:48:28.253
+6a651337e75d7a30ba685885,Azee 100mg Dry Syrup Peppermint,Cipla Ltd,,Antibiotic,30,45.88,False,True,2027-10-31 10:09:47.035
+6a651337e75d7a30ba68584a,Azee 200mg Dry Syrup,Cipla Ltd,,Antibiotic,75,52.31,False,True,2027-11-23 14:53:08.464
+6a651337e75d7a30ba685899,Azee 250 Tablet,Cipla Ltd,,Antibiotic,52,78.75,False,True,2027-10-13 19:06:48.672
+6a651337e75d7a30ba685835,Azee 500 Tablet,Cipla Ltd,,Antibiotic,36,132.38,False,True,2028-01-01 00:52:32.137
+6a651337e75d7a30ba6858d5,Azee XL 200mg Dry Syrup Peppermint,Cipla Ltd,,Antibiotic,136,114.55,False,True,2026-12-05 02:24:10.994
+6a651337e75d7a30ba6859fa,Azfex M 120mg/10mg Tablet,Azkka Pharmaceuticals Pvt Ltd,,Allergy,130,119.9,False,True,2027-07-27 16:29:32.668
+6a651337e75d7a30ba6858ea,Azibact 200 Readymix Oral Suspension,Ipca Laboratories Ltd,,Antibiotic,127,57.46,False,True,2027-08-30 01:02:09.338
+6a651337e75d7a30ba68588f,Azibact 500 Tablet,Ipca Laboratories Ltd,,Antibiotic,58,132.37,False,True,2027-12-21 02:38:10.787
+6a651337e75d7a30ba6858ec,Azibest 500mg Tablet,Blue Cross Laboratories Ltd,,Antibiotic,49,69.0,False,True,2027-08-02 16:38:16.586
+6a651337e75d7a30ba685a21,Azicef-LB Tablet,Mclain Laboratories,,Antibiotic,54,259.0,False,True,2027-04-07 14:44:23.796
+6a651337e75d7a30ba685844,Azicip 500 Tablet,Cipla Ltd,,Antibiotic,123,79.43,False,True,2028-01-03 03:07:12.492
+6a651337e75d7a30ba68586c,Azikem 500mg Tablet,Alkem Laboratories Ltd,,Antibiotic,90,71.7,False,True,2028-01-07 03:15:42.460
+6a651337e75d7a30ba6858a4,Azimax 500 Tablet,Cipla Ltd,,Antibiotic,75,119.5,False,True,2027-07-31 11:17:53.639
+6a651337e75d7a30ba685a6c,Azirab 20mg Tablet,Astraazin Pharmaceuticals Private Limited,,Gastro & Digestion,38,67.5,False,False,2026-12-30 04:47:46.754
+6a651337e75d7a30ba685a29,Azirab-DSR 30mg/20mg Capsule,Astraazin Pharmaceuticals Private Limited,,Gastro & Digestion,49,75.0,False,False,2028-01-04 18:41:39.017
+6a651337e75d7a30ba685884,Azithral 100 Liquid,Alembic Pharmaceuticals Ltd,,Antibiotic,106,46.3,False,True,2028-04-12 03:12:27.500
+6a651337e75d7a30ba685842,Azithral 200 Liquid,Alembic Pharmaceuticals Ltd,,Antibiotic,83,57.25,False,True,2027-11-23 22:29:41.672
+6a651337e75d7a30ba685831,Azithral 500 Tablet,Alembic Pharmaceuticals Ltd,,Antibiotic,78,132.36,False,True,2027-01-11 20:27:37.276
+6a651337e75d7a30ba6858c8,Azithral Eye Ointment,Alembic Pharmaceuticals Ltd,,Antibiotic,35,146.0,False,True,2027-05-04 21:15:55.488
+6a651337e75d7a30ba68586f,Azithral XL 200 Liquid,Alembic Pharmaceuticals Ltd,,Antibiotic,43,114.56,False,True,2027-09-06 07:25:42.597
+6a651337e75d7a30ba6858a3,Azithro 250mg Tablet,Ind Swift Laboratories Ltd,,Antibiotic,133,57.08,False,True,2027-02-21 01:44:23.071
+6a651337e75d7a30ba6858c7,Azivent 500 Tablet,Aristo Pharmaceuticals Pvt Ltd,,Antibiotic,20,96.12,False,True,2027-09-13 16:22:52.134
+6a651337e75d7a30ba685882,Aziwok 500 Tablet,Dr Reddy's Laboratories Ltd,,Antibiotic,146,132.36,False,True,2027-04-07 15:20:50.092
+6a651337e75d7a30ba685b1d,Azmino Plus Tablet,Medoz Pharmaceutical Pvt. Ltd,,"Cough, Cold & Respiratory",54,12.9,False,False,2028-01-18 15:18:27.107
+6a651337e75d7a30ba685a44,Azneten M Tablet ER,Daylon Healthcare,,Diabetes,3,117.0,False,True,2027-05-31 10:57:36.458
+6a651337e75d7a30ba685aac,Azol 20 Capsule,Dr. Johns Laboratories Pvt Ltd,,Gastro & Digestion,62,32.0,False,False,2028-03-26 16:51:16.970
+6a651337e75d7a30ba6859be,Azole 20mg Capsule,Dr. Johns Laboratories Pvt Ltd,,Gastro & Digestion,85,40.43,False,False,2027-09-10 00:13:55.561
+6a651337e75d7a30ba685918,Azovas T 40 Tablet,J B Chemicals and Pharmaceuticals Ltd,,Heart & Blood Pressure,84,153.93,False,True,2026-12-28 09:22:23.113
+6a651337e75d7a30ba685b1e,Aztec 150mg Tablet,Ind Swift Laboratories Ltd,,Gastro & Digestion,39,4.68,False,False,2027-04-24 18:08:04.676
+6a651337e75d7a30ba685b8e,Aztec 25mg Injection,Ind Swift Laboratories Ltd,,Gastro & Digestion,69,2.5,False,False,2027-03-03 06:03:54.594
+6a651337e75d7a30ba6859d3,Aztel Trio 40mg/5mg/12.5mg Tablet,Azkka Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,133,72.0,False,True,2027-10-14 08:36:33.505
+6a651337e75d7a30ba68590b,Aztogold 10 Capsule,Sun Pharmaceutical Industries Ltd,,Pain Relief,123,62.0,False,False,2027-04-01 16:37:36.554
+6a651337e75d7a30ba6858ce,Aztogold 20 Capsule,Sun Pharmaceutical Industries Ltd,,Pain Relief,115,85.0,False,False,2027-11-09 19:06:17.803
+6a651337e75d7a30ba685865,Aztolet  10 Tablet,Sun Pharmaceutical Industries Ltd,,Heart & Blood Pressure,10,170.0,False,True,2028-04-17 08:23:45.889
+6a651337e75d7a30ba6858b7,Aztolet  20 Tablet,Sun Pharmaceutical Industries Ltd,,Heart & Blood Pressure,62,246.0,False,True,2028-03-11 22:27:01.368
+6a651337e75d7a30ba685853,Aztor 10 Tablet,Sun Pharmaceutical Industries Ltd,,Heart & Blood Pressure,0,102.25,False,True,2027-06-05 11:41:28.862
+6a651337e75d7a30ba685892,Aztor 20 Tablet,Sun Pharmaceutical Industries Ltd,,Heart & Blood Pressure,30,247.75,False,True,2027-12-09 19:04:02.315
+6a651337e75d7a30ba685879,Aztor 40 Tablet,Sun Pharmaceutical Industries Ltd,,Heart & Blood Pressure,45,359.8,False,True,2028-04-07 10:13:08.886
+6a651337e75d7a30ba6858f9,Aztor 80 Tablet,Sun Pharmaceutical Industries Ltd,,Heart & Blood Pressure,70,699.0,False,True,2027-12-01 22:13:18.464
+6a651337e75d7a30ba68589c,Aztor Asp 75 Capsule,Sun Pharmaceutical Industries Ltd,,Heart & Blood Pressure,144,38.5,False,True,2027-11-01 11:47:19.235
+6a651337e75d7a30ba68595b,Azulix 0.5 MF Tablet PR,Torrent Pharmaceuticals Ltd,,Diabetes,74,53.0,False,True,2027-10-04 16:08:17.338
+6a651337e75d7a30ba685908,Azulix 1 MF Forte Tablet PR,Torrent Pharmaceuticals Ltd,,Diabetes,10,170.0,False,True,2027-09-10 15:00:03.061
+6a651337e75d7a30ba68588e,Azulix 1 MF Tablet PR,Torrent Pharmaceuticals Ltd,,Diabetes,71,155.0,False,True,2027-01-16 13:17:58.988
+6a651337e75d7a30ba6858fb,Azulix 1 Tablet,Torrent Pharmaceuticals Ltd,,Diabetes,125,44.47,False,True,2027-04-28 06:07:56.937
+6a651337e75d7a30ba6858ee,Azulix 2 MF Forte Tablet PR,Torrent Pharmaceuticals Ltd,,Diabetes,114,242.6,False,True,2026-11-30 19:16:42.495
+6a651337e75d7a30ba68588c,Azulix 2 MF Tablet PR,Torrent Pharmaceuticals Ltd,,Diabetes,128,225.0,False,True,2027-03-03 05:59:23.383
+6a651337e75d7a30ba68590a,Azulix 2 Tablet,Torrent Pharmaceuticals Ltd,,Diabetes,11,70.65,False,True,2027-03-29 20:06:43.815
+6a651337e75d7a30ba68595a,Azulix 3 MF Forte Tablet PR,Torrent Pharmaceuticals Ltd,,Diabetes,140,159.0,False,True,2028-02-06 07:06:21.082
+6a651337e75d7a30ba685931,Azulix 4 MF Forte Tablet PR,Torrent Pharmaceuticals Ltd,,Diabetes,41,171.55,False,True,2027-01-31 07:56:44.995
+6a651337e75d7a30ba68597d,Azulix MV 1mg/500mg/0.2mg Tablet SR,Torrent Pharmaceuticals Ltd,,Diabetes,7,141.25,False,True,2027-12-09 13:25:41.871
+6a651337e75d7a30ba685929,Azulix MV 2/0.2 Tablet SR,Torrent Pharmaceuticals Ltd,,Diabetes,70,192.2,False,True,2028-04-02 20:56:58.050
+6a651337e75d7a30ba685926,Azulix MV 2mg/500mg/0.3mg Tablet SR,Torrent Pharmaceuticals Ltd,,Diabetes,14,181.6,False,True,2026-12-29 20:32:17.890
+6a651337e75d7a30ba685a89,Azupan 40mg Tablet,Azurite Bio Science Pvt Ltd,,Gastro & Digestion,31,79.8,False,False,2027-07-22 19:00:08.149
+6a651337e75d7a30ba68592b,Azusa T 8/40 Tablet,Ajanta Pharma Ltd,,Heart & Blood Pressure,80,152.0,False,True,2027-03-04 20:56:55.945
+6a651337e75d7a30ba685974,Azuvas 10 Tablet,Azkka Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,146,129.9,False,True,2027-05-10 19:31:23.560
+6a651337e75d7a30ba6859b6,Azuvas 20 Tablet,Azkka Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,148,129.9,False,True,2028-04-17 15:14:49.881
+6a651337e75d7a30ba685973,Azuvas 20-Gold Capsule,Azkka Pharmaceuticals Pvt Ltd,,Pain Relief,42,129.9,False,False,2027-10-20 21:49:38.365
+6a651337e75d7a30ba68598b,Azuvas 40 Tablet,Azkka Pharmaceuticals Pvt Ltd,,Heart & Blood Pressure,129,129.9,False,True,2027-03-07 08:30:40.550
+6a651337e75d7a30ba685bc3,B Bact Ointment,Wallace Pharmaceuticals Pvt Ltd,,Skin Care,144,159.0,False,True,2027-10-18 09:19:14.772
+6a651337e75d7a30ba685bda,B Muce Ointment,Biochem Pharmaceutical Industries,,Skin Care,2,144.9,False,True,2027-05-20 12:28:56.591
+6a651337e75d7a30ba685c0b,B Sim 2% Ointment,Starzol Pharma,,Skin Care,118,127.0,False,True,2028-03-06 10:17:14.651
+6a651337e75d7a30ba685be0,B-Supp Tablet,Beaumont Healthcare Pvt Ltd,,Vitamins & Supplements,2,199.0,False,False,2027-02-10 19:20:53.429
+6a651337e75d7a30ba685bf7,BaciFoe Ointment,Insutik pharmaceuticals Private Limited,,Skin Care,125,160.0,False,True,2027-07-03 02:18:57.755
+6a651337e75d7a30ba685be4,Bacigyl-N Suspension,Aristo Pharmaceuticals Pvt Ltd,,Antibiotic,120,26.35,False,True,2027-11-04 13:25:47.304
+6a651337e75d7a30ba685bfe,Bacrocin 2% Ointment,Benedic Pharmaceutical Pvt Ltd,,Skin Care,69,107.0,False,True,2027-03-21 08:32:28.945
+6a651337e75d7a30ba685be1,Bact M 2% Ointment,Quality Pharma Products Pvt. Ltd.,,Skin Care,30,90.0,False,True,2028-03-24 14:44:58.939
+6a651337e75d7a30ba685bde,Bacticin Ointment,Parker Robinson Pvt  Ltd,,Skin Care,56,61.0,False,True,2027-06-10 17:52:27.880
+6a651337e75d7a30ba685c06,Bactifree Lotion,Lupin Ltd,,Skin Care,29,13.28,False,True,2027-08-20 22:17:34.715
+6a651337e75d7a30ba685c04,Bactirel Ointment,Reliance Life Sciences,,Skin Care,26,102.0,False,True,2027-07-23 23:11:36.600
+6a651337e75d7a30ba685bf6,Bactisan 2% Ointment,Exsan Healthcare,,Skin Care,13,120.0,False,True,2027-03-11 02:32:08.236
+6a651337e75d7a30ba685bfb,Bactivac Ointment,Prevego Healthcare & Research Private Limited,,Skin Care,65,150.0,False,True,2027-11-28 07:19:07.281
+6a651337e75d7a30ba685be3,Bactocid Ointment,Kusum Healthcare Pvt Ltd,,Skin Care,138,84.9,False,True,2027-10-03 05:01:54.865
+6a651337e75d7a30ba685bf3,Bactofast Ointment,Grefith Life Sciences Pvt Ltd,,Skin Care,37,109.0,False,True,2028-01-13 10:42:46.675
+6a651337e75d7a30ba685be7,Bactorub Antiseptic Solution,Raman   Weil Pvt Ltd,,Skin Care,18,630.0,False,False,2027-01-18 03:58:53.436
+6a651337e75d7a30ba685c0c,Bageo JeFe-XT Tablet,Bageo Pharmaceuticals Pvt Ltd,,Vitamins & Supplements,72,80.0,False,False,2027-01-06 04:06:42.259
+6a651337e75d7a30ba685c11,Banshel Tablet,Bantom Laboratories Pvt Ltd,,Vitamins & Supplements,143,23.5,False,False,2028-03-31 19:48:29.751
+6a651337e75d7a30ba685bc5,Basaglar 100 Units/ml Cartridge,Cipla Ltd,,Diabetes,42,665.0,False,True,2027-01-08 05:38:09.820
+6a651337e75d7a30ba685bcc,Basaglar 100IU/ml Kwikpen,Cipla Ltd,,Diabetes,80,1028.0,False,True,2027-10-06 13:21:09.319
+6a651337e75d7a30ba685bc2,Basalog 100IU/ml Injection,Biocon,,Diabetes,34,564.55,False,True,2028-01-26 09:52:44.741
+6a651337e75d7a30ba685bc4,Basalog 100IU/ml Refill Cartridge,Biocon,,Diabetes,69,610.53,False,True,2027-09-05 00:55:55.530
+6a651337e75d7a30ba685bcd,Basalog One 100IU/ml Injection,Biocon,,Diabetes,130,823.1,False,True,2027-09-26 11:00:29.076
+6a651337e75d7a30ba685c18,Basefresh 0.2% Mouth Wash,Base Pharmaceuticals Pvt Ltd,,Skin Care,76,98.0,False,False,2026-12-13 07:44:52.438
+6a651337e75d7a30ba685bc7,Basugine 100IU/ml Injection,Lupin Ltd,,Diabetes,29,594.8,False,True,2027-08-16 10:18:49.317
+6a651337e75d7a30ba685c12,Bcuff DX Syrup,BPlus NG Pharmaceuticals,,"Cough, Cold & Respiratory",31,55.0,False,False,2027-01-30 02:19:27.289
+6a651337e75d7a30ba685bef,Beatvit 60K Softgel Capsule,Neobeat Healthcare Pvt Ltd,,Vitamins & Supplements,24,99.1,False,False,2028-02-15 09:01:28.854
+6a651337e75d7a30ba685bf0,Beclo Cream,Welltrack Pharma,,Skin Care,72,72.0,False,False,2027-09-07 00:23:27.478
+6a651337e75d7a30ba685bcb,Benadryl DR Kids Syrup,Johnson & Johnson Ltd,,"Cough, Cold & Respiratory",99,93.0,False,False,2027-04-17 23:40:50.700
+6a651337e75d7a30ba685bbf,Benadryl DR Syrup,Johnson & Johnson Ltd,,"Cough, Cold & Respiratory",128,123.0,False,False,2028-02-27 04:18:56.316
+6a651337e75d7a30ba685c02,Best Dee 3 Oral Solution (5ml Each) Delicious Sugar Free,Best Biotech,,Vitamins & Supplements,109,240.0,False,False,2027-08-03 10:56:28.608
+6a651337e75d7a30ba685bbc,Betadine 10% Ointment,Win-Medicare Pvt Ltd,,Skin Care,47,129.47,False,False,2027-04-18 01:34:39.227
+6a651337e75d7a30ba685bbe,Betadine 10% Solution,Win-Medicare Pvt Ltd,,Skin Care,34,115.36,False,False,2027-06-08 09:51:18.109
+6a651337e75d7a30ba685bbd,Betadine 2% Gargle Mint,Win-Medicare Pvt Ltd,,Skin Care,74,153.5,False,False,2027-05-29 11:43:28.098
+6a651337e75d7a30ba685bca,Betadine 5 % Solution,Win-Medicare Pvt Ltd,,Skin Care,34,240.8,False,False,2028-01-26 12:17:20.753
+6a651337e75d7a30ba685bc8,Betadine 5% Ointment,Win-Medicare Pvt Ltd,,Skin Care,135,80.5,False,False,2028-02-05 12:15:16.701
+6a651337e75d7a30ba685bcf,Betadine 7.5% Surgical Scrub,Win-Medicare Pvt Ltd,,Skin Care,59,99.68,False,False,2027-03-16 19:23:46.973
+6a651337e75d7a30ba685bd8,Betadine First Aid Solution,Win-Medicare Pvt Ltd,,Skin Care,75,108.08,False,False,2027-02-11 01:55:35.460
+6a651337e75d7a30ba685bc1,Betadine Powder,Win-Medicare Pvt Ltd,,Skin Care,6,144.0,False,False,2028-04-07 18:34:41.766
+6a651337e75d7a30ba685bc6,Betadine Vaginal Pessaries,Win-Medicare Pvt Ltd,,Skin Care,18,216.0,False,False,2027-07-16 13:27:35.455
+6a651337e75d7a30ba685bc9,Betakind Gargle,Mankind Pharma Ltd,,Skin Care,71,110.0,False,False,2027-09-19 06:28:32.773
+6a651337e75d7a30ba685c0a,Bicoba-FC 2500 Injection,Bioclix Remedies,,Vitamins & Supplements,127,91.0,False,False,2027-02-27 05:28:06.847
+6a651337e75d7a30ba685bfc,Bigvin-FC Injection,BestoChem Formulations  India  Ltd,,Vitamins & Supplements,53,40.87,False,False,2027-08-20 08:01:34.956
+6a651337e75d7a30ba685bf8,Bio Cal-D 1000mg/200IU Tablet,Bio Drugs Laboratories Pvt Ltd,,Vitamins & Supplements,25,23.75,False,False,2028-02-12 05:50:55.767
+6a651337e75d7a30ba685c16,Bioclop 75mg Tablet,Caddes Life Sciences,,Heart & Blood Pressure,71,67.0,False,True,2027-06-25 13:41:16.177
+6a651337e75d7a30ba685bd7,Biodox LB Capsule,Bioderma Solutions,,Antibiotic,62,75.0,False,True,2026-11-13 03:14:19.096
+6a651337e75d7a30ba685bd9,Biodoxi 100 Tablet,Biochem Pharmaceutical Industries,,Antibiotic,103,12.48,False,True,2028-02-25 10:51:51.051
+6a651337e75d7a30ba685bd2,Biofil-AB Particles,Eucare Pharmaceuticals Pvt Ltd,,Skin Care,8,861.0,False,True,2027-10-11 16:18:39.555
+6a651337e75d7a30ba685bff,Biofresh 0.2% Mouth Wash,Caddes Life Sciences,,Skin Care,31,65.0,False,False,2027-09-28 04:15:20.111
+6a651337e75d7a30ba685c19,Biogrel Tablet,Guard Ever Life Sciences,,Heart & Blood Pressure,132,31.0,False,True,2027-06-13 04:52:45.850
+6a651337e75d7a30ba685bd0,Bionect Ointment,Macleods Pharmaceuticals Pvt Ltd,,Skin Care,76,160.0,False,False,2028-02-26 04:52:32.405
+6a651337e75d7a30ba685c17,Bioprocin 2% Ointment,Bio Heal Remedies,,Skin Care,33,125.0,False,True,2026-11-18 04:14:43.790
+6a651337e75d7a30ba685bed,Biosulin 30/70 100IU/ml Cartridge,Innova Life Sciences Private Limited,,Diabetes,29,162.76,False,True,2027-11-10 20:38:53.479
+6a651337e75d7a30ba685c08,Biosulin 30/70 100IU/ml Injection,Innova Life Sciences Private Limited,,Diabetes,135,355.0,False,True,2027-11-05 15:56:22.234
+6a651337e75d7a30ba685bf4,Biosulin 30/70 40IU/ml Injection,Innova Life Sciences Private Limited,,Diabetes,134,155.77,False,True,2027-07-15 18:18:31.889
+6a651337e75d7a30ba685bfa,Biosulin N 40IU Injection,Innova Life Sciences Private Limited,,Diabetes,124,152.98,False,True,2027-03-27 03:16:59.335
+6a651337e75d7a30ba685bf5,Biosulin R 40IU Injection,Innova Life Sciences Private Limited,,Diabetes,67,152.88,False,True,2028-01-28 11:00:06.784
+6a651337e75d7a30ba685bf1,Biov-D3 Softgel Capsule,Elancer Pharmaceuticals,,Vitamins & Supplements,29,100.0,False,False,2027-03-03 16:05:49.540
+6a651337e75d7a30ba685c0f,Biovilda 50mg Tablet,Bios Lab,,Diabetes,103,81.0,False,True,2027-01-19 09:37:13.635
+6a651337e75d7a30ba685bd3,Biovorin 15 Tablet,Biochem Pharmaceutical Industries,,Vitamins & Supplements,109,555.0,False,False,2027-10-18 08:11:01.900
+6a651337e75d7a30ba685bee,Biovorin 15mg Injection,Biochem Pharmaceutical Industries,,Vitamins & Supplements,56,130.6,False,False,2028-01-03 16:17:07.893
+6a651337e75d7a30ba685bdd,Biovorin 50mg Injection,Biochem Pharmaceutical Industries,,Vitamins & Supplements,87,326.0,False,False,2027-11-12 00:36:55.410
+6a651337e75d7a30ba685bf9,Bitcal-D3 Softgel Capsule,Betlif Pharmaceutical Pvt Ltd,,Vitamins & Supplements,47,112.99,False,False,2027-04-15 15:21:07.962
+6a651337e75d7a30ba685bd1,Bluglip 50mg Tablet,Blue Cross Laboratories Ltd,,Diabetes,102,55.0,False,True,2027-01-08 20:19:45.883
+6a651337e75d7a30ba685c01,Bluzole Dusting Powder,Sun Pharmaceutical Industries Ltd,,Skin Care,98,30.0,False,False,2028-01-23 13:38:35.034
+6a651337e75d7a30ba685c09,Blzole Dusting Powder,Blaze Remedies,,Skin Care,147,149.0,False,False,2027-01-20 14:51:24.444
+6a651337e75d7a30ba685bf2,Bon-D3 Oral Drops,Spc Healthcare Private Limited,,Vitamins & Supplements,120,75.0,False,False,2027-01-14 14:37:03.156
+6a651337e75d7a30ba685bdc,Boncare Tablet,Lifecare Innovations Pvt Ltd,,Vitamins & Supplements,130,23.5,False,False,2027-11-03 22:08:29.967
+6a651337e75d7a30ba685bdf,Bone C Max Capsule,Dr Cure Pharmaceuticals India Pvt Ltd,,Vitamins & Supplements,84,190.0,False,False,2028-03-09 18:43:38.847
+6a651337e75d7a30ba685be2,Bone-C Plus Capsule,Wiscon Pharmaceuticals Pvt Ltd,,Vitamins & Supplements,6,237.0,False,False,2028-04-19 08:19:03.908
+6a651337e75d7a30ba685bce,Bonecart-D3 Capsule,Alcott Healthcare Pvt Ltd,,Vitamins & Supplements,74,100.0,False,False,2027-12-29 04:19:29.503
+6a651337e75d7a30ba685be6,Bonenice Plus Softgel Capsule,Aexiom Pharmaceuticals,,Vitamins & Supplements,78,195.0,False,False,2028-03-01 01:04:29.714
+6a651337e75d7a30ba685c0d,Bonterol D3 60K Softgel Capsule,Medflux Pharmaceuticals Pvt Ltd,,Vitamins & Supplements,35,131.0,False,False,2027-10-24 12:23:46.473
+6a651337e75d7a30ba685be8,Bonultra 60K Soft Gelatin Capsule,Energize Pharmaceuticals (P) Ltd.,,Vitamins & Supplements,130,131.0,False,False,2027-02-14 19:44:18.319
+6a651337e75d7a30ba685c0e,Boost-CEE Injection,Flagship Biotech International,,Vitamins & Supplements,92,999.0,False,False,2027-05-13 15:56:49.579
+6a651337e75d7a30ba685c13,Borncal D3 Nano Shot (5ml Each) Mango Sugar Free,Century Life Science,,Vitamins & Supplements,56,272.0,False,False,2027-06-13 22:55:10.563
+6a651337e75d7a30ba685c14,Borncal-D3 Softgel Capsule,Century Life Science,,Vitamins & Supplements,26,120.0,False,False,2026-10-31 18:06:47.089
+6a651337e75d7a30ba685c1a,Boscort C 1% Dusting Powder,Elkos Healthcare Pvt Ltd,,Skin Care,43,107.0,False,False,2027-10-11 03:54:34.291
+6a651337e75d7a30ba685c07,Boscort C 1% Lotion,Elkos Healthcare Pvt Ltd,,Skin Care,147,96.0,False,False,2028-02-24 00:40:09.232
+6a651337e75d7a30ba685bec,Bricarex D 30mg/5ml Expectorant,Biochem Pharmaceutical Industries,,"Cough, Cold & Respiratory",144,114.95,False,False,2027-02-05 04:53:08.830
+6a651337e75d7a30ba685bd6,Briodox Tablet,Brinton Pharmaceuticals Pvt Ltd,,Antibiotic,145,89.24,False,True,2027-04-29 13:22:28.897
+6a651337e75d7a30ba685bd5,Bro Cofdex Plus Syrup,Cipla Ltd,,"Cough, Cold & Respiratory",44,70.0,False,False,2027-10-26 16:48:33.657
+6a651337e75d7a30ba685bfd,Brobact 2% Ointment,Icarus Healthcare Pvt Ltd,,Skin Care,78,100.0,False,True,2027-08-18 04:03:55.234
+6a651337e75d7a30ba685c05,Brodil D 30mg/5ml Syrup,Vanguard Therapeutics Pvt Ltd,,"Cough, Cold & Respiratory",48,65.4,False,False,2027-12-26 04:39:17.215
+6a651337e75d7a30ba685c15,Buglac Mouth Wash,Urvija Pharmaceuticals,,Skin Care,143,99.0,False,False,2028-04-06 01:31:36.370
+6a651337e75d7a30ba685c03,Bupirobact 2% Ointment,German Remedies,,Skin Care,22,95.0,False,True,2027-06-11 21:17:45.934
+6a651337e75d7a30ba685bdb,Burn Nil Cream,Scott Edil Pharmacia Ltd,,Skin Care,53,60.0,False,False,2027-05-26 03:39:25.959
+6a651337e75d7a30ba685beb,Burn O Relief Cream,Cure Tech Skincare,,Skin Care,108,77.0,False,False,2027-03-10 03:07:16.585
+6a651337e75d7a30ba685c00,Burn-Om Cream,Om Biotec,,Skin Care,60,110.0,False,False,2027-01-01 08:26:38.736
+6a651337e75d7a30ba685be5,Burnfree Cream,Prevego Healthcare & Research Private Limited,,Skin Care,73,70.0,False,False,2026-11-23 18:59:57.765
+6a651337e75d7a30ba685bc0,Burnheal Cream,Cipla Ltd,,Skin Care,21,81.95,False,False,2028-04-07 09:57:07.259
+6a651337e75d7a30ba685be9,Burnheal Dusting Powder,Cipla Ltd,,Skin Care,52,21.0,False,False,2027-01-04 23:05:32.825
+6a651337e75d7a30ba685bea,Burnhit Cream,Care Formulation Labs Pvt Ltd,,Skin Care,61,750.0,False,False,2027-04-27 09:42:05.877
+6a651337e75d7a30ba685bd4,Burnol Povidone Ointment,Dr. Morepen Limited,,Skin Care,135,30.0,False,False,2027-07-21 19:22:44.930
+6a651337e75d7a30ba685c10,But-Bmd 3 Nano Shot Butterscotch Sugar Free,Butson Bioscience,,Vitamins & Supplements,29,78.0,False,False,2028-02-20 13:18:56.152
+6a651339e75d7a30ba685c2c,CB12 Injection,Mapra Laboratories Pvt Ltd,,Vitamins & Supplements,45,12.8,False,False,2026-12-30 02:58:19.584
+6a651339e75d7a30ba685c2f,CO Mupimet Collagen Particles,Fourrts India Laboratories Pvt Ltd,,Skin Care,11,1072.0,False,True,2027-07-18 08:07:15.093
+6a651339e75d7a30ba685c32,CO Mupimet Powder,Fourrts India Laboratories Pvt Ltd,,Skin Care,131,339.0,False,True,2027-10-31 04:31:12.273
+6a651339e75d7a30ba685c34,CZ 360 Chewable Tablet Orange,FDC Ltd,,Vitamins & Supplements,16,90.0,False,False,2027-01-09 02:52:23.711
+6a651339e75d7a30ba685c2e,Canazole Cream,Lupin Ltd,,Skin Care,125,40.0,False,False,2028-03-02 19:39:09.299
+6a651339e75d7a30ba685c31,Candid Gold Cream,Glenmark Pharmaceuticals Ltd,,Skin Care,22,163.52,False,False,2026-12-19 22:17:44.345
+6a651339e75d7a30ba685c20,Candid Lotion,Glenmark Pharmaceuticals Ltd,,Skin Care,18,133.6,False,False,2026-12-19 12:06:51.808
+6a651337e75d7a30ba685c1b,Candid Mouth Paint,Glenmark Pharmaceuticals Ltd,,Skin Care,102,153.0,False,False,2028-01-08 12:41:01.091
+6a651339e75d7a30ba685c22,Candid TV Suspension,Glenmark Pharmaceuticals Ltd,,Skin Care,62,305.0,False,False,2027-05-15 00:45:17.826
+6a651339e75d7a30ba685c21,Candid-V 6 Tablet ER,Glenmark Pharmaceuticals Ltd,,Skin Care,115,64.83,False,False,2027-10-31 21:33:07.512
+6a651339e75d7a30ba685c1e,Candid-V Gel,Glenmark Pharmaceuticals Ltd,,Skin Care,123,122.0,False,False,2027-10-29 19:38:57.308
+6a651339e75d7a30ba685c23,Candid-V3 Tablet VT,Glenmark Pharmaceuticals Ltd,,Skin Care,30,77.5,False,False,2027-10-25 06:05:15.052
+6a651339e75d7a30ba685c30,Canesten V6 Tablet VT,Bayer Pharmaceuticals Pvt Ltd,,Skin Care,29,64.5,False,False,2028-02-05 17:51:52.859
+6a651339e75d7a30ba685c2a,Canesten Vaginal Cream,Bayer Pharmaceuticals Pvt Ltd,,Skin Care,27,97.5,False,False,2027-08-07 11:05:57.410
+6a651339e75d7a30ba685c36,Carnozin 75mg Tablet,Bharti Life Sciences,,Vitamins & Supplements,14,88.38,False,False,2027-05-11 20:01:49.261
+6a651339e75d7a30ba685c41,Cefedge-C Injection,Suncure Lifescience Pvt Ltd,,Vitamins & Supplements,22,296.0,False,False,2026-11-23 02:20:10.213
+6a651339e75d7a30ba685c47,Cetrimol DG Syrup,Instant Remedies Pvt Ltd,,"Cough, Cold & Respiratory",54,74.0,False,False,2028-01-21 16:58:37.938
+6a651339e75d7a30ba685c3e,Chirof SF Syrup,Adventure Life Sciences Pvt Ltd,,"Cough, Cold & Respiratory",140,50.0,False,False,2027-04-21 06:27:37.077
+6a651339e75d7a30ba685c27,Clavix Tablet,Intas Pharmaceuticals Ltd,,Heart & Blood Pressure,21,126.87,False,True,2027-05-20 19:25:11.602
+6a651339e75d7a30ba685c3c,Cledex -SF Oral Liquid,Panjon Pharma Ltd,,"Cough, Cold & Respiratory",139,48.0,False,False,2026-11-23 04:22:57.853
+6a651339e75d7a30ba685c2d,Clenorush Oral Gel,DWD Pharmaceuticals Ltd,,Skin Care,59,99.0,False,False,2027-08-08 16:25:12.215
+6a651339e75d7a30ba685c28,Clocip Cream,Cipla Ltd,,Skin Care,26,47.23,False,False,2027-11-16 16:02:25.134
+6a651339e75d7a30ba685c3a,Clodin Soap,Gary Pharmaceuticals Pvt Ltd,,Skin Care,73,48.47,False,False,2027-06-28 15:58:45.406
+6a651339e75d7a30ba685c29,Clohex Mouth Wash,Dr Reddy's Laboratories Ltd,,Skin Care,22,148.75,False,False,2026-11-12 09:26:35.501
+6a651339e75d7a30ba685c24,Clop-GM Neo Cream,Zydus Cadila,,Skin Care,44,105.6,False,False,2027-06-22 17:48:01.854
+6a651339e75d7a30ba685c1f,Clopilet Tablet,Sun Pharmaceutical Industries Ltd,,Heart & Blood Pressure,112,129.4,False,True,2027-05-29 13:20:15.473
+6a651339e75d7a30ba685c1d,Clopitab Tablet,Lupin Ltd,,Heart & Blood Pressure,6,108.47,False,True,2027-07-26 18:38:44.421
+6a651339e75d7a30ba685c25,Clopivas 75 Tablet,Cipla Ltd,,Heart & Blood Pressure,22,94.2,False,True,2027-06-12 15:52:59.926
+6a651339e75d7a30ba685c26,Clostar-Gm Cream,Mankind Pharma Ltd,,Skin Care,83,58.56,False,False,2027-11-16 20:49:22.005
+6a651339e75d7a30ba685c3f,Coba C Injection,Healsure Lifesciences Pvt. Ltd.,,Vitamins & Supplements,64,65.0,False,False,2027-08-30 08:05:58.597
+6a651339e75d7a30ba685c42,Cobaver Forte Injection,Evershine Lifesciences Pvt Ltd,,Vitamins & Supplements,114,50.0,False,False,2027-11-23 23:46:13.647
+6a651339e75d7a30ba685c40,Cobsa-Vit C Injection,Arvincare Pharma,,Vitamins & Supplements,72,72.0,False,False,2027-09-05 22:17:07.231
+6a651339e75d7a30ba685c2b,Cofsils Dry Cough Syrup,Cipla Health Ltd,,"Cough, Cold & Respiratory",112,95.0,False,False,2027-09-11 04:42:55.495
+6a651339e75d7a30ba685c35,Cofstop-DX Syrup,Apex Laboratories Pvt Ltd,,"Cough, Cold & Respiratory",42,50.0,False,False,2027-09-03 02:06:56.947
+6a651339e75d7a30ba685c46,Coldnem Syrup,Nemi Pharmaceuticles,,"Cough, Cold & Respiratory",127,50.0,False,False,2028-03-24 18:54:37.817
+6a651339e75d7a30ba685c33,Combikit 12 Injection,Scott Edil Pharmacia Ltd,,Vitamins & Supplements,61,17.75,False,False,2026-12-28 08:37:04.859
+6a651339e75d7a30ba685c39,Consegna 30/70 Injection,Wockhardt Ltd,,Diabetes,26,397.6,False,True,2027-10-07 14:11:16.185
+6a651339e75d7a30ba685c37,Cool Burn Cream,Rishab Healthcare pvt. Ltd.,,Skin Care,12,350.0,False,False,2028-04-07 21:11:25.148
+6a651339e75d7a30ba685c43,Corest-BR Syrup,Ikon Remedies Pvt Ltd,,"Cough, Cold & Respiratory",16,95.0,False,False,2027-08-01 06:28:53.377
+6a651339e75d7a30ba685c3d,Corituss  Syrup,Wanbury Ltd,,"Cough, Cold & Respiratory",4,77.8,False,False,2027-09-17 10:31:40.657
+6a651339e75d7a30ba685c3b,Coughtas DX Syrup,Lupitas Pharmaceuticals Pvt  Ltd,,"Cough, Cold & Respiratory",134,40.0,False,False,2027-09-26 12:18:57.640
+6a651339e75d7a30ba685c45,Coverdoz 50mg/100mg/12mg Kit,Windlas Biotech Ltd,,Vitamins & Supplements,130,155.0,False,False,2027-12-27 01:48:30.891
+6a651339e75d7a30ba685c44,Cozia Tablet,Aeon Pharma Pvt Ltd,,"Cough, Cold & Respiratory",124,22.5,False,False,2027-10-12 12:55:23.177
+6a651339e75d7a30ba685c38,Cufbeat-D Syrup,Cubic Lifesciences Private Limited,,"Cough, Cold & Respiratory",90,69.5,False,False,2027-02-22 20:14:13.670
+6a651339e75d7a30ba685c56,D Glipin 50mg Tablet,Dr. Edwin Lab,,Diabetes,129,66.0,False,True,2028-04-19 10:01:45.571
+6a651339e75d7a30ba685c4b,D Tus Syrup,Med Manor Organics Pvt Ltd,,"Cough, Cold & Respiratory",16,110.0,False,False,2027-08-12 18:31:45.678
+6a651339e75d7a30ba685c4d,DMR 10mg Tablet,West-Coast Pharmaceutical Works Ltd,,"Cough, Cold & Respiratory",139,26.0,False,False,2027-02-10 14:00:20.264
+6a651339e75d7a30ba685c49,DMR 20mg Tablet,West-Coast Pharmaceutical Works Ltd,,"Cough, Cold & Respiratory",100,45.0,False,False,2027-12-08 05:37:21.497
+6a651339e75d7a30ba685c48,DMR 30mg Tablet,West-Coast Pharmaceutical Works Ltd,,"Cough, Cold & Respiratory",96,57.0,False,False,2027-03-08 17:59:52.927
+6a651339e75d7a30ba685c4a,DMR Syrup,West-Coast Pharmaceutical Works Ltd,,"Cough, Cold & Respiratory",64,90.0,False,False,2026-12-11 13:23:50.071
+6a651339e75d7a30ba685c4f,Debiglip 100 SR Tablet,Leeford Healthcare Ltd,,Diabetes,20,250.0,False,True,2028-03-28 15:28:38.666
+6a651339e75d7a30ba685c4e,Debiglip 50mg Tablet,Leeford Healthcare Ltd,,Diabetes,45,150.0,False,True,2028-04-17 20:27:19.158
+6a651339e75d7a30ba685c4c,Deroxy P Syrup,Biotic Healthcare,,"Cough, Cold & Respiratory",127,59.0,False,False,2027-10-25 01:48:56.499
+6a651339e75d7a30ba685c50,Diavild 50mg Tablet,Proqol Healthcare,,Diabetes,1,112.5,False,True,2027-08-09 06:28:12.191
+6a651339e75d7a30ba685c55,Dippivi 50 Tablet,Jubilant Life Sciences,,Diabetes,47,120.0,False,True,2028-04-13 14:10:20.793
+6a651339e75d7a30ba685c54,Doevil 50mg Tablet,Doer Life Sciences,,Diabetes,86,125.0,False,True,2028-03-24 06:36:19.054
+6a651339e75d7a30ba685c53,Dpp Vil 50 Tablet,Best Biotech,,Diabetes,132,96.0,False,True,2027-11-14 21:20:56.428
+6a651339e75d7a30ba685c52,Dpvil 50mg Tablet,Azkka Pharmaceuticals Pvt Ltd,,Diabetes,15,75.0,False,True,2027-12-20 09:31:06.621
+6a651339e75d7a30ba685c51,Drvilda 50mg Tablet,DR Best pharmaceuticals Pvt Ltd,,Diabetes,131,60.0,False,True,2027-04-04 00:30:56.268
+6a651339e75d7a30ba685c75,Ecovilda 50mg Tablet,Curewin Hylico Pharma Pvt Ltd,,Diabetes,148,67.5,False,True,2026-10-30 06:05:27.862
+6a651339e75d7a30ba685c5d,Eglucent Mix 25 100IU/ml Suspension for Injection,Lupin Ltd,,Diabetes,60,900.0,False,True,2027-10-03 14:39:23.741
+6a651339e75d7a30ba685c64,Eglucent Mix 25 Kwikpen 100IU/ml,Lupin Ltd,,Diabetes,38,1029.0,False,True,2026-11-06 12:06:51.374
+6a651339e75d7a30ba685c61,Eglucent Mix 50 100IU/ml Suspension for Injection,Lupin Ltd,,Diabetes,147,900.0,False,True,2027-01-21 01:34:10.119
+6a651339e75d7a30ba685c6d,Eglucent Mix 50 Kwikpen 100IU/ml,Lupin Ltd,,Diabetes,2,1131.0,False,True,2027-05-12 03:27:50.366
+6a651339e75d7a30ba685c69,Eglucent Rapid 100IU/ml Kwikpen,Lupin Ltd,,Diabetes,57,1029.0,False,True,2027-07-16 16:08:52.397
+6a651339e75d7a30ba685c5f,Eglucent Rapid 100IU/ml Solution for Injection,Lupin Ltd,,Diabetes,35,900.0,False,True,2027-11-09 13:10:48.931
+6a651339e75d7a30ba685c57,Eldervit 12 Combipack,Elder Pharmaceuticals Ltd,,Vitamins & Supplements,140,29.7,False,False,2027-05-14 03:52:02.803
+6a651339e75d7a30ba685c66,Eldervita 12 Injection Combipack,Elder Projects Ltd,,Vitamins & Supplements,124,25.3,False,False,2027-10-20 16:18:19.471
+6a651339e75d7a30ba685c73,Eldoviptin 50mg Tablet,El-Dorado Bio-Tech Pvt Ltd,,Diabetes,47,78.0,False,True,2027-03-06 07:52:37.585
+6a651339e75d7a30ba685c58,Eltroxin 100mcg Tablet,Glaxo SmithKline Pharmaceuticals Ltd,,Thyroid,71,177.55,False,True,2026-11-27 14:32:36.759
+6a651339e75d7a30ba685c62,Eltroxin 125mcg Tablet,Glaxo SmithKline Pharmaceuticals Ltd,,Thyroid,73,114.15,False,True,2026-11-01 03:14:44.692
+6a651339e75d7a30ba685c5a,Eltroxin 25mcg Tablet,Glaxo SmithKline Pharmaceuticals Ltd,,Thyroid,12,191.31,False,True,2027-09-06 05:25:56.293
+6a651339e75d7a30ba685c59,Eltroxin 50mcg Tablet,Glaxo SmithKline Pharmaceuticals Ltd,,Thyroid,35,106.63,False,True,2027-02-10 07:45:15.139
+6a651339e75d7a30ba685c5b,Eltroxin 75mcg Tablet,Glaxo SmithKline Pharmaceuticals Ltd,,Thyroid,56,193.53,False,True,2027-12-03 21:05:29.922
+6a651339e75d7a30ba685c67,Eltroxin 88mcg Tablet,Glaxo SmithKline Pharmaceuticals Ltd,,Thyroid,47,99.7,False,True,2027-06-17 00:51:38.685
+6a651339e75d7a30ba685c65,Encelin 50mg Tablet,Torrent Pharmaceuticals Ltd,,Diabetes,60,59.2,False,True,2027-01-17 14:11:13.729
+6a651339e75d7a30ba685c63,Encelin OD 100 Tablet,Torrent Pharmaceuticals Ltd,,Diabetes,94,121.0,False,True,2027-01-31 21:05:40.157
+6a651339e75d7a30ba685c74,Enerject 12 Injection,Anglo-French Drugs & Industries Ltd,,Vitamins & Supplements,41,13.9,False,False,2027-09-15 03:28:37.511
+6a651339e75d7a30ba685c6b,Equisulin-M 30 100IU/ml,Koye Pharmaceuticals Pvt ltd,,Diabetes,147,242.62,False,True,2026-11-06 19:56:46.231
+6a651339e75d7a30ba685c6a,Equisulin-M 30 Injection 40IU/ml,Koye Pharmaceuticals Pvt ltd,,Diabetes,146,169.15,False,True,2027-02-12 07:44:55.159
+6a651339e75d7a30ba685c78,Euroglipt 50mg Tablet,Efrosine Healthcare Private Limited,,Diabetes,38,112.0,False,True,2027-10-20 05:53:47.737
+6a651339e75d7a30ba685c72,Euthyroid 100 Tablet,Akumentis Healthcare Ltd,,Thyroid,2,130.0,False,True,2026-10-30 18:48:52.451
+6a651339e75d7a30ba685c71,Euthyroid 25 Tablet,Akumentis Healthcare Ltd,,Thyroid,34,64.0,False,True,2028-04-01 07:25:05.097
+6a651339e75d7a30ba685c70,Euthyroid 50 Tablet,Akumentis Healthcare Ltd,,Thyroid,97,104.0,False,True,2027-07-25 13:12:24.969
+6a651339e75d7a30ba685c5e,Euthyrox 100 Tablet,Merck Ltd,,Thyroid,18,147.38,False,True,2027-07-27 08:41:37.054
+6a651339e75d7a30ba685c6e,Euthyrox 12.5 Tablet,Merck Ltd,,Thyroid,120,150.88,False,True,2026-12-29 20:52:46.163
+6a651339e75d7a30ba685c6f,Euthyrox 12.5mcg Tablet,Merck Ltd,,Thyroid,7,167.12,False,True,2028-02-16 08:54:52.709
+6a651339e75d7a30ba685c60,Euthyrox 25 Tablet,Merck Ltd,,Thyroid,21,162.12,False,True,2027-01-23 01:49:58.749
+6a651339e75d7a30ba685c5c,Euthyrox 50 Tablet,Merck Ltd,,Thyroid,118,120.7,False,True,2027-03-30 01:08:31.325
+6a651339e75d7a30ba685c68,Euthyrox 75 Tablet,Merck Ltd,,Thyroid,120,160.88,False,True,2027-02-26 09:40:51.616
+6a651339e75d7a30ba685c6c,Euthyrox 88 Tablet,Merck Ltd,,Thyroid,57,190.55,False,True,2028-03-24 05:08:31.970
+6a651339e75d7a30ba685c77,Euvilda 50mg Tablet,Europa Healthcare Pvt Ltd,,Diabetes,113,104.0,False,True,2027-01-28 04:04:20.279
+6a651339e75d7a30ba685c76,Ezithyx 100mcg Tablet,DR Best pharmaceuticals Pvt Ltd,,Thyroid,77,89.0,False,True,2027-09-08 01:05:14.511
+6a651339e75d7a30ba685c79,Ezithyx 25mcg Tablet,DR Best pharmaceuticals Pvt Ltd,,Thyroid,77,69.0,False,True,2028-04-03 05:21:26.002
+6a651339e75d7a30ba685c7b,Ezithyx 50mcg Tablet,DR Best pharmaceuticals Pvt Ltd,,Thyroid,100,79.0,False,True,2026-12-19 17:45:12.295
+6a651339e75d7a30ba685c7a,Ezithyx 75mcg Tablet,DR Best pharmaceuticals Pvt Ltd,,Thyroid,83,85.0,False,True,2026-11-30 13:48:22.083
+6a651339e75d7a30ba685c89,Fertibex 50 Tablet,Fourrts India Laboratories Pvt Ltd,,Thyroid,25,9.55,False,True,2027-12-13 13:35:37.002
+6a651339e75d7a30ba685c88,Folcin 1 Injection,Unimarck Pharma India Ltd,,Vitamins & Supplements,68,1.75,False,False,2027-04-11 09:52:07.132
+6a651339e75d7a30ba685c84,Folcin 2 Injection,Unimarck Pharma India Ltd,,Vitamins & Supplements,101,24.1,False,False,2027-10-31 03:33:44.322
+6a651339e75d7a30ba685c85,Folera Tablet,Maneesh Pharmaceuticals Ltd,,Vitamins & Supplements,71,46.85,False,False,2026-10-25 19:03:21.109
+6a651339e75d7a30ba685c87,Foliage Tablet,Magbro Healthcare Pvt Ltd,,Vitamins & Supplements,49,19.0,False,False,2027-05-01 09:10:13.350
+6a651339e75d7a30ba685c7e,Folicel Tablet,Aishwarya Healthcare,,Vitamins & Supplements,35,43.6,False,False,2026-11-05 18:48:15.065
+6a651339e75d7a30ba685c83,Folimac 5mg Tablet,Ikon Pharmachem Pvt Ltd,,Vitamins & Supplements,72,11.5,False,False,2027-04-28 13:54:22.600
+6a651339e75d7a30ba685c7f,Folinal 5mg Tablet,Alembic Pharmaceuticals Ltd,,Vitamins & Supplements,1,45.9,False,False,2027-02-14 14:27:17.385
+6a651339e75d7a30ba685c80,Folistar Soft Gelatin Capsule,Triton Healthcare Pvt Ltd,,Vitamins & Supplements,107,179.0,False,False,2027-03-11 06:14:29.148
+6a651339e75d7a30ba685c81,Folizee 5mg Tablet,Zeelab Pharmacy Pvt Ltd,,Vitamins & Supplements,28,98.0,False,False,2028-02-24 06:24:37.807
+6a651339e75d7a30ba685c7c,Folvite 5mg Tablet,Pfizer Ltd,,Vitamins & Supplements,103,76.54,False,False,2027-02-06 10:59:52.645
+6a651339e75d7a30ba685c7d,Foly 5mg Tablet,Kaizen Pharmaceuticals Pvt Ltd,,Vitamins & Supplements,89,13.4,False,False,2027-05-14 15:42:04.594
+6a651339e75d7a30ba685c82,Foly-Act Tablet,Morepen Laboratories Ltd,,Vitamins & Supplements,44,14.38,False,False,2027-05-21 23:03:57.283
+6a651339e75d7a30ba685c86,Fregam B12 Injection,Siskan Pharma,,Vitamins & Supplements,115,49.0,False,False,2028-02-24 22:04:06.230
+6a651339e75d7a30ba685c8a,Galvus 50mg Tablet,Novartis India Ltd,,Diabetes,99,327.5,False,True,2028-02-08 16:45:45.089
+6a651339e75d7a30ba685c8c,Gastrozin 75mg Tablet,Synergy Pharma Formulations India Pvt Ltd,,Vitamins & Supplements,68,330.0,False,False,2027-06-20 21:07:58.326
+6a651339e75d7a30ba685c8b,Gliptagreat 50 Tablet,Mankind Pharma Ltd,,Diabetes,121,49.9,False,True,2027-03-15 17:32:10.423
+6a651339e75d7a30ba685c8d,HI ZN Syrup,Halcyon Drugs,,Vitamins & Supplements,46,26.0,False,False,2027-10-18 17:59:33.020
+6a651339e75d7a30ba685c8e,Healtroxin 100 Tablet,Healing Pharma India Pvt Ltd,,Thyroid,13,150.0,False,True,2027-07-03 05:36:24.779
+6a651339e75d7a30ba685c90,Healtroxin 125mcg Tablet,Healing Pharma India Pvt Ltd,,Thyroid,21,193.0,False,True,2028-03-03 10:13:15.117
+6a651339e75d7a30ba685c8f,Healtroxin 50mcg Tablet,Healing Pharma India Pvt Ltd,,Thyroid,145,123.0,False,True,2027-03-11 06:19:29.877
+6a651339e75d7a30ba685c91,Healtroxin 75mcg Tablet,Healing Pharma India Pvt Ltd,,Thyroid,107,164.0,False,True,2027-08-24 02:00:34.976
+6a651339e75d7a30ba685c92,IZinc Oral Suspension,Asterism Pharmaceuticals Pvt  Ltd,,Vitamins & Supplements,141,124.9,False,False,2027-09-28 17:30:05.246
+6a651339e75d7a30ba685c95,Immun Dase HD Chewable Tablet Tangy Orange Sugar Free,Astraea Life Sciences Pvt Ltd,,Vitamins & Supplements,54,110.0,False,False,2027-10-07 00:58:10.435
+6a651339e75d7a30ba685c93,Imuzinc Syrup,Medisurf Pharma,,Vitamins & Supplements,48,50.0,False,False,2027-01-22 05:14:52.628
+6a651339e75d7a30ba685c94,Inlime-CZ Chewable Tablet Orange,Winsome Bioceuticals,,Vitamins & Supplements,136,120.0,False,False,2027-12-10 07:32:37.938
+6a651339e75d7a30ba685c96,Jink Syrup,Lincoln Pharmaceuticals Ltd,,Vitamins & Supplements,41,72.6,False,False,2028-02-13 17:49:52.076
+6a651339e75d7a30ba685c97,Limcor Chewable Tablet,Rivan Pharma,,Vitamins & Supplements,58,170.0,False,False,2026-12-20 08:35:57.506
+6a651339e75d7a30ba685c98,Limcor Chewable Tablet Orange,Rivan Pharma,,Vitamins & Supplements,120,225.0,False,False,2027-12-19 00:04:55.559
+6a651339e75d7a30ba685c99,Medbic Injection,Medease Healthcare Pvt Ltd,,Vitamins & Supplements,119,490.0,False,False,2027-05-20 08:44:55.884
+6a651339e75d7a30ba685c9a,Ovit-Cee Injection,Oscar Remedies Pvt Ltd,,Vitamins & Supplements,18,420.0,False,False,2027-04-19 15:57:05.579
+6a651339e75d7a30ba685c9c,Oxistox 12 Injection,Zeelab Pharmacy Pvt Ltd,,Vitamins & Supplements,51,9.0,False,False,2026-11-11 04:06:10.987
+6a651339e75d7a30ba685c9b,Oxyfag-B Oral Suspension Sugar Free,U & V Cancure Pvt. Ltd.,,Vitamins & Supplements,99,650.0,False,False,2027-10-02 02:54:08.035
+6a651339e75d7a30ba685c9d,Rashcare Cream,Leeford Healthcare Ltd,,Vitamins & Supplements,114,75.0,False,False,2027-10-22 00:39:30.896
+6a651339e75d7a30ba685c9e,Redivit ZN 50mg Tablet,Best Biotech,,Vitamins & Supplements,35,65.0,False,False,2027-07-05 01:38:44.435
+6a651339e75d7a30ba685c9f,Ross Vee C 500mg Injection,Rosswelt Biosciences,,Vitamins & Supplements,22,330.0,False,False,2026-11-30 20:17:35.508
+6a651339e75d7a30ba685ca4,S-Zinc Tablet DT,Home Remedies Private Limited,,Vitamins & Supplements,8,55.0,False,False,2027-02-04 03:09:22.338
+6a651339e75d7a30ba685ca5,Scorbia-XT Injection,Pollen Healthcure Pvt. Ltd.,,Vitamins & Supplements,83,299.0,False,False,2026-11-05 11:37:01.327
+6a651339e75d7a30ba685ca2,Scorbix 1.5gm Injection,Fusion Healthcare Pvt Ltd,,Vitamins & Supplements,107,295.0,False,False,2027-07-16 13:26:33.447
+6a651339e75d7a30ba685ca6,Scornix Injection,Nixi Laboratories Private Limited,,Vitamins & Supplements,9,400.0,False,False,2028-01-07 03:23:43.587
+6a651339e75d7a30ba685ca0,Sofirash Cream,KLM Laboratories Pvt Ltd,,Vitamins & Supplements,113,130.0,False,False,2028-01-06 14:01:15.813
+6a651339e75d7a30ba685ca1,Suncros Soft 2% Cream,Sun Pharmaceutical Industries Ltd,,Vitamins & Supplements,76,799.0,False,False,2028-01-19 12:06:40.452
+6a651339e75d7a30ba685ca3,Sunheal Pure Cream,Alkem Laboratories Ltd,,Vitamins & Supplements,19,666.0,False,False,2026-12-23 09:19:51.717
+6a651339e75d7a30ba685ca7,T-Zinc Syrup,Terra Pharma Private Limited,,Vitamins & Supplements,27,96.0,False,False,2027-11-10 13:21:22.127
+6a651339e75d7a30ba685ca8,Tedyzin Syrup Mango,Insutik pharmaceuticals Private Limited,,Vitamins & Supplements,73,75.0,False,False,2026-11-19 10:52:35.828
+6a651339e75d7a30ba685ca9,Vitamin C Injection,Mankind Pharma Ltd,,Vitamins & Supplements,113,3.08,False,False,2028-03-26 08:30:33.737
+6a651339e75d7a30ba685caa,W-Vit-Plus Injection Combipack,Woriox Pharma Private Limited,,Vitamins & Supplements,76,51.0,False,False,2026-11-08 10:14:00.037
+6a651339e75d7a30ba685cab,Xcorbic 1.5gm Injection,Dote Health Care,,Vitamins & Supplements,101,360.0,False,False,2028-04-11 05:44:27.703
+6a651339e75d7a30ba685cb2,Zia 20 Tablet DT,West-Coast Pharmaceutical Works Ltd,,Vitamins & Supplements,90,35.0,False,False,2027-08-18 16:31:51.619
+6a651339e75d7a30ba685caf,Zincolak Capsule,A. Menarini India Pvt Ltd,,Vitamins & Supplements,70,21.0,False,False,2027-09-12 01:04:39.256
+6a651339e75d7a30ba685cb1,Zincovec 50 Tablet,Biorex Healthcare Pvt Ltd,,Vitamins & Supplements,41,51.0,False,False,2026-12-22 03:08:44.922
+6a651339e75d7a30ba685cb0,Zincshot Injection,Fusion Healthcare Pvt Ltd,,Vitamins & Supplements,56,599.0,False,False,2027-05-20 00:26:31.536
+6a651339e75d7a30ba685cad,Zioral Drops,FDC Ltd,,Vitamins & Supplements,50,74.8,False,False,2026-11-13 18:36:25.949
+6a651339e75d7a30ba685cae,Ziverdo Kit,Mankind Pharma Ltd,,Vitamins & Supplements,48,150.0,False,False,2027-07-21 03:39:05.788
+6a651339e75d7a30ba685cac,Zynwin Tablet,Macleods Pharmaceuticals Pvt Ltd,,Vitamins & Supplements,140,55.0,False,False,2027-03-22 23:38:23.784

@@ -149,9 +149,11 @@ const MedicineDetails = () => {
             <p className="muted-text">Fetching additional details…</p>
           ) : apiInfo ? (
             <div className="api-info-block">
-              {apiInfo.indicationsAndUsage && <p><strong>Indications:</strong> {apiInfo.indicationsAndUsage}</p>}
-              {apiInfo.dosageAndAdministration && <p><strong>Dosage:</strong> {apiInfo.dosageAndAdministration}</p>}
+              {apiInfo.uses && <p><strong>Uses:</strong> {apiInfo.uses}</p>}
+              {apiInfo.sideEffects && <p><strong>Side Effects:</strong> {apiInfo.sideEffects}</p>}
               {apiInfo.warnings && <p><strong>Warnings:</strong> {apiInfo.warnings}</p>}
+              {apiInfo.storage && <p><strong>Storage:</strong> {apiInfo.storage}</p>}
+              {apiInfo.dosage && <p><strong>Dosage:</strong> {apiInfo.dosage}</p>}
               <p className="muted-text api-source">Source: {apiInfo.source}</p>
             </div>
           ) : (

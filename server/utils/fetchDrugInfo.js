@@ -1,21 +1,30 @@
 /**
- * Fetches supplementary drug label info from openFDA — the live
- * "Medicine Information API fetches additional details" step in the
- * Medicine Details flow. Free, no API key required for moderate use.
+ * Module 8 — Medicine Information API integration.
  *
- * Only called for medicines with a known `fdaAlias` (the US generic name),
- * since Indian and US generic names sometimes differ (e.g. Salbutamol vs
- * Albuterol). Always best-effort — returns null on any failure so a slow
- * or unreachable API never breaks the medicine detail page.
+ * Flow:
+ *   User opens medicine
+ *     -> Node calls the standalone Python service (python-service/medicine_api)
+ *         -> That service calls the external Medicine API (openFDA)
+ *             -> Returns Uses, Side Effects, Warnings, Storage, Dosage
+ *     -> Node forwards the result straight back to the medicine page
+ *
+ * Node no longer talks to openFDA itself — that lookup now lives entirely
+ * in python-service/medicine_api/app.py. This file just calls that service
+ * over HTTP. Only called for medicines with a known `fdaAlias` (the US
+ * generic name), since Indian and US generic names sometimes differ (e.g.
+ * Salbutamol vs Albuterol). Always best-effort — returns null on any
+ * failure (service down, network error, timeout, "not found") so a
+ * problem with the Python service never breaks the medicine detail page.
  */
 
-// Simple in-memory cache so repeated views of the same medicine (or the
-// same generic across different brands) don't re-hit the API every time.
-// Resets on server restart — fine for this use case.
+const MEDICINE_API_URL = process.env.MEDICINE_API_URL || 'http://localhost:5001';
+const FETCH_TIMEOUT_MS = 4000;
+
+// Small in-memory cache on the Node side too, on top of the Python
+// service's own cache — avoids an HTTP round trip entirely for repeat
+// views within the same server process. Resets on server restart.
 const cache = new Map();
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
-
-const FETCH_TIMEOUT_MS = 4000;
 
 const fetchDrugInfo = async (fdaAlias) => {
   if (!fdaAlias) return null;
@@ -27,7 +36,7 @@ const fetchDrugInfo = async (fdaAlias) => {
   }
 
   try {
-    const url = `https://api.fda.gov/drug/label.json?search=openfda.generic_name:"${encodeURIComponent(key)}"&limit=1`;
+    const url = `${MEDICINE_API_URL}/api/medicine-info?generic_name=${encodeURIComponent(key)}`;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
@@ -40,24 +49,25 @@ const fetchDrugInfo = async (fdaAlias) => {
     }
 
     const json = await res.json();
-    const result = json?.results?.[0];
-    if (!result) {
+    if (!json.found) {
       cache.set(key, { data: null, fetchedAt: Date.now() });
       return null;
     }
 
     const data = {
-      source: 'openFDA',
-      purpose: result.purpose?.[0],
-      warnings: result.warnings?.[0] || result.warnings_and_cautions?.[0],
-      dosageAndAdministration: result.dosage_and_administration?.[0],
-      indicationsAndUsage: result.indications_and_usage?.[0],
+      source: json.source,
+      uses: json.uses,
+      sideEffects: json.sideEffects,
+      warnings: json.warnings,
+      storage: json.storage,
+      dosage: json.dosage,
     };
 
     cache.set(key, { data, fetchedAt: Date.now() });
     return data;
   } catch (err) {
-    // Network error, timeout, or unexpected shape — fail silently
+    // Network error, timeout, Python service not running, or unexpected
+    // shape — fail silently, same contract as before.
     return null;
   }
 };

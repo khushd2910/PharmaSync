@@ -1,0 +1,13 @@
+invoiceNumber,orderDate,customerName,customerEmail,itemCount,totalAmount,paymentMethod,paymentStatus,orderStatus,city,state,pincode
+INV-20260723-CE0638,2026-07-23 11:50:45.917,Test 1,test1@gmail.com,3,223.32,COD,Pending,Packed,Gandhinagar,Gujarat,384002
+INV-20260723-1DC574,2026-07-23 11:48:46.164,Test 1,test1@gmail.com,1,87.0,UPI,Paid,Cancelled,Gandhinagar,Gujarat,384002
+INV-20260719-9DEAFD,2026-07-19 15:49:13.337,Test 1,test1@gmail.com,1,163.52,COD,Pending,Pending,Gandhinagar,Gujarat,384002
+INV-20260719-6E8573,2026-07-19 15:37:40.841,Test 1,test1@gmail.com,1,106.05,COD,Pending,Confirmed,Gandhinagar,Gujarat,384002
+INV-20260719-79AA91,2026-07-19 15:15:57.241,Khush desai,khushd2910@gmail.com,1,196.5,COD,Pending,Confirmed,Gandhinagar,Gujarat,384002
+INV-20260719-8D7303,2026-07-19 14:48:08.640,Test 1,test1@gmail.com,1,73.5,COD,Pending,Confirmed,Gandhinagar,Gujarat,384002
+INV-20260719-45B626,2026-07-19 08:35:23.683,Test 1,test1@gmail.com,1,580.0,COD,Pending,Confirmed,Gandhinagar,Gujarat,384002
+INV-20260719-3D81A9,2026-07-19 08:23:09.854,Test 1,test1@gmail.com,1,10000000.0,COD,Pending,Cancelled,Gandhinagar,Gujarat,384002
+INV-20260718-87DE87,2026-07-18 08:57:23.321,Test 1,test1@gmail.com,2,126.23,UPI,Paid,Out for Delivery,Gandhinagar,Gujarat,384002
+INV-20260708-8885DA,2026-07-08 14:10:28.297,Test 1,test1@gmail.com,2,2602.5,COD,Pending,Confirmed,Gandhinagar,Gujarat,384002
+INV-20260708-376C66,2026-07-08 12:27:44.595,Test 1,test1@gmail.com,3,213.09,UPI,Paid,Cancelled,Gandhinagar,Gujarat,384002
+INV-20260707-7D53F0,2026-07-07 04:12:14.698,Test 1,test1@gmail.com,2,64.13,COD,Pending,Confirmed,Gandhinagar,Gujarat,384002

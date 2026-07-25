@@ -116,8 +116,11 @@ const getBrands = catchAsync(async (req, res) => {
   return res.status(200).json({ brands: brands.filter(Boolean).sort() });
 });
 
-// @desc    Get a single medicine's details, enriched with a live openFDA
-//          lookup where a reliable US-generic-name match exists
+// @desc    Get a single medicine's details, enriched with a live lookup
+//          (Uses/Side Effects/Warnings/Storage/Dosage) from the Module 8
+//          Medicine Information API (python-service/medicine_api), where a
+//          reliable US-generic-name match exists. fetchDrugInfo calls that
+//          Python service over HTTP; Node itself never talks to openFDA.
 // @route   GET /api/medicines/:id
 // @access  Public
 const getMedicineById = catchAsync(async (req, res, next) => {

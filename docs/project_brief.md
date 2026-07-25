@@ -91,3 +91,12 @@ PharmaSync/
     *   Admins can trigger analyses on-demand via the Admin Dashboard's "Run Analysis Now" button, which spawns the Python script as a Node subprocess.
     *   Results are written to distinct collections (`inventory_analysis` and `sales_analysis`).
     *   The frontend uses a custom bar chart component built using CSS div heights to visualize trends dynamically.
+
+---
+
+## 💊 Module 8: Medicine Information API (Python + Flask)
+
+*   **Standalone Lookup Service**: `python-service/medicine_api/app.py` is a small, stateless Flask service — unlike the analytics pipelines above, it never touches MongoDB.
+*   **Flow**: Whenever a user opens a medicine's detail page → Node calls this Python service → the service calls the external Medicine API (openFDA) → returns **Uses, Side Effects, Warnings, Storage, and Dosage** → Node forwards the result straight to the medicine page.
+*   **Node integration**: `server/utils/fetchDrugInfo.js` calls the service over HTTP (`MEDICINE_API_URL`, default `http://localhost:5001`) instead of calling openFDA directly.
+*   **Resilience**: Best-effort at every layer — a cache miss, an unmatched generic name, or the Python service being offline all resolve to no live data, never a broken page. Both the Python service and Node cache successful lookups in-memory for 24h.
