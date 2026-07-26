@@ -75,7 +75,7 @@ Pharmasync/
     *   Persists daily snapshot documents to MongoDB.
 *   **Execution Channels**:
     *   Runs automatically via `cron` (daily at 2:00 AM) or Windows Task Scheduler.
-    *   Triggerable on-demand via the Admin Dashboard's "Run Analysis Now" button (spawns Python subprocess).
+    *   Triggerable on-demand via the Admin Dashboard's "Run Analysis Now" button — proxied through Node to the Django analytics service (`python-service/analytics`), which runs the same pandas pipeline in-process.
     *   The Admin Dashboard queries the database to display the latest snapshot.
 
 ---
@@ -140,17 +140,18 @@ cp .env.example .env     # Set MONGO_URI to match your server connection
     ```bash
     python analytics/inventory_analysis.py
     ```
-*   **Run the Django service** (required for Module 5 Sales Analysis, plus
-    the Medicine Information API and AI Chatbot — all three are served
-    from this one process):
+*   **Run the Django service** (required for the admin dashboard's
+    Inventory, Sales, and Expiry Analysis pages, plus the Medicine
+    Information API and AI Chatbot — all five are served from this one
+    process):
     ```bash
     python manage.py runserver 8000
     ```
-    With this running, the admin dashboard's Sales Analysis "Run Analysis
-    Now" button and its regular data fetch both work — Node proxies both
-    to `http://localhost:8000` (`ANALYTICS_API_URL` in `server/.env`).
-    `inventory_analysis.py` and `expiry_analysis.py` don't need this
-    running; they're still plain standalone scripts.
+    With this running, every Analysis page's "Run Analysis Now" button and
+    its regular data fetch all work — Node proxies each one to
+    `http://localhost:8000` (`ANALYTICS_API_URL` in `server/.env`). The
+    nightly cron/Task Scheduler jobs below don't need this running; those
+    still call the plain standalone scripts directly.
 *   **Automate via Cron (Linux/macOS)**:
     Add to your crontab (`crontab -e`):
     ```cron
@@ -224,9 +225,15 @@ cp .env.example .env     # Set MONGO_URI to match your server connection
 | **GET** | `/api/admin/pos/sales/:id/receipt`| Admin | Download printable receipt PDF for a counter sale |
 
 ### Analytics
+All of the below are proxied by Node to the Django analytics service
+(`python-service/analytics`), which runs the actual pandas pipeline —
+see `python-service/analytics/README.md`.
+
 | Method | Endpoint | Access | Description |
 | :--- | :--- | :--- | :--- |
-| **GET** | `/api/admin/inventory-analysis` | Admin | Fetch the latest nightly stats snapshot |
-| **POST** | `/api/admin/inventory-analysis/run` | Admin | Trigger python analysis pipeline on-demand |
-| **GET** | `/api/admin/sales-analysis` | Admin | Fetch the latest sales snapshot (proxied to the Django analytics service) |
-| **POST** | `/api/admin/sales-analysis/run` | Admin | Run sales analysis now (proxied to the Django analytics service) |
+| **GET** | `/api/admin/inventory-analysis` | Admin | Fetch the latest inventory stats snapshot |
+| **POST** | `/api/admin/inventory-analysis/run` | Admin | Run inventory analysis now |
+| **GET** | `/api/admin/sales-analysis` | Admin | Fetch the latest sales snapshot |
+| **POST** | `/api/admin/sales-analysis/run` | Admin | Run sales analysis now |
+| **GET** | `/api/admin/expiry-analysis` | Admin | Fetch the latest expiry snapshot (Expired, 30/60/90-day buckets) |
+| **POST** | `/api/admin/expiry-analysis/run` | Admin | Run expiry analysis now |

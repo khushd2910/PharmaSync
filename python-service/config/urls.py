@@ -20,4 +20,8 @@ urlpatterns = [
     path('api/chat', chatbot_views.chat),
     path('api/sales-analysis', analytics_views.sales_analysis),
     path('api/sales-analysis/run', analytics_views.run_sales_analysis),
+    path('api/inventory-analysis', analytics_views.inventory_analysis),
+    path('api/inventory-analysis/run', analytics_views.run_inventory_analysis),
+    path('api/expiry-analysis', analytics_views.expiry_analysis),
+    path('api/expiry-analysis/run', analytics_views.run_expiry_analysis),
 ]

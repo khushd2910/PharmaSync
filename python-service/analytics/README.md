@@ -1,32 +1,34 @@
 # Analytics (Python + Pandas)
 
 Three scripts, same shape: read the same MongoDB the Node API uses, crunch
-it with pandas, write one summary document to their own collection.
+it with pandas, write one summary document to their own collection. Each
+one is still a plain, independent script — `python3 <name>_analysis.py`
+still works exactly as before, and the nightly cron job runs them that
+way. On top of that, all three are now *also* wrapped by a proper Django
+app (`analytics/views.py`, registered in `config/settings.py` /
+`config/urls.py`) that serves each one over HTTP — the same way Module 8
+(`medicine_api`) and Module 9 (`chatbot`) already replaced their
+Node/Flask equivalents. Node's `inventoryAnalysisController.js`,
+`salesAnalysisController.js`, and `expiryAnalysisController.js` are all
+now thin authenticated proxies to that service instead of reading MongoDB
+or spawning a subprocess themselves — see each file's header comment.
 
-- `inventory_analysis.py` and `expiry_analysis.py` are still standalone —
-  they only ever run on a schedule (cron/Task Scheduler) or via Node
-  spawning them as a subprocess for "Run Analysis Now" (see
-  `server/controllers/inventoryAnalysisController.js` /
-  `expiryAnalysisController.js` + `server/utils/runPythonScript.js`).
-- `sales_analysis.py` works both ways now: the script itself is unchanged
-  and still runs standalone on a schedule, but it's *also* wrapped by a
-  proper Django app (`analytics/views.py`, registered in
-  `config/settings.py` / `config/urls.py`) that serves
-  `GET /api/sales-analysis` and `POST /api/sales-analysis/run` over HTTP —
-  the same way Module 8 (`medicine_api`) and Module 9 (`chatbot`) already
-  replaced their Node/Flask equivalents. Node's
-  `salesAnalysisController.js` is now a thin authenticated proxy to that
-  service instead of reading MongoDB or spawning a subprocess itself — see
-  that file's header comment. `inventory_analysis.py` and
-  `expiry_analysis.py` haven't been converted yet; that's next.
+Every line of pandas logic still lives only in the three `*_analysis.py`
+scripts — `analytics/views.py` imports `get_db()` / `build_analysis()` /
+etc. from each one and calls them directly rather than reimplementing
+anything, so the cron path and the HTTP path always compute the exact
+same result.
 
-| Script | Module | Collection | What it computes | Django-served? |
-|---|---|---|---|---|
-| `inventory_analysis.py` | 4 | `inventory_analysis` | Total Stock, Low Stock, Fast Selling, Slow Selling | No — cron/subprocess only |
-| `sales_analysis.py` | 5 | `sales_analysis` | Daily/Weekly/Monthly Sales, Revenue, Best/Worst Sellers | **Yes** — `GET/POST /api/sales-analysis[/run]` |
-| `expiry_analysis.py` | 6 | `expiry_analysis` | Already Expired, Expiring in 30/60/90 Days, alert count | No — cron/subprocess only |
+| Script | Module | Collection | What it computes |
+|---|---|---|---|
+| `inventory_analysis.py` | 4 | `inventory_analysis` | Total Stock, Low Stock, Fast Selling, Slow Selling |
+| `sales_analysis.py` | 5 | `sales_analysis` | Daily/Weekly/Monthly Sales, Revenue, Best/Worst Sellers |
+| `expiry_analysis.py` | 6 | `expiry_analysis` | Already Expired, Expiring in 30/60/90 Days, alert count |
 
-## Setup (shared by both scripts)
+All three are served at `GET/POST /api/<name>-analysis[/run]` by the same
+Django process (`python3 manage.py runserver 8000`) — see "Run once" below.
+
+## Setup (shared by all three scripts)
 
 ```bash
 cd python-service
@@ -44,13 +46,11 @@ python3 analytics/sales_analysis.py
 python3 analytics/expiry_analysis.py
 ```
 
-For inventory and expiry, the admin dashboard's "Run Analysis Now" button
-does exactly this under the hood, spawning the script as a subprocess (see
-`server/controllers/inventoryAnalysisController.js` and
-`expiryAnalysisController.js`).
+That's the standalone path, same as always — mainly useful for the
+nightly cron job or debugging a script in isolation.
 
-For sales, "Run Analysis Now" instead calls the Django service in-process
-(no subprocess spawn) — start it with:
+For the admin dashboard's "Run Analysis Now" buttons, all three now call
+the Django service in-process (no subprocess spawn) — start it with:
 
 ```bash
 python3 manage.py runserver 8000
@@ -58,8 +58,9 @@ python3 manage.py runserver 8000
 
 ...and Node will reach it at `ANALYTICS_API_URL` (`server/.env`, defaults
 to `http://localhost:8000`, same port `MEDICINE_API_URL`/`CHATBOT_API_URL`
-already use for Modules 8/9). All three Django-served features currently
-live in one `manage.py runserver` process on port 8000.
+already use for Modules 8/9). All Django-served features — inventory,
+sales, and expiry analysis, plus the medicine info API and the chatbot —
+live in this one `manage.py runserver` process.
 
 ## Schedule nightly
 
