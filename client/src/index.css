@@ -51,6 +51,55 @@
 }
 
 /* ============================================================
+   Dark mode
+   ============================================================
+   Same variable names, remapped values — every component that
+   already reads var(--surface)/var(--ink)/etc. re-themes for free.
+   --teal-dark in particular flips role: on the light palette it's a
+   deeper teal used for emphasis text on a light background; here
+   it's the lighter of the two teals, since emphasis text needs to
+   be bright against a dark background instead.
+*/
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --paper: #101512;
+  --surface: #182019;
+  --ink: #e8ece5;
+  --muted: #8b9686;
+  --line: #2b3630;
+
+  --teal: #3f9c8c;
+  --teal-dark: #8fd9c9;
+  --teal-tint: #17302c;
+
+  --amber: #d99a3f;
+  --amber-tint: #362a15;
+
+  --red: #d97f68;
+  --red-tint: #3a2019;
+
+  --green: #5cb37e;
+  --green-tint: #1a3324;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 12px 32px -12px rgba(0, 0, 0, 0.55);
+}
+
+[data-theme='dark'] .admin-theme {
+  --teal: #d99a3f;
+  --teal-dark: #f0c27e;
+  --teal-tint: #362a15;
+  --amber: #3f9c8c;
+  --amber-tint: #17302c;
+}
+
+body, .navbar, .btn-primary, .btn-secondary, input, select, textarea,
+.chat-fab, .chat-panel, .medicine-card, .stat-card {
+  transition: background-color var(--ease), color var(--ease), border-color var(--ease);
+}
+
+/* ============================================================
    Reset & base
    ============================================================ */
 * {
@@ -438,6 +487,18 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 .navbar-btn.ghost { background: transparent; border: 1px solid var(--line); color: var(--ink) !important; }
 .navbar-btn.ghost:hover { border-color: var(--teal); color: var(--teal) !important; }
 .cart-link { position: relative; }
+
+.theme-toggle-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line);
+  background: var(--paper); color: var(--ink); cursor: pointer; flex-shrink: 0;
+}
+.theme-toggle-btn:hover { border-color: var(--teal); color: var(--teal); }
+
+.navbar-menu-toggle {
+  display: none; background: none; border: none; color: var(--ink); cursor: pointer;
+  align-items: center; justify-content: center; padding: 4px;
+}
 .cart-badge {
   background: var(--amber);
   color: #fff;
@@ -765,9 +826,20 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 }
 
 @media (max-width: 720px) {
-  .navbar { padding: 12px 18px; }
-  .navbar-links { gap: 10px; }
-  .navbar-link.muted { display: none; }
+  .navbar { padding: 12px 18px; position: relative; }
+  .navbar-menu-toggle { display: flex; }
+  .navbar-links {
+    display: none;
+    position: absolute; top: 100%; left: 0; right: 0;
+    flex-direction: column; align-items: flex-start; gap: 4px;
+    background: var(--surface); border-bottom: 1px solid var(--line);
+    padding: 12px 18px 16px; box-shadow: var(--shadow-md); z-index: 99;
+  }
+  .navbar-links-open { display: flex; }
+  .navbar-link, .navbar-btn { width: 100%; padding: 9px 4px; }
+  .navbar-btn { justify-content: center; padding: 9px 15px; }
+  .navbar-link.muted { display: block; }
+  .theme-toggle-btn { align-self: flex-end; margin-top: 4px; }
   .feature-grid { grid-template-columns: 1fr; }
   .hero-title { font-size: 28px; }
 }
@@ -788,6 +860,9 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
   .analysis-grid { grid-template-columns: 1fr; }
   .analysis-grid.two-col { grid-template-columns: 1fr; }
   .analysis-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .chat-widget { right: 12px; bottom: 12px; }
+  .chat-panel { width: calc(100vw - 24px); height: 65vh; bottom: 62px; }
+  .chat-fab { width: 48px; height: 48px; }
 }
 
 /* Module 9 — AI Chatbot widget */

@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { CartProvider } from './context/CartContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicLayout from './components/PublicLayout';
 
@@ -31,6 +32,7 @@ import AdminPrescriptions from './pages/AdminPrescriptions';
 
 function App() {
   return (
+    <ThemeProvider>
     <ToastProvider>
       <AuthProvider>
         <CartProvider>
@@ -174,6 +176,7 @@ function App() {
         </CartProvider>
       </AuthProvider>
     </ToastProvider>
+    </ThemeProvider>
   );
 }
 
