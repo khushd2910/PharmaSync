@@ -14,13 +14,13 @@ except ImportError:  # pragma: no cover
 
 from .knowledge_base import (
     DISCLAIMER,
-    GREETING_RESPONSES,
-    PRESCRIPTION_FAQ,
-    DELIVERY_FAQ,
-    FALLBACK_RESPONSE,
     clarify_response,
+    delivery_faq_response,
+    fallback_response,
+    greeting_response,
     is_health_related,
     match_all_symptoms,
+    prescription_faq_response,
 )
 
 # Connect to MongoDB from django settings
@@ -230,7 +230,7 @@ def handle_symptom_clarify():
 
 def handle_gemini_fallback(message):
     if not GEMINI_API_KEY or requests is None:
-        return {'reply': FALLBACK_RESPONSE, 'intent': 'general_question', 'disclaimer': DISCLAIMER}
+        return {'reply': fallback_response(), 'intent': 'general_question', 'disclaimer': DISCLAIMER}
 
     try:
         payload = {
@@ -247,13 +247,13 @@ def handle_gemini_fallback(message):
         }
         res = requests.post(f'{GEMINI_URL}?key={GEMINI_API_KEY}', json=payload, timeout=6)
         if not res.ok:
-            return {'reply': FALLBACK_RESPONSE, 'intent': 'general_question', 'disclaimer': DISCLAIMER}
+            return {'reply': fallback_response(), 'intent': 'general_question', 'disclaimer': DISCLAIMER}
 
         data = res.json()
         text = data['candidates'][0]['content']['parts'][0]['text']
         return {'reply': text.strip(), 'intent': 'general_question', 'disclaimer': DISCLAIMER}
     except Exception:
-        return {'reply': FALLBACK_RESPONSE, 'intent': 'general_question', 'disclaimer': DISCLAIMER}
+        return {'reply': fallback_response(), 'intent': 'general_question', 'disclaimer': DISCLAIMER}
 
 
 # ---------------------------------------------------------------------------
@@ -285,13 +285,13 @@ def chat(request):
     intent = detect_intent(message_lower)
 
     if intent == 'greeting':
-        result = {'reply': GREETING_RESPONSES[0], 'intent': 'greeting'}
+        result = {'reply': greeting_response(), 'intent': 'greeting'}
     elif intent == 'order_status':
         result = handle_order_status(user_id)
     elif intent == 'prescription_question':
-        result = {'reply': PRESCRIPTION_FAQ, 'intent': 'prescription_question'}
+        result = {'reply': prescription_faq_response(), 'intent': 'prescription_question'}
     elif intent == 'delivery_question':
-        result = {'reply': DELIVERY_FAQ, 'intent': 'delivery_question'}
+        result = {'reply': delivery_faq_response(), 'intent': 'delivery_question'}
     elif intent == 'recommendation':
         result = handle_recommendation()
     elif intent == 'symptom_advice':

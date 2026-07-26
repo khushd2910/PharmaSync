@@ -57,8 +57,34 @@ const SYMPTOM_KB = {
 
 const HEALTH_HINT_WORDS = [
   'sick', 'unwell', 'not feeling well', 'not well', 'not okay', 'not ok',
-  'ill', 'pain', 'ache', 'aches', 'hurts', 'hurting', 'symptom', 'symptoms',
-  'feel bad', 'feeling bad', 'feel awful', 'feeling awful',
+  'ill', 'pain', 'ache', 'aches', 'hurts', 'hurting',
+  'symptom', 'symptoms', 'feel bad', 'feeling bad', 'feel awful', 'feeling awful',
+  'feel off', 'feeling off', 'feel weird', 'feeling weird', 'feel strange', 'feeling strange',
+  'feel funny', 'feeling funny', 'feel odd', 'feeling odd', 'feel gross', 'feeling gross',
+  'feel rough', 'feeling rough', 'feel terrible', 'feeling terrible', 'feel horrible', 'feeling horrible',
+  'feel lousy', 'feeling lousy', 'feel crummy', 'feeling crummy', 'feel miserable', 'feeling miserable',
+  'feel sick', 'feeling sick', 'feel unwell', 'feeling unwell', 'feel ill', 'feeling ill',
+  'feel down', 'feeling down', 'feel low', 'feeling low', 'feel worn out', 'feeling worn out',
+  'feel drained', 'feeling drained', 'feel exhausted', 'feeling exhausted', 'feel out of sorts', 'feeling out of sorts',
+  'feel under the weather', 'feeling under the weather', 'feel poorly', 'feeling poorly', 'feel seedy', 'feeling seedy',
+  'feel queasy', 'feeling queasy', 'feel faint', 'feeling faint', 'feel weak', 'feeling weak',
+  'feel tired', 'feeling tired', 'feel nauseous', 'feeling nauseous', 'feel dizzy', 'feeling dizzy',
+  'feel uncomfortable', 'feeling uncomfortable', 'under the weather', 'run down', 'feeling run down', 'run-down',
+  'not myself', 'not feeling myself', 'not at my best', 'not at 100%', 'not at 100 percent', 'not doing well',
+  'not doing so well', 'not doing great', 'not doing so great', 'having a rough day', 'having a bad day health wise', 'health isn’t great',
+  'health is not great', 'poor health', 'not in good health', 'something\'s wrong', 'something is wrong', 'something\'s off',
+  'something feels wrong', 'something feels off', 'not right', 'doesn\'t feel right', 'does not feel right', 'feels wrong',
+  'body feels off', 'body feels weird', 'body feels strange', 'body hurts', 'my body hurts', 'everything hurts',
+  'whole body hurts', 'in pain', 'in a lot of pain', 'having pain', 'having discomfort', 'feel discomfort',
+  'feeling discomfort', 'in discomfort', 'uncomfortable', 'something hurts', 'something\'s hurting', 'physically unwell',
+  'physically not well', 'have symptoms', 'having symptoms', 'showing symptoms', 'developed symptoms', 'come down with something',
+  'coming down with something', 'catching something', 'might be coming down with something', 'feel like i\'m getting sick', 'feel like i am getting sick', 'getting sick',
+  'falling sick', 'fell sick', 'fallen ill', 'taken ill', 'medically unwell', 'don\'t feel good',
+  'dont feel good', 'do not feel good', 'not feeling good', 'isn\'t feeling good', 'is not feeling good', 'can\'t function',
+  'cant function', 'cannot function', 'can\'t get out of bed', 'cant get out of bed', 'cannot get out of bed', 'no energy',
+  'zero energy', 'health issue', 'health problem', 'health concern', 'medical issue', 'medical problem',
+  'medical concern', 'worried about my health', 'need medical help', 'need medical advice', 'need a doctor', 'need to see a doctor',
+  'should i see a doctor', 'should i go to the doctor', 'i\'m worried', 'i am worried'
 ];
 
 const GREETING_WORDS = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening'];

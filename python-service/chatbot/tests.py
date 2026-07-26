@@ -74,3 +74,60 @@ class SymptomIntentTests(SimpleTestCase):
         self.assertEqual(data['intent'], 'symptom_advice')
         self.assertIn('sore throat', data['data']['symptoms'])
         self.assertIn('lozenges', data['reply'].lower())
+
+
+class ExpandedResponseVarietyTests(SimpleTestCase):
+    """Coverage for the 10x expansion of HEALTH_HINT_WORDS,
+    GREETING_RESPONSES, PRESCRIPTION_FAQ, DELIVERY_FAQ, FALLBACK_RESPONSE,
+    and _CLARIFY_SAMPLE — checks both that each pool actually grew and
+    that the reply-picking functions draw from the full pool rather than
+    always returning the same single variant."""
+
+    def _reply(self, message):
+        response = self.client.post('/api/chat', data={'message': message}, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        return response.json()
+
+    def test_health_hint_words_grew_roughly_tenfold(self):
+        from chatbot.knowledge_base import HEALTH_HINT_WORDS
+        self.assertGreaterEqual(len(HEALTH_HINT_WORDS), 150)
+
+    def test_clarify_sample_grew_and_stays_readable(self):
+        from chatbot.knowledge_base import _CLARIFY_SAMPLE, SYMPTOM_KB
+        # Grew well beyond the original 10 (capped by how many non-urgent
+        # SYMPTOM_KB entries actually exist, not padded with invented ones).
+        self.assertGreaterEqual(len(_CLARIFY_SAMPLE), 50)
+        # Every sampled name must be a real, non-urgent SYMPTOM_KB key —
+        # clarify_response() should never offer an example it can't match.
+        for symptom in _CLARIFY_SAMPLE:
+            self.assertIn(symptom, SYMPTOM_KB)
+            self.assertFalse(SYMPTOM_KB[symptom].get('urgent'))
+
+    def test_clarify_response_stays_short_despite_larger_pool(self):
+        data = self._reply('i am not feeling well')
+        # A bigger underlying pool shouldn't turn the reply itself into an
+        # unreadable wall of text — only a handful of examples per reply.
+        shown = data['reply'].split('like:')[1]
+        self.assertLessEqual(shown.count(','), 12)
+
+    def test_greeting_responses_grew_and_vary(self):
+        from chatbot.knowledge_base import GREETING_RESPONSES
+        self.assertGreaterEqual(len(GREETING_RESPONSES), 10)
+        seen = {self._reply('hi')['reply'] for _ in range(30)}
+        self.assertGreater(len(seen), 1)
+
+    def test_prescription_faq_grew_and_varies(self):
+        from chatbot.knowledge_base import PRESCRIPTION_FAQ
+        self.assertGreaterEqual(len(PRESCRIPTION_FAQ), 10)
+        seen = {self._reply('do I need a prescription for this')['reply'] for _ in range(30)}
+        self.assertGreater(len(seen), 1)
+
+    def test_delivery_faq_grew_and_varies(self):
+        from chatbot.knowledge_base import DELIVERY_FAQ
+        self.assertGreaterEqual(len(DELIVERY_FAQ), 10)
+        seen = {self._reply('what is the delivery process')['reply'] for _ in range(30)}
+        self.assertGreater(len(seen), 1)
+
+    def test_fallback_response_grew(self):
+        from chatbot.knowledge_base import FALLBACK_RESPONSE
+        self.assertGreaterEqual(len(FALLBACK_RESPONSE), 10)

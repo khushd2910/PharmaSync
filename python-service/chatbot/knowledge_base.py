@@ -17,6 +17,8 @@ in dengue because of bleeding risk) rather than just unhelpful. Those
 always redirect to a doctor instead of naming a medicine.
 """
 
+import random
+
 DISCLAIMER = (
     "This is for informational purposes only and is not a substitute for "
     "professional medical advice, diagnosis, or treatment."
@@ -519,49 +521,250 @@ SYMPTOM_KB = {
 # Words that signal "this is a health complaint" even when they don't match
 # a specific SYMPTOM_KB entry — e.g. "I'm not feeling well" or "I feel
 # sick" say something is wrong without naming what. These trigger a
-# clarifying question (see CLARIFY_RESPONSE) instead of falling straight
+# clarifying question (see clarify_response()) instead of falling straight
 # through to the generic Gemini/static fallback, which had no way to ask
 # "which symptom?" and just gave up.
+#
+# Deliberately broad and repetitive (many "feel X" / "feeling X" pairs) —
+# people phrase "something's wrong" in a lot of different ways, and this
+# only needs to catch the message, not classify it precisely; the actual
+# specific-symptom matching still happens in SYMPTOM_KB above. ~168
+# phrases now, roughly 10x the original 18.
 HEALTH_HINT_WORDS = (
+    # -- original core set --
     'sick', 'unwell', 'not feeling well', 'not well', 'not okay', 'not ok',
     'ill', 'pain', 'ache', 'aches', 'hurts', 'hurting', 'symptom', 'symptoms',
     'feel bad', 'feeling bad', 'feel awful', 'feeling awful',
+
+    # -- "feel/feeling X" variants --
+    'feel off', 'feeling off', 'feel weird', 'feeling weird',
+    'feel strange', 'feeling strange', 'feel funny', 'feeling funny',
+    'feel odd', 'feeling odd', 'feel gross', 'feeling gross',
+    'feel rough', 'feeling rough', 'feel terrible', 'feeling terrible',
+    'feel horrible', 'feeling horrible', 'feel lousy', 'feeling lousy',
+    'feel crummy', 'feeling crummy', 'feel miserable', 'feeling miserable',
+    'feel sick', 'feeling sick', 'feel unwell', 'feeling unwell',
+    'feel ill', 'feeling ill', 'feel down', 'feeling down',
+    'feel low', 'feeling low', 'feel worn out', 'feeling worn out',
+    'feel drained', 'feeling drained', 'feel exhausted', 'feeling exhausted',
+    'feel out of sorts', 'feeling out of sorts',
+    'feel under the weather', 'feeling under the weather',
+    'feel poorly', 'feeling poorly', 'feel seedy', 'feeling seedy',
+    'feel queasy', 'feeling queasy', 'feel faint', 'feeling faint',
+    'feel weak', 'feeling weak', 'feel tired', 'feeling tired',
+    'feel nauseous', 'feeling nauseous', 'feel dizzy', 'feeling dizzy',
+    'feel uncomfortable', 'feeling uncomfortable',
+
+    # -- "under the weather" / general malaise phrasings --
+    'under the weather', 'run down', 'feeling run down', 'run-down',
+    'not myself', 'not feeling myself', 'not at my best', 'not at 100%',
+    'not at 100 percent', 'not doing well', 'not doing so well',
+    'not doing great', 'not doing so great', 'having a rough day',
+    'having a bad day health wise', 'health isn\u2019t great',
+    'health is not great', 'poor health', 'not in good health',
+
+    # -- "something's wrong" phrasings --
+    "something's wrong", 'something is wrong', "something's off",
+    'something feels wrong', 'something feels off', 'not right',
+    "doesn't feel right", 'does not feel right', 'feels wrong',
+    'body feels off', 'body feels weird', 'body feels strange',
+
+    # -- pain / discomfort phrasings --
+    'body hurts', 'my body hurts', 'everything hurts', 'whole body hurts',
+    'in pain', 'in a lot of pain', 'having pain', 'having discomfort',
+    'feel discomfort', 'feeling discomfort', 'in discomfort',
+    'uncomfortable', 'something hurts', "something's hurting",
+    'physically unwell', 'physically not well',
+
+    # -- illness / getting sick phrasings --
+    'have symptoms', 'having symptoms', 'showing symptoms',
+    'developed symptoms', 'come down with something',
+    'coming down with something', 'catching something',
+    'might be coming down with something',
+    "feel like i'm getting sick", 'feel like i am getting sick',
+    'getting sick', 'falling sick', 'fell sick', 'fallen ill',
+    'taken ill', 'medically unwell',
+
+    # -- "don't feel good" phrasings --
+    "don't feel good", 'dont feel good', 'do not feel good',
+    'not feeling good', "isn't feeling good", 'is not feeling good',
+
+    # -- functional/energy complaints --
+    "can't function", 'cant function', 'cannot function',
+    "can't get out of bed", 'cant get out of bed',
+    'cannot get out of bed', 'no energy', 'zero energy',
+
+    # -- seeking help phrasings --
+    'health issue', 'health problem', 'health concern',
+    'medical issue', 'medical problem', 'medical concern',
+    'worried about my health', 'need medical help', 'need medical advice',
+    'need a doctor', 'need to see a doctor', 'should i see a doctor',
+    'should i go to the doctor', "i'm worried", 'i am worried',
 )
 
 # Predefined canned responses — the diagram's "Predefined responses" and
 # rule-driven FAQ boxes (Prescription question / Delivery question).
-GREETING_RESPONSES = [
+#
+# Each of these is now a tuple of ~10 differently-worded variants (same
+# meaning, different phrasing) rather than one fixed string. A chatbot
+# that says the exact same sentence every single time it's asked about
+# delivery, or every time someone says "hi", reads as obviously canned;
+# picking a random variant per reply (see the *_response()/greeting()
+# helpers below) makes repeated use feel less robotic without changing
+# what's actually being said. `chat()` in views.py calls these helpers —
+# it never reads GREETING_RESPONSES[0] or a bare FALLBACK_RESPONSE string
+# directly.
+GREETING_RESPONSES = (
     "Hi! I'm PharmaSync's assistant. Ask me about a medicine, your order status, or a symptom like a headache or fever.",
-]
+    "Hello! I can help with medicine info, order tracking, or general symptom guidance — what's up?",
+    "Hey there! Tell me what's going on — a symptom, an order question, or a medicine you're looking for.",
+    "Hi, welcome to PharmaSync! I can look up medicines, check your order status, or suggest OTC options for common symptoms.",
+    "Hello! Feeling unwell, or here about an order or a medicine? I can help with any of those.",
+    "Hey! I'm here to help — ask about a symptom (like fever or headache), an order, or a medicine's price/stock.",
+    "Hi there! What can I help you with today — a health question, an order update, or something in our catalog?",
+    "Hello, I'm the PharmaSync assistant. Let me know your symptom, order number question, or medicine query.",
+    "Hey! Ready when you are — symptoms, orders, prescriptions, or medicine details, I've got you covered.",
+    "Hi! Whether it's a symptom, a medicine, or an order, just tell me what's on your mind.",
+)
 
 PRESCRIPTION_FAQ = (
     "Some medicines on PharmaSync require a valid prescription. When your cart has one of those, "
     "you'll be asked to upload a prescription at checkout — our pharmacist team reviews it, and your "
-    "order proceeds once it's approved. You can check an order's prescription status on its Order Details page."
+    "order proceeds once it's approved. You can check an order's prescription status on its Order Details page.",
+
+    "For prescription-only medicines, you'll need to upload a valid prescription at checkout. Our pharmacist "
+    "team reviews it before the order is confirmed, and you can track its approval status from your Order Details page.",
+
+    "Prescription-only items in your cart trigger an upload step at checkout. Once our pharmacists approve it, "
+    "your order moves forward — you can always check where that review stands on the Order Details page.",
+
+    "If you've added a prescription-required medicine, checkout will ask you to upload a valid prescription. "
+    "A pharmacist reviews and approves it, and the order's Order Details page shows exactly where that stands.",
+
+    "Certain medicines need a prescription on file before we can ship them. Upload yours at checkout, our "
+    "pharmacist team will review it, and you'll see the approval status on the relevant Order Details page.",
+
+    "You'll be prompted to upload a prescription at checkout for any medicine that requires one. Our pharmacists "
+    "review every upload, and approval status is always visible on that order's details page.",
+
+    "Prescription requirement works like this: add the medicine, upload your prescription at checkout, and a "
+    "pharmacist reviews it before the order is confirmed. Status updates live on the Order Details page.",
+
+    "For Rx-required medicines, checkout includes a prescription upload step. A pharmacist reviews it, and once "
+    "approved your order proceeds — check status any time from Order Details.",
+
+    "Medicines that need a prescription will prompt you to upload one during checkout. Our pharmacist team "
+    "reviews each upload, and you can follow its approval status on that order's Order Details page.",
+
+    "When your order includes a prescription-only medicine, you'll upload your prescription at checkout for "
+    "pharmacist review. Once approved, the order moves ahead — track that on Order Details.",
 )
 
 DELIVERY_FAQ = (
     "Orders move through Pending \u2192 Confirmed \u2192 Packed \u2192 Out for Delivery \u2192 Delivered. "
-    "You can track any order's current status from My Orders."
+    "You can track any order's current status from My Orders.",
+
+    "Every order goes through the same stages: Pending, Confirmed, Packed, Out for Delivery, then Delivered. "
+    "Check My Orders any time to see exactly where yours is.",
+
+    "Delivery tracking is simple — Pending \u2192 Confirmed \u2192 Packed \u2192 Out for Delivery \u2192 Delivered, "
+    "all visible from your My Orders page.",
+
+    "You can follow your order's journey (Pending, Confirmed, Packed, Out for Delivery, Delivered) from the "
+    "My Orders section at any time.",
+
+    "Orders progress step by step: Pending, then Confirmed, Packed, Out for Delivery, and finally Delivered. "
+    "My Orders always shows the current stage.",
+
+    "From the moment you place an order it moves through Pending \u2192 Confirmed \u2192 Packed \u2192 Out for "
+    "Delivery \u2192 Delivered — check My Orders for live status.",
+
+    "Wondering where your order is? It moves through five stages (Pending, Confirmed, Packed, Out for Delivery, "
+    "Delivered), all trackable from My Orders.",
+
+    "Delivery status updates as your order is Confirmed, then Packed, then Out for Delivery, and finally "
+    "Delivered — you can check this any time under My Orders.",
+
+    "Each order passes through Pending, Confirmed, Packed, Out for Delivery, and Delivered in that order. "
+    "My Orders shows exactly which stage yours is at right now.",
+
+    "You can track exactly where your order is — Pending, Confirmed, Packed, Out for Delivery, or Delivered — "
+    "from the My Orders page.",
 )
 
 FALLBACK_RESPONSE = (
     "I'm not able to help with that one directly \u2014 for anything specific to your health, "
-    "please consult a doctor or pharmacist."
+    "please consult a doctor or pharmacist.",
+
+    "That's a bit outside what I can help with directly \u2014 for anything specific to your health, "
+    "a doctor or pharmacist would be the right person to ask.",
+
+    "I don't have a good answer for that one \u2014 please check with a doctor or pharmacist for "
+    "anything specific to your health.",
+
+    "I'm not confident I can help with that directly. For anything health-specific, it's best to "
+    "consult a doctor or pharmacist.",
+
+    "That one's outside what I can reliably answer \u2014 a doctor or pharmacist would be able to "
+    "give you proper guidance on it.",
+
+    "I'd rather not guess on that one. For anything specific to your health, please reach out to a "
+    "doctor or pharmacist.",
+
+    "I'm not the right source for that \u2014 please consult a doctor or pharmacist for anything "
+    "specific to your health.",
+
+    "That's beyond what I can confidently help with here \u2014 a doctor or pharmacist can give you "
+    "an accurate answer.",
+
+    "I can't give a reliable answer on that one. Please check with a doctor or pharmacist for "
+    "anything specific to your health.",
+
+    "I'm not equipped to answer that directly \u2014 for anything specific to your health, please "
+    "consult a doctor or pharmacist.",
 )
 
+
+def greeting_response():
+    return random.choice(GREETING_RESPONSES)
+
+
+def prescription_faq_response():
+    return random.choice(PRESCRIPTION_FAQ)
+
+
+def delivery_faq_response():
+    return random.choice(DELIVERY_FAQ)
+
+def fallback_response():
+    return random.choice(FALLBACK_RESPONSE)
+
+
 # What SYMPTOM_KB actually covers, sampled for the clarifying question
-# below. With 100+ entries now, listing every single one would be an
-# unreadable wall of text, so this shows a handful of common,
-# easy-to-recognize ones rather than dumping the entire dictionary.
-_CLARIFY_SAMPLE = (
-    'headache', 'fever', 'cold', 'cough', 'stomach ache', 'body pain',
-    'sore throat', 'allergy', 'nausea', 'back pain',
-)
+# below. Previously this was a fixed 10-item tuple always shown in full —
+# expanded here to every non-urgent SYMPTOM_KB entry (~86, as close to a
+# 10x increase over the original 10 as the actual knowledge base
+# supports — it's built from real SYMPTOM_KB keys rather than padded with
+# invented ones, so every example clarify_response() gives is guaranteed
+# to actually match if the person repeats it back). Urgent/red-flag
+# entries (chest pain, dengue, ...) are deliberately excluded — those
+# should never be offered up as a casual "try telling me about this"
+# example.
+#
+# Showing all ~86 in one message would still be a wall of text, so
+# clarify_response() below randomly samples a short, readable handful from
+# this larger pool each time instead of printing the whole thing — bigger
+# underlying variable, still a readable reply, and it varies from one
+# conversation to the next rather than always listing the same 10.
+_CLARIFY_SAMPLE = tuple(sorted(symptom for symptom, info in SYMPTOM_KB.items() if not info.get('urgent')))
+
+_CLARIFY_SAMPLE_SIZE = 10  # how many examples clarify_response() shows per reply
 
 
 def _known_symptoms_list():
-    return ', '.join(_CLARIFY_SAMPLE)
+    pool = list(_CLARIFY_SAMPLE)
+    sample_size = min(_CLARIFY_SAMPLE_SIZE, len(pool))
+    return ', '.join(random.sample(pool, sample_size))
 
 
 def clarify_response():
