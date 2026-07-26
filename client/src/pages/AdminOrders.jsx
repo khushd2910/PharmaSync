@@ -3,6 +3,7 @@ import { Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import { computeDisplayStatus, ORDER_STAGES } from '../utils/orderStatus';
+import { formatCurrency, formatDate } from '../utils/format';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const ALL_STATUSES = [...ORDER_STAGES, 'Cancelled'];
@@ -83,9 +84,9 @@ const AdminOrders = () => {
                   {order.user?.name || 'Unknown'} · {order.user?.email}
                 </p>
                 <p className="muted-text">
-                  {new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  {formatDate(order.createdAt)}
                   {' · '}{order.items.length} item{order.items.length > 1 ? 's' : ''}
-                  {' · '}₹{order.totalAmount.toFixed(2)}
+                  {' · '}{formatCurrency(order.totalAmount)}
                 </p>
               </div>
 

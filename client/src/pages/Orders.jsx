@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ClipboardList } from 'lucide-react';
+import { formatCurrency, formatDate } from '../utils/format';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import { computeDisplayStatus } from '../utils/orderStatus';
@@ -43,12 +44,12 @@ const Orders = () => {
             <div className="order-row-main">
               <p className="order-invoice">{order.invoiceNumber}</p>
               <p className="muted-text">
-                {new Date(order.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}
+                {formatDate(order.createdAt)}
                 {' · '}{order.items.length} item{order.items.length > 1 ? 's' : ''}
               </p>
             </div>
             <span className="badge badge-status">{computeDisplayStatus(order)}</span>
-            <span className="order-row-total num">₹{order.totalAmount.toFixed(2)}</span>
+            <span className="order-row-total num">{formatCurrency(order.totalAmount)}</span>
           </Link>
         ))}
       </div>

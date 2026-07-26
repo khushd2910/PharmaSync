@@ -5,6 +5,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
+import { addRecentlyViewed } from '../utils/recentlyViewed';
 
 const MedicineDetails = () => {
   const { id } = useParams();
@@ -27,6 +28,7 @@ const MedicineDetails = () => {
       .then((res) => {
         setMedicine(res.data.medicine);
         setApiInfo(res.data.apiInfo);
+        addRecentlyViewed(res.data.medicine);
       })
       .catch(() => showToast('Could not load this medicine', 'error'))
       .finally(() => {

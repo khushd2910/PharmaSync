@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, CreditCard, Truck, ShieldAlert, UploadCloud, FileCheck2 } from 'lucide-react';
+import { MapPin, CreditCard, Truck, ShieldAlert, UploadCloud, FileCheck2, CalendarCheck } from 'lucide-react';
 import api from '../api/axios';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
+import { formatCurrency } from '../utils/format';
 
 const Checkout = () => {
   const { cart, refreshCart } = useCart();
@@ -212,13 +213,21 @@ const Checkout = () => {
             {cart.items.map(({ medicine, quantity, lineTotal }) => (
               <div className="summary-line" key={medicine._id}>
                 <span>{medicine.name} × {quantity}</span>
-                <span>₹{lineTotal.toFixed(2)}</span>
+                <span>{formatCurrency(lineTotal)}</span>
               </div>
             ))}
             <div className="summary-line total">
               <span>Total</span>
-              <span>₹{cart.totalAmount.toFixed(2)}</span>
+              <span>{formatCurrency(cart.totalAmount)}</span>
             </div>
+
+            <p className="delivery-estimate">
+              <CalendarCheck size={14} strokeWidth={2} />
+              {rxItems.length > 0
+                ? 'Estimated delivery: 4–6 days after prescription approval'
+                : 'Estimated delivery: 3–5 business days'}
+            </p>
+
             <button
               className="btn-primary place-order-btn"
               onClick={handlePlaceOrder}

@@ -7,6 +7,7 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import IconInput from '../components/IconInput';
 import MedicineCard from '../components/MedicineCard';
+import { getRecentlyViewed } from '../utils/recentlyViewed';
 
 const highlights = [
   { icon: ShieldCheck, title: 'Verified accounts', text: 'Email verification keeps every account secure.' },
@@ -22,6 +23,7 @@ const Home = () => {
   const [offers, setOffers] = useState([]);
   const [popular, setPopular] = useState([]);
   const [recent, setRecent] = useState([]);
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
 
   // Search/filter state
   const [search, setSearch] = useState('');
@@ -52,6 +54,7 @@ const Home = () => {
     api.get('/medicines', { params: { onOffer: true, limit: 8 } }).then((res) => setOffers(res.data.medicines)).catch(() => {});
     api.get('/medicines', { params: { featured: true, limit: 8 } }).then((res) => setPopular(res.data.medicines)).catch(() => {});
     api.get('/medicines', { params: { sort: 'newest', limit: 8 } }).then((res) => setRecent(res.data.medicines)).catch(() => {});
+    setRecentlyViewed(getRecentlyViewed());
   }, []);
 
   const fetchMedicines = async (targetPage, append = false) => {
@@ -152,6 +155,9 @@ const Home = () => {
       )}
 
       {/* Promo rows — additive, shown above the catalog only while browsing */}
+      {isBrowsing && recentlyViewed.length > 0 && (
+        <BrowseRow title="Recently Viewed" medicines={recentlyViewed} onAddToCart={handleAddToCart} />
+      )}
       {isBrowsing && offers.length > 0 && (
         <BrowseRow title="Offers" icon={Tag} medicines={offers} onAddToCart={handleAddToCart} />
       )}

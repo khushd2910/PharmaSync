@@ -5,6 +5,7 @@ import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import OrderStatusStepper from '../components/OrderStatusStepper';
 import { isCancellable } from '../utils/orderStatus';
+import { formatCurrency, formatDateTime } from '../utils/format';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -53,7 +54,7 @@ const OrderDetails = () => {
         <div>
           <h1 className="page-title">Order {order.invoiceNumber}</h1>
           <p className="muted-text">
-            Placed {new Date(order.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+            Placed {formatDateTime(order.createdAt)}
           </p>
         </div>
         <div className="order-actions">
@@ -83,12 +84,12 @@ const OrderDetails = () => {
           {order.items.map((item, i) => (
             <div className="summary-line" key={i}>
               <span>{item.name} × {item.quantity}</span>
-              <span>₹{(item.price * item.quantity).toFixed(2)}</span>
+              <span>{formatCurrency(item.price * item.quantity)}</span>
             </div>
           ))}
           <div className="summary-line total">
             <span>Total</span>
-            <span>₹{order.totalAmount.toFixed(2)}</span>
+            <span>{formatCurrency(order.totalAmount)}</span>
           </div>
 
           {order.prescriptionRequired && (

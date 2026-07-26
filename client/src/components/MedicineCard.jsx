@@ -1,5 +1,11 @@
 import { Link } from 'react-router-dom';
 import { Pill, ShoppingCart, FileWarning } from 'lucide-react';
+import { formatCurrency } from '../utils/format';
+
+// Below this many units left, show an urgency hint ("Only 3 left")
+// instead of a flat "in stock" — a trust/transparency signal that sets
+// expectations before checkout rather than at it.
+const LOW_STOCK_THRESHOLD = 5;
 
 const MedicineCard = ({ medicine, onAddToCart }) => {
   const composition = [medicine.composition1, medicine.composition2].filter(Boolean).join(' + ');
@@ -8,6 +14,7 @@ const MedicineCard = ({ medicine, onAddToCart }) => {
     ? medicine.price * (1 - medicine.discountPercent / 100)
     : medicine.price;
   const outOfStock = medicine.stock <= 0;
+  const lowStock = !outOfStock && medicine.stock <= LOW_STOCK_THRESHOLD;
 
   return (
     <div className="medicine-card">
@@ -26,19 +33,20 @@ const MedicineCard = ({ medicine, onAddToCart }) => {
 
       <div className="medicine-card-tags">
         {medicine.requiresPrescription && (
-          <span className="badge badge-rx">
+          <span className="badge badge-rx" title="A pharmacist must approve an uploaded prescription before this can be delivered">
             <FileWarning size={11} strokeWidth={2} /> Rx required
           </span>
         )}
         {outOfStock && <span className="badge badge-outofstock">Out of stock</span>}
+        {lowStock && <span className="badge badge-discount">Only {medicine.stock} left</span>}
       </div>
 
       <div className="medicine-card-footer">
         <span className="medicine-card-price num">
           {typeof medicine.price === 'number' ? (
             <>
-              ₹{effectivePrice.toFixed(2)}
-              {hasDiscount && <span className="price-strike">₹{medicine.price.toFixed(2)}</span>}
+              {formatCurrency(effectivePrice)}
+              {hasDiscount && <span className="price-strike">{formatCurrency(medicine.price)}</span>}
             </>
           ) : (
             'Price unavailable'

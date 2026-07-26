@@ -1,3 +1,4 @@
+import { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
@@ -20,15 +21,22 @@ import Orders from './pages/Orders';
 import OrderDetails from './pages/OrderDetails';
 import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
-import AdminDashboard from './pages/AdminDashboard';
-import AdminOrders from './pages/AdminOrders';
-import AdminAddMedicine from './pages/AdminAddMedicine';
-import AdminMedicines from './pages/AdminMedicines';
-import AdminEditMedicine from './pages/AdminEditMedicine';
-import AdminPOS from './pages/AdminPOS';
-import AdminSalesAnalysis from './pages/AdminSalesAnalysis';
-import AdminReports from './pages/AdminReports';
-import AdminPrescriptions from './pages/AdminPrescriptions';
+
+// Admin/POS pages are a meaningful chunk of code a regular customer
+// never needs — split them into their own lazily-loaded bundles so the
+// storefront's initial download stays small. React.lazy + Suspense
+// fetches each one only the first time its route is actually visited.
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AdminOrders = lazy(() => import('./pages/AdminOrders'));
+const AdminAddMedicine = lazy(() => import('./pages/AdminAddMedicine'));
+const AdminMedicines = lazy(() => import('./pages/AdminMedicines'));
+const AdminEditMedicine = lazy(() => import('./pages/AdminEditMedicine'));
+const AdminPOS = lazy(() => import('./pages/AdminPOS'));
+const AdminSalesAnalysis = lazy(() => import('./pages/AdminSalesAnalysis'));
+const AdminReports = lazy(() => import('./pages/AdminReports'));
+const AdminPrescriptions = lazy(() => import('./pages/AdminPrescriptions'));
+
+const AdminPageFallback = () => <p className="info-text center-text admin-theme">Loading…</p>;
 
 function App() {
   return (
@@ -36,6 +44,7 @@ function App() {
       <ToastProvider>
         <AuthProvider>
           <CartProvider>
+            <Suspense fallback={<AdminPageFallback />}>
             <Routes>
               {/* Public pages share the Navbar via PublicLayout */}
               <Route element={<PublicLayout />}>
@@ -173,6 +182,7 @@ function App() {
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
+            </Suspense>
           </CartProvider>
         </AuthProvider>
       </ToastProvider>

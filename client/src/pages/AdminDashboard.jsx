@@ -7,7 +7,9 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
-const formatExpiry = (iso) => new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+import { formatCurrency, formatDate, formatDateTime } from '../utils/format';
+
+const formatExpiry = formatDate;
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -127,8 +129,8 @@ const AdminDashboard = () => {
           <div className="stat-card">
             <Wallet size={18} strokeWidth={2} className="stat-icon" />
             <div>
-              <p className="stat-value">₹{stats.revenue.toFixed(2)}</p>
-              <p className="stat-label">Revenue · ₹{stats.onlineRevenue.toFixed(2)} online, ₹{stats.posRevenue.toFixed(2)} in-store</p>
+              <p className="stat-value">{formatCurrency(stats.revenue)}</p>
+              <p className="stat-label">Revenue · {formatCurrency(stats.onlineRevenue)} online, {formatCurrency(stats.posRevenue)} in-store</p>
             </div>
           </div>
 
@@ -168,7 +170,7 @@ const AdminDashboard = () => {
         ) : (
           <>
             <p className="muted-text analysis-meta">
-              Last run {new Date(analysis.generatedAt).toLocaleString('en-IN')} · sales window: last{' '}
+              Last run {formatDateTime(analysis.generatedAt)} · sales window: last{' '}
               {analysis.lookbackDays} days · {analysis.totalStockUnits} total units across {analysis.totalMedicines}{' '}
               medicines
             </p>
@@ -242,7 +244,7 @@ const AdminDashboard = () => {
         ) : (
           <>
             <p className="muted-text analysis-meta">
-              Last run {new Date(expiryAnalysis.generatedAt).toLocaleString('en-IN')} · {expiryAnalysis.totalTracked}{' '}
+              Last run {formatDateTime(expiryAnalysis.generatedAt)} · {expiryAnalysis.totalTracked}{' '}
               medicines with a known expiry date · {expiryAnalysis.expired.length} already expired
             </p>
 

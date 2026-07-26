@@ -2,14 +2,27 @@ import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send } from 'lucide-react';
 import api from '../api/axios';
 
-// Module 9 — AI Chatbot. Client-side history only (not persisted) — a
-// fresh page load starts a new conversation. Works for guests and
-// logged-in users alike; the server attaches the user id when there is one.
+const STORAGE_KEY = 'pharmacare-chat-history';
+const DEFAULT_MESSAGES = [
+  { role: 'bot', text: "Hi! Ask me about a medicine, your order status, or a symptom like a headache." },
+];
+const QUICK_REPLIES = ['Track my order', 'I have a headache', 'Do I need a prescription?', 'Delivery time?'];
+
+// Module 9 — AI Chatbot. History persists in sessionStorage so switching
+// pages (or accidentally closing the panel) doesn't wipe the
+// conversation — it clears naturally when the browser tab closes,
+// same as the rest of the app's session-scoped state. Works for guests
+// and logged-in users alike; the server attaches the user id when there is one.
 const ChatWidget = () => {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    { role: 'bot', text: "Hi! Ask me about a medicine, your order status, or a symptom like a headache." },
-  ]);
+  const [messages, setMessages] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : DEFAULT_MESSAGES;
+    } catch {
+      return DEFAULT_MESSAGES;
+    }
+  });
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const scrollRef = useRef(null);
@@ -18,10 +31,15 @@ const ChatWidget = () => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    } catch {
+      // Storage full/unavailable (private browsing, etc.) — chat still
+      // works within the tab, it just won't persist across a reload.
+    }
   }, [messages, open]);
 
-  const handleSend = async () => {
-    const text = input.trim();
+  const sendText = async (text) => {
     if (!text || sending) return;
 
     setMessages((prev) => [...prev, { role: 'user', text }]);
@@ -45,12 +63,19 @@ const ChatWidget = () => {
     }
   };
 
+  const handleSend = () => sendText(input.trim());
+
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
+
+  // Quick replies stay available for the first couple of turns (common
+  // starting points), then step aside once the conversation is underway
+  // so they don't clutter a longer back-and-forth.
+  const showQuickReplies = messages.length <= 1;
 
   return (
     <div className="chat-widget">
@@ -71,6 +96,16 @@ const ChatWidget = () => {
               </div>
             ))}
             {sending && <div className="chat-bubble chat-bubble-bot chat-typing">Typing…</div>}
+
+            {showQuickReplies && !sending && (
+              <div className="chat-quick-replies">
+                {QUICK_REPLIES.map((q) => (
+                  <button key={q} type="button" className="chat-quick-reply" onClick={() => sendText(q)}>
+                    {q}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="chat-panel-input">
