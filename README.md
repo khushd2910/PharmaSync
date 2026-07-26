@@ -140,6 +140,17 @@ cp .env.example .env     # Set MONGO_URI to match your server connection
     ```bash
     python analytics/inventory_analysis.py
     ```
+*   **Run the Django service** (required for Module 5 Sales Analysis, plus
+    the Medicine Information API and AI Chatbot — all three are served
+    from this one process):
+    ```bash
+    python manage.py runserver 8000
+    ```
+    With this running, the admin dashboard's Sales Analysis "Run Analysis
+    Now" button and its regular data fetch both work — Node proxies both
+    to `http://localhost:8000` (`ANALYTICS_API_URL` in `server/.env`).
+    `inventory_analysis.py` and `expiry_analysis.py` don't need this
+    running; they're still plain standalone scripts.
 *   **Automate via Cron (Linux/macOS)**:
     Add to your crontab (`crontab -e`):
     ```cron
@@ -217,3 +228,5 @@ cp .env.example .env     # Set MONGO_URI to match your server connection
 | :--- | :--- | :--- | :--- |
 | **GET** | `/api/admin/inventory-analysis` | Admin | Fetch the latest nightly stats snapshot |
 | **POST** | `/api/admin/inventory-analysis/run` | Admin | Trigger python analysis pipeline on-demand |
+| **GET** | `/api/admin/sales-analysis` | Admin | Fetch the latest sales snapshot (proxied to the Django analytics service) |
+| **POST** | `/api/admin/sales-analysis/run` | Admin | Run sales analysis now (proxied to the Django analytics service) |
