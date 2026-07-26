@@ -7,8 +7,7 @@ try:
 except ImportError:  # pragma: no cover
     requests = None
 
-# Configure port and caching defaults (matching app.py exactly)
-PORT = int(os.getenv('MEDICINE_API_PORT', '5001'))
+# Cache TTL for in-memory openFDA lookups
 CACHE_TTL_SECONDS = int(os.getenv('MEDICINE_INFO_CACHE_TTL_HOURS', '24')) * 60 * 60
 FETCH_TIMEOUT_SECONDS = 4
 OPENFDA_URL = 'https://api.fda.gov/drug/label.json'

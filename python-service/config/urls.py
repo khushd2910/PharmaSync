@@ -2,7 +2,7 @@
 URL configuration for config project.
 """
 from django.http import JsonResponse
-from django.urls import path, include
+from django.urls import path
 
 from medicine_api import views as medicine_views
 from chatbot import views as chatbot_views
@@ -17,6 +17,4 @@ urlpatterns = [
     path('health', root_health),
     path('api/medicine-info', medicine_views.medicine_info),
     path('api/chat', chatbot_views.chat),
-    path('medicine/', include('medicine_api.urls')),
-    path('chatbot/', include('chatbot.urls')),
 ]

@@ -94,11 +94,27 @@ PharmaSync/
 
 ---
 
+## ⏳ Module 6: Expiry Analysis (Python + Pandas)
+
+*   **Standalone Pipeline**: `python-service/analytics/expiry_analysis.py` runs alongside the inventory and sales pipelines, connecting directly to MongoDB.
+*   **Bucketed Output**: Scans active (non-discontinued) medicines with a known expiry date and buckets them into `Expired`, `Within 30 Days`, `Within 60 Days`, and `Within 90 Days`, so admins can see what needs pulling from the shelf soonest.
+*   **Execution & Integration**: Same pattern as Modules 5's pipelines — scheduled nightly, or triggered on-demand via the Admin Dashboard's "Run Analysis Now" button, with results written to the `expiry_analysis` collection.
+
+---
+
+## 🧾 Module 7: CSV Reports (Python + Pandas)
+
+*   **On-Demand Export Job**: `python-service/reports/generate_reports.py` is triggered directly by an admin clicking "Generate Report" (unlike Modules 5/6, it has no nightly schedule — it's a live snapshot, not a history).
+*   **Four Flat Exports**: Reads straight from MongoDB and writes `Sales.csv` (combined online + POS revenue), `Inventory.csv` (full catalog snapshot), `Expiry.csv` (active medicines nearest expiry first), and `Orders.csv` (online orders with customer + delivery detail) to `reports/exports/` at the project root.
+*   **Node integration**: `server/controllers/reportController.js` spawns the script via the shared `runPythonScript` util, then serves each CSV back down through a filename-whitelisted download endpoint (`/api/admin/reports/download/:filename`) — the admin UI (`AdminReports.jsx`) shows each file's size and last-generated time and links straight to that endpoint.
+
+---
+
 ## 💊 Module 8: Medicine Information API (Python + Django)
 
 *   **Standalone Lookup Service**: `python-service/medicine_api/views.py` is a small, stateless Django service — unlike the analytics pipelines above, it never touches MongoDB.
 *   **Flow**: Whenever a user opens a medicine's detail page → Node calls this Python service → the service calls the external Medicine API (openFDA) → returns **Uses, Side Effects, Warnings, Storage, and Dosage** → Node forwards the result straight to the medicine page.
-*   **Node integration**: `server/utils/fetchDrugInfo.js` calls the service over HTTP (`MEDICINE_API_URL`, default `http://localhost:5001`) instead of calling openFDA directly.
+*   **Node integration**: `server/utils/fetchDrugInfo.js` calls the service over HTTP (`MEDICINE_API_URL`, default `http://localhost:8000`) instead of calling openFDA directly.
 *   **Resilience**: Best-effort at every layer — a cache miss, an unmatched generic name, or the Python service being offline all resolve to no live data, never a broken page. Both the Python service and Node cache successful lookups in-memory for 24h.
 
 ---
