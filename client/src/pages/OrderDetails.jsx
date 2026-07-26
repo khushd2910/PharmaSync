@@ -129,7 +129,9 @@ const OrderDetails = () => {
           <section className="checkout-section">
             <h2 className="checkout-section-title"><CreditCard size={16} strokeWidth={2} /> Payment</h2>
             <p>{order.paymentMethod === 'UPI' ? 'UPI (Demo)' : 'Cash on Delivery'}</p>
-            <span className={`badge ${order.paymentStatus === 'Paid' ? 'badge-success' : 'badge-status'}`}>
+            <span className={`badge ${
+              order.paymentStatus === 'Paid' ? 'badge-success' : order.paymentStatus === 'Refunded' ? 'badge-rx' : 'badge-status'
+            }`}>
               {order.paymentStatus}
             </span>
           </section>

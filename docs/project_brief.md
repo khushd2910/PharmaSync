@@ -94,9 +94,18 @@ PharmaSync/
 
 ---
 
-## 💊 Module 8: Medicine Information API (Python + Flask)
+## 💊 Module 8: Medicine Information API (Python + Django)
 
-*   **Standalone Lookup Service**: `python-service/medicine_api/app.py` is a small, stateless Flask service — unlike the analytics pipelines above, it never touches MongoDB.
+*   **Standalone Lookup Service**: `python-service/medicine_api/views.py` is a small, stateless Django service — unlike the analytics pipelines above, it never touches MongoDB.
 *   **Flow**: Whenever a user opens a medicine's detail page → Node calls this Python service → the service calls the external Medicine API (openFDA) → returns **Uses, Side Effects, Warnings, Storage, and Dosage** → Node forwards the result straight to the medicine page.
 *   **Node integration**: `server/utils/fetchDrugInfo.js` calls the service over HTTP (`MEDICINE_API_URL`, default `http://localhost:5001`) instead of calling openFDA directly.
 *   **Resilience**: Best-effort at every layer — a cache miss, an unmatched generic name, or the Python service being offline all resolve to no live data, never a broken page. Both the Python service and Node cache successful lookups in-memory for 24h.
+
+---
+
+## 🤖 Module 9: AI Chatbot (Python + Django)
+
+*   **Flow**: React chat widget → Node's `/api/chat` → `python-service/chatbot/views.py`, which classifies the message by simple keyword rules and routes it: order questions query MongoDB directly; medicine questions query MongoDB (via the existing text index); recommendation requests pull a small curated list of featured, in-stock items; prescription/delivery FAQs and symptom questions ("I have a headache") get canned answers from `knowledge_base.py`; anything else falls through to the Gemini API (or a static message if no `GEMINI_API_KEY` is set).
+*   **Symptom guidance**: every symptom reply lists possible OTC medicines and precautions, always followed by "Consult a doctor if symptoms persist" and a disclaimer that it's informational only, not medical advice.
+*   **Framework note**: built with Django to match the migrated `medicine_api` service and the rest of `python-service/`.
+*   **Node integration**: `server/controllers/chatController.js` forwards the message plus the logged-in user's id (if any, via the new `optionalAuth` middleware) to `CHATBOT_API_URL` (default `http://localhost:8000`) and relays the JSON reply back — guests can chat too, just without order-lookup answers.

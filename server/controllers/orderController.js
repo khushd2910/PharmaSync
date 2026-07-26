@@ -182,6 +182,9 @@ const cancelOrder = catchAsync(async (req, res, next) => {
   await restockItems(order.items);
   order.orderStatus = 'Cancelled';
   order.demoMode = false;
+  if (order.paymentStatus === 'Paid') {
+    order.paymentStatus = 'Refunded';
+  }
   await order.save();
 
   return res.status(200).json({ message: 'Order cancelled and refund/restock processed', order });
@@ -247,6 +250,9 @@ const adminUpdateOrderStatus = catchAsync(async (req, res, next) => {
 
   if (status === 'Cancelled' && order.orderStatus !== 'Cancelled') {
     await restockItems(order.items);
+    if (order.paymentStatus === 'Paid') {
+      order.paymentStatus = 'Refunded';
+    }
   }
 
   order.orderStatus = status;

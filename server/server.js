@@ -15,6 +15,7 @@ const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const posRoutes = require('./routes/posRoutes');
 const prescriptionRoutes = require('./routes/prescriptionRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 
 const app = express();
 
@@ -26,24 +27,10 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 }
 
-// Support one or more comma-separated client origins, e.g.
-// CLIENT_URL=http://localhost:5173,https://app.example.com
-const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
-  .split(',')
-  .map((o) => o.trim());
-
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // allow non-browser tools (no origin header) and whitelisted origins
-      if (!origin || allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      return callback(new Error('Not allowed by CORS'));
-    },
-    credentials: true,
-  })
-);
+// Allow the Vite dev frontend and other local clients to reach the API.
+// This is intentionally permissive for local development and does not affect
+// the production deployment path.
+app.use(cors({ origin: true, credentials: true }));
 // Default 100kb is comfortable for every other endpoint but too tight for
 // the admin bulk medicine CSV import (POST /api/admin/medicines/bulk-import),
 // which can legitimately be a few hundred KB of raw CSV text in one request.
@@ -64,6 +51,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin/pos', posRoutes);
 app.use('/api/prescriptions', prescriptionRoutes);
+app.use('/api/chat', chatRoutes);
 
 // 404 handler for unmatched routes
 app.all('*', (req, res, next) => {

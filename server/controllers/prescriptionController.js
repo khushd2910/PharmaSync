@@ -110,6 +110,9 @@ const adminReviewPrescription = catchAsync(async (req, res, next) => {
         await restockItems(order.items);
         order.orderStatus = 'Cancelled';
         order.demoMode = false;
+        if (order.paymentStatus === 'Paid') {
+          order.paymentStatus = 'Refunded';
+        }
       }
       await order.save();
     }

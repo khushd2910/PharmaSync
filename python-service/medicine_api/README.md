@@ -1,6 +1,6 @@
 # Medicine Information API (Module 8)
 
-A small standalone Flask service. Unlike `../analytics`, it never touches
+A Django-based medicine information service. Unlike `../analytics`, it never touches
 MongoDB — it's a stateless lookup layer between Node and openFDA.
 
 ```
@@ -24,14 +24,13 @@ cp .env.example .env            # defaults work out of the box
 ## Run
 
 ```bash
-python3 medicine_api/app.py
+python3 manage.py runserver 0.0.0.0:8000
 ```
 
-Starts on `http://localhost:5001` by default (override with
-`MEDICINE_API_PORT`). Keep it running alongside the Node server (`server/`)
-and the client (`client/`) — Node calls it over HTTP via
-`server/utils/fetchDrugInfo.js`, using the `MEDICINE_API_URL` env var
-(`server/.env`, default `http://localhost:5001`).
+Starts on `http://localhost:8000` by default. Keep it running alongside the
+Node server (`server/`) and the client (`client/`) — Node calls it over HTTP
+via `server/utils/fetchDrugInfo.js`, using the `MEDICINE_API_URL` env var
+(`server/.env`, default `http://localhost:8000`).
 
 ## Endpoints
 

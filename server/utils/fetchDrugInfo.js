@@ -3,13 +3,13 @@
  *
  * Flow:
  *   User opens medicine
- *     -> Node calls the standalone Python service (python-service/medicine_api)
+ *     -> Node calls the Django Python service (python-service/medicine_api)
  *         -> That service calls the external Medicine API (openFDA)
  *             -> Returns Uses, Side Effects, Warnings, Storage, Dosage
  *     -> Node forwards the result straight back to the medicine page
  *
  * Node no longer talks to openFDA itself — that lookup now lives entirely
- * in python-service/medicine_api/app.py. This file just calls that service
+ * in python-service/medicine_api/views.py. This file just calls that service
  * over HTTP. Only called for medicines with a known `fdaAlias` (the US
  * generic name), since Indian and US generic names sometimes differ (e.g.
  * Salbutamol vs Albuterol). Always best-effort — returns null on any
@@ -17,7 +17,7 @@
  * problem with the Python service never breaks the medicine detail page.
  */
 
-const MEDICINE_API_URL = process.env.MEDICINE_API_URL || 'http://localhost:5001';
+const MEDICINE_API_URL = process.env.MEDICINE_API_URL || process.env.DJANGO_API_URL || 'http://localhost:8000';
 const FETCH_TIMEOUT_MS = 4000;
 
 // Small in-memory cache on the Node side too, on top of the Python
@@ -36,7 +36,7 @@ const fetchDrugInfo = async (fdaAlias) => {
   }
 
   try {
-    const url = `${MEDICINE_API_URL}/api/medicine-info?generic_name=${encodeURIComponent(key)}`;
+    const url = `${MEDICINE_API_URL.replace(/\/$/, '')}/api/medicine-info?generic_name=${encodeURIComponent(key)}`;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 

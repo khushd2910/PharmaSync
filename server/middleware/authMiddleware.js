@@ -41,4 +41,27 @@ const adminOnly = (req, res, next) => {
   return next(new AppError('Access denied. Admins only.', 403));
 };
 
-module.exports = { protect, adminOnly };
+/**
+ * Like `protect`, but never blocks the request — attaches req.user if a
+ * valid session exists, otherwise leaves it undefined and moves on. For
+ * routes usable by guests and logged-in users alike (Module 9 chat, where
+ * only some intents actually need to know who's asking).
+ */
+const optionalAuth = async (req, res, next) => {
+  let token = req.cookies?.accessToken;
+  if (!token && req.headers.authorization?.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+  if (!token) return next();
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    if (user && user.isActive) req.user = user;
+  } catch (err) {
+    // Invalid/expired token on an optional route — just proceed as a guest
+  }
+  next();
+};
+
+module.exports = { protect, adminOnly, optionalAuth };
