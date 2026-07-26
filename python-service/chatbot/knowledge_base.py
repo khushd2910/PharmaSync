@@ -69,6 +69,18 @@ SYMPTOM_KB = {
     },
 }
 
+# Words that signal "this is a health complaint" even when they don't match
+# a specific SYMPTOM_KB entry — e.g. "I'm not feeling well" or "I feel
+# sick" say something is wrong without naming what. These trigger a
+# clarifying question (see CLARIFY_RESPONSE) instead of falling straight
+# through to the generic Gemini/static fallback, which had no way to ask
+# "which symptom?" and just gave up.
+HEALTH_HINT_WORDS = (
+    'sick', 'unwell', 'not feeling well', 'not well', 'not okay', 'not ok',
+    'ill', 'pain', 'ache', 'aches', 'hurts', 'hurting', 'symptom', 'symptoms',
+    'feel bad', 'feeling bad', 'feel awful', 'feeling awful',
+)
+
 # Predefined canned responses — the diagram's "Predefined responses" and
 # rule-driven FAQ boxes (Prescription question / Delivery question).
 GREETING_RESPONSES = [
@@ -91,12 +103,39 @@ FALLBACK_RESPONSE = (
     "please consult a doctor or pharmacist."
 )
 
+# What SYMPTOM_KB actually covers, used to build the clarifying question
+# below — kept as a function rather than a frozen string so it can never
+# drift out of sync with SYMPTOM_KB itself.
+def _known_symptoms_list():
+    return ', '.join(sorted(SYMPTOM_KB.keys()))
+
+
+def clarify_response():
+    return (
+        "Sorry to hear that — could you tell me a bit more about what you're experiencing? "
+        f"I can help with common symptoms like: {_known_symptoms_list()}."
+    )
+
+
+def match_all_symptoms(message_lower):
+    """Returns a list of (symptom, info) for every SYMPTOM_KB entry whose
+    key appears in the message — e.g. "fever and headache" matches both,
+    so the reply can address everything the user mentioned instead of only
+    the first (dict-order-dependent) match. Dict insertion order is stable
+    in Python 3.7+, so this is deterministic when only one matches too."""
+    return [(symptom, info) for symptom, info in SYMPTOM_KB.items() if symptom in message_lower]
+
 
 def match_symptom(message_lower):
-    """Returns the first SYMPTOM_KB entry whose key appears in the message,
-    or None. Dict insertion order is stable in Python 3.7+, so this is
-    deterministic."""
-    for symptom, info in SYMPTOM_KB.items():
-        if symptom in message_lower:
-            return symptom, info
-    return None
+    """Back-compat single-match helper — returns the first match from
+    match_all_symptoms(), or None. Kept for anything that only needs a
+    yes/no "does this message mention a known symptom" check."""
+    matches = match_all_symptoms(message_lower)
+    return matches[0] if matches else None
+
+
+def is_health_related(message_lower):
+    """True if the message sounds like a health complaint even though it
+    didn't name a symptom SYMPTOM_KB recognizes — the signal for asking a
+    clarifying question rather than giving up entirely."""
+    return any(w in message_lower for w in HEALTH_HINT_WORDS)

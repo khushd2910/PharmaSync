@@ -7,10 +7,22 @@
  * actual intent handling — MongoDB lookups, the recommendation
  * function, the Gemini fallback — lives there, same split as Module 8's
  * medicine_api.
+ *
+ * Resilience: if the Django service can't be reached at all (not running,
+ * network error, timeout), this used to always show a flat "assistant is
+ * temporarily unavailable" message — even for something as basic as
+ * "I have a fever", which doesn't actually need a database or an AI call
+ * to answer. Now it tries utils/localChatFallback.js first, a small JS
+ * mirror of just the symptom knowledge base, so the common cases (a
+ * greeting, a known symptom, or a vague "I don't feel well") still get a
+ * real answer even with the Python service down. Anything outside that
+ * scope (order lookups, medicine search, Gemini) still needs Django and
+ * falls through to the unavailable message as before.
  */
 
 const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
+const { getLocalFallbackReply } = require('../utils/localChatFallback');
 
 const CHATBOT_API_URL = process.env.CHATBOT_API_URL || process.env.DJANGO_API_URL || 'http://localhost:8000';
 const FETCH_TIMEOUT_MS = 8000; // Gemini calls can take a moment longer than a plain DB lookup
@@ -33,27 +45,26 @@ const sendChatMessage = catchAsync(async (req, res, next) => {
     });
     clearTimeout(timeout);
 
-    const upstreamText = await upstream.text();
-    console.error('[chatController] upstream status', upstream.status, 'body', upstreamText);
-
     if (!upstream.ok) {
+      const localReply = getLocalFallbackReply(message);
+      if (localReply) {
+        return res.status(200).json(localReply);
+      }
       return next(new AppError('Chat assistant is temporarily unavailable', 502));
     }
 
-    let data;
-    try {
-      data = JSON.parse(upstreamText);
-    } catch {
-      data = { reply: upstreamText };
-    }
+    const data = await upstream.json();
     return res.status(200).json(data);
   } catch (err) {
-    console.error('[chatController] upstream fetch failed', err?.message || err, err?.code, err?.cause);
-    // Chat service down/unreachable/timed out — fail gracefully rather
-    // than a raw 500, since this is a "nice to have" assistant, not a
-    // critical path.
+    // Chat service down/unreachable/timed out — try the local fallback
+    // before giving up, since a fair number of common questions (a
+    // greeting, a known symptom) don't actually need Django at all.
+    const localReply = getLocalFallbackReply(message);
+    if (localReply) {
+      return res.status(200).json(localReply);
+    }
     return res.status(200).json({
-      reply: "Sorry, the assistant is temporarily unavailable. Please try again shortly.",
+      reply: 'Sorry, the assistant is temporarily unavailable. Please try again shortly.',
       intent: 'error',
     });
   }

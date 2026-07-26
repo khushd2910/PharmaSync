@@ -18,7 +18,9 @@ from .knowledge_base import (
     PRESCRIPTION_FAQ,
     DELIVERY_FAQ,
     FALLBACK_RESPONSE,
-    match_symptom,
+    clarify_response,
+    is_health_related,
+    match_all_symptoms,
 )
 
 # Connect to MongoDB from django settings
@@ -39,9 +41,33 @@ DELIVERY_WORDS = ('delivery', 'shipping', 'deliver')
 RECOMMEND_WORDS = ('recommend', 'suggest', 'best medicine', 'what should i buy')
 MEDICINE_WORDS = ('price', 'stock', 'available', 'tablet', 'syrup', 'medicine', 'capsule')
 
+# A short greeting word count as a whole message means "just saying hi" —
+# but "hey I have a fever" carries real content after the greeting and
+# should be treated as the symptom/question it actually is, not swallowed
+# by the greeting branch. Previously `message_lower.startswith('hi')`
+# alone decided this, which meant ANY message opening with a greeting word
+# (a very natural way to start a chat, e.g. "hi, i have a fever") never
+# reached symptom/medicine/order matching at all — this was the main
+# reason real questions kept getting a plain "hi there" reply instead of
+# an actual answer.
+_GREETING_MAX_WORDS = 4
+
+
+def is_pure_greeting(message_lower):
+    stripped = message_lower.strip(' .,!?')
+    if stripped in GREETING_WORDS:
+        return True
+    if not any(stripped.startswith(w) for w in GREETING_WORDS):
+        return False
+    # Starts with a greeting word — only treat the WHOLE message as a
+    # greeting if there's little to nothing else in it ("hi there",
+    # "hey!", "good morning :)"). Anything longer almost certainly has a
+    # real question or symptom attached.
+    return len(stripped.split()) <= _GREETING_MAX_WORDS
+
 
 def detect_intent(message_lower):
-    if any(message_lower.startswith(w) or message_lower == w for w in GREETING_WORDS):
+    if is_pure_greeting(message_lower):
         return 'greeting'
     if any(w in message_lower for w in ORDER_WORDS):
         return 'order_status'
@@ -51,10 +77,12 @@ def detect_intent(message_lower):
         return 'delivery_question'
     if any(w in message_lower for w in RECOMMEND_WORDS):
         return 'recommendation'
-    if match_symptom(message_lower):
+    if match_all_symptoms(message_lower):
         return 'symptom_advice'
     if any(w in message_lower for w in MEDICINE_WORDS):
         return 'medicine_question'
+    if is_health_related(message_lower):
+        return 'symptom_clarify'
     return 'general_question'
 
 
@@ -149,13 +177,36 @@ def handle_recommendation():
 
 
 def handle_symptom(message_lower):
-    symptom, info = match_symptom(message_lower)
-    reply = (
-        f"For {symptom}, commonly used OTC options include: {', '.join(info['medicines'])}.\n"
-        f"Precautions: {'; '.join(info['precautions'])}.\n"
-        "Consult a doctor if symptoms persist."
-    )
-    return {'reply': reply, 'intent': 'symptom_advice', 'disclaimer': DISCLAIMER}
+    """Addresses every symptom the message mentions, not just the first
+    one found — "I have a fever and a headache" used to only get a
+    headache reply (whichever key happened to come first in SYMPTOM_KB)
+    and silently drop the fever."""
+    matches = match_all_symptoms(message_lower)
+    symptom_names = [s for s, _ in matches]
+
+    sections = []
+    for symptom, info in matches:
+        sections.append(
+            f"For {symptom}: {', '.join(info['medicines'])}. "
+            f"({'; '.join(info['precautions'])}.)"
+        )
+
+    reply = "\n".join(sections) + "\nConsult a doctor if symptoms persist or worsen."
+    return {
+        'reply': reply,
+        'intent': 'symptom_advice',
+        'disclaimer': DISCLAIMER,
+        'data': {'symptoms': symptom_names},
+    }
+
+
+def handle_symptom_clarify():
+    """The message reads as a health complaint ("I feel sick", "not
+    feeling well") but doesn't name a symptom the knowledge base
+    recognizes. Previously this fell straight through to the Gemini/static
+    fallback, which had no way to ask "which symptom?" — this asks
+    directly instead of dead-ending the conversation."""
+    return {'reply': clarify_response(), 'intent': 'symptom_clarify', 'disclaimer': DISCLAIMER}
 
 
 def handle_gemini_fallback(message):
@@ -228,6 +279,8 @@ def chat(request):
         result = handle_symptom(message_lower)
     elif intent == 'medicine_question':
         result = handle_medicine_question(message)
+    elif intent == 'symptom_clarify':
+        result = handle_symptom_clarify()
     else:
         result = handle_gemini_fallback(message)
 
