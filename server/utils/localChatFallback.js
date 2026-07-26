@@ -71,7 +71,7 @@ const HEALTH_HINT_WORDS = [
   'feel tired', 'feeling tired', 'feel nauseous', 'feeling nauseous', 'feel dizzy', 'feeling dizzy',
   'feel uncomfortable', 'feeling uncomfortable', 'under the weather', 'run down', 'feeling run down', 'run-down',
   'not myself', 'not feeling myself', 'not at my best', 'not at 100%', 'not at 100 percent', 'not doing well',
-  'not doing so well', 'not doing great', 'not doing so great', 'having a rough day', 'having a bad day health wise', 'health isn’t great',
+  'not doing so well', 'not doing great', 'not doing so great', 'having a rough day', 'having a bad day health wise', "health isn't great",
   'health is not great', 'poor health', 'not in good health', 'something\'s wrong', 'something is wrong', 'something\'s off',
   'something feels wrong', 'something feels off', 'not right', 'doesn\'t feel right', 'does not feel right', 'feels wrong',
   'body feels off', 'body feels weird', 'body feels strange', 'body hurts', 'my body hurts', 'everything hurts',

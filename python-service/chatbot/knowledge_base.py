@@ -560,7 +560,7 @@ HEALTH_HINT_WORDS = (
     'not myself', 'not feeling myself', 'not at my best', 'not at 100%',
     'not at 100 percent', 'not doing well', 'not doing so well',
     'not doing great', 'not doing so great', 'having a rough day',
-    'having a bad day health wise', 'health isn\u2019t great',
+    'having a bad day health wise', "health isn't great",
     'health is not great', 'poor health', 'not in good health',
 
     # -- "something's wrong" phrasings --

@@ -3,3 +3,7 @@ pymongo>=4.7
 python-dotenv>=1.0
 django>=5.0,<7.0
 requests>=2.31
+
+# Test-only — stands in for MongoDB in analytics/tests.py so the
+# sales/inventory/expiry route tests run without needing a live database.
+mongomock>=4.1

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Pill, LogOut, ShoppingCart, User as UserIcon, ClipboardList, LayoutDashboard, ScanBarcode,
@@ -14,6 +14,33 @@ const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const navRef = useRef(null);
+
+  // Only attached while the menu is actually open, and torn down again as
+  // soon as it closes — so this costs nothing on every other page. A
+  // hamburger menu that only closes via its own toggle button (the
+  // previous behavior) is a common source of "stuck open" complaints:
+  // clicking anywhere else on the page, or pressing Escape, should close
+  // it too.
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const handleOutsideClick = (e) => {
+      if (navRef.current && !navRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    };
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') setMenuOpen(false);
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [menuOpen]);
 
   const handleLogout = async () => {
     setMenuOpen(false);
@@ -24,7 +51,7 @@ const Navbar = () => {
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <nav className="navbar">
+    <nav className="navbar" ref={navRef}>
       <Link to="/" className="navbar-brand" onClick={closeMenu}>
         <Pill size={20} strokeWidth={2.2} />
         <span>PharmaCare</span>
