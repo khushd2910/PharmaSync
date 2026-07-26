@@ -180,23 +180,42 @@ def handle_symptom(message_lower):
     """Addresses every symptom the message mentions, not just the first
     one found — "I have a fever and a headache" used to only get a
     headache reply (whichever key happened to come first in SYMPTOM_KB)
-    and silently drop the fever."""
+    and silently drop the fever.
+
+    A handful of entries (chest pain, dengue, ...) deliberately carry no
+    medicines at all — see the "never just an OTC suggestion" section of
+    knowledge_base.py for why. Those get a direct "see a doctor" sentence
+    instead of the usual "For X: <medicines>. (<precautions>.)" shape,
+    which would otherwise render as a nonsensical "For chest pain: . (...)"
+    with an empty medicines list."""
     matches = match_all_symptoms(message_lower)
     symptom_names = [s for s, _ in matches]
 
     sections = []
+    any_urgent = False
     for symptom, info in matches:
-        sections.append(
-            f"For {symptom}: {', '.join(info['medicines'])}. "
-            f"({'; '.join(info['precautions'])}.)"
-        )
+        if info.get('urgent'):
+            any_urgent = True
+        if info['medicines']:
+            sections.append(
+                f"For {symptom}: {', '.join(info['medicines'])}. "
+                f"({'; '.join(info['precautions'])}.)"
+            )
+        else:
+            prefix = '\u26a0\ufe0f ' if info.get('urgent') else ''
+            sections.append(f"{prefix}For {symptom}: {'; '.join(info['precautions'])}.")
 
-    reply = "\n".join(sections) + "\nConsult a doctor if symptoms persist or worsen."
+    closing = (
+        "Please seek medical attention for the item(s) above marked \u26a0\ufe0f — this assistant can't help further with those."
+        if any_urgent
+        else "Consult a doctor if symptoms persist or worsen."
+    )
+    reply = "\n".join(sections) + f"\n{closing}"
     return {
         'reply': reply,
         'intent': 'symptom_advice',
         'disclaimer': DISCLAIMER,
-        'data': {'symptoms': symptom_names},
+        'data': {'symptoms': symptom_names, 'urgent': any_urgent},
     }
 
 

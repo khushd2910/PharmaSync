@@ -43,3 +43,34 @@ class SymptomIntentTests(SimpleTestCase):
         data = self._reply('i am not feeling well')
         self.assertEqual(data['intent'], 'symptom_clarify')
         self.assertIn('?', data['reply'])
+
+    def test_chest_pain_gets_no_medicine_suggestion(self):
+        """Chest pain must never get a casual OTC reply — only a redirect
+        to emergency care."""
+        data = self._reply('i have chest pain')
+        self.assertEqual(data['intent'], 'symptom_advice')
+        self.assertTrue(data['data']['urgent'])
+        self.assertIn('emergency', data['reply'].lower())
+        self.assertNotIn('Paracetamol', data['reply'])
+        self.assertNotIn('Ibuprofen', data['reply'])
+
+    def test_dengue_fever_does_not_also_trigger_the_plain_fever_entry(self):
+        """"dengue fever" contains "fever" as a literal substring — without
+        the nested-match de-dup, this would incorrectly also suggest
+        Paracetamol/ibuprofen-adjacent fever advice alongside the dengue
+        safety redirect."""
+        data = self._reply('i think i have dengue fever')
+        self.assertEqual(data['data']['symptoms'], ['dengue fever'])
+        self.assertNotIn('fever and headache', data['reply'])  # sanity: not the multi-symptom path
+
+    def test_cold_sore_does_not_also_match_plain_cold(self):
+        data = self._reply('i have a cold sore on my lip')
+        self.assertEqual(data['data']['symptoms'], ['cold sore'])
+
+    def test_ordinary_symptom_still_gets_a_medicine_suggestion(self):
+        """Broad regression check that expanding the knowledge base didn't
+        break plain, everyday symptom matching."""
+        data = self._reply('i have a bad sore throat')
+        self.assertEqual(data['intent'], 'symptom_advice')
+        self.assertIn('sore throat', data['data']['symptoms'])
+        self.assertIn('lozenges', data['reply'].lower())
