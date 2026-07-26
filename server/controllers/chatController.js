@@ -33,13 +33,22 @@ const sendChatMessage = catchAsync(async (req, res, next) => {
     });
     clearTimeout(timeout);
 
+    const upstreamText = await upstream.text();
+    console.error('[chatController] upstream status', upstream.status, 'body', upstreamText);
+
     if (!upstream.ok) {
       return next(new AppError('Chat assistant is temporarily unavailable', 502));
     }
 
-    const data = await upstream.json();
+    let data;
+    try {
+      data = JSON.parse(upstreamText);
+    } catch {
+      data = { reply: upstreamText };
+    }
     return res.status(200).json(data);
   } catch (err) {
+    console.error('[chatController] upstream fetch failed', err?.message || err, err?.code, err?.cause);
     // Chat service down/unreachable/timed out — fail gracefully rather
     // than a raw 500, since this is a "nice to have" assistant, not a
     // critical path.
