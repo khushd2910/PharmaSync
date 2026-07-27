@@ -103,17 +103,15 @@ const AdminOrders = () => {
                 ))}
               </select>
 
-              {computeDisplayStatus(order) === 'Delivered' && (
-                <a
-                  className="icon-btn-danger"
-                  href={`${API_BASE_URL}/orders/${order._id}/invoice`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="Download invoice"
-                >
-                  <Download size={16} strokeWidth={2} />
-                </a>
-              )}
+              <a
+                className="icon-btn-danger"
+                href={`${API_BASE_URL}/orders/${order._id}/invoice`}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Download invoice"
+              >
+                <Download size={16} strokeWidth={2} />
+              </a>
             </div>
           ))}
         </div>

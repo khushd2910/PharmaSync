@@ -3,12 +3,17 @@
  * deliberately so "can this order still be cancelled?" is decided using
  * the same effective status the user actually sees on screen.
  *
- * An order's status is exactly whatever it was last set to — either the
- * default 'Pending' at checkout, or whatever an admin explicitly set via
- * adminUpdateOrderStatus. There is no automatic/time-based progression;
- * only an admin (or the user, for cancellation) changes an order's status.
+ * This whole file exists to simulate delivery progress on a timer, purely
+ * for demo purposes — a real pharmacy's orders don't actually walk
+ * themselves through Confirmed -> Packed -> Delivered on a clock. Before
+ * running this for real, set ORDER_DEMO_ENABLED=false (server .env) and
+ * VITE_ORDER_DEMO_ENABLED=false (client .env) so an order's status is
+ * exactly whatever staff/admin actually set it to, with no auto-advance.
  */
 const ORDER_STAGES = ['Pending', 'Confirmed', 'Packed', 'Out for Delivery', 'Delivered'];
+
+const DEMO_ENABLED = process.env.ORDER_DEMO_ENABLED !== 'false'; // opt out, not opt in — matches today's default behavior
+const STAGE_DURATION_MS = Number(process.env.ORDER_DEMO_STAGE_DURATION_MS) || 45 * 1000; // must match client/src/utils/orderStatus.js
 
 const computeEffectiveStatus = (order) => {
   if (order.orderStatus === 'Cancelled') return 'Cancelled';
@@ -17,7 +22,14 @@ const computeEffectiveStatus = (order) => {
   // outright (prescriptionController.adminReviewPrescription), so the only
   // way out of this branch is 'Approved'.
   if (order.prescriptionRequired && order.prescriptionStatus !== 'Approved') return 'Pending';
-  return order.orderStatus;
+  if (!DEMO_ENABLED) return order.orderStatus; // simulation off — status is exactly what was last set
+  if (order.demoMode === false) return order.orderStatus; // admin has taken manual control
+
+  const elapsed = Date.now() - new Date(order.createdAt).getTime();
+  const timeIndex = Math.min(Math.floor(elapsed / STAGE_DURATION_MS), ORDER_STAGES.length - 1);
+  const storedIndex = ORDER_STAGES.indexOf(order.orderStatus);
+  const finalIndex = Math.max(timeIndex, storedIndex === -1 ? 0 : storedIndex);
+  return ORDER_STAGES[finalIndex];
 };
 
 module.exports = { ORDER_STAGES, computeEffectiveStatus };

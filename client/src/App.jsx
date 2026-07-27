@@ -20,6 +20,7 @@ import Checkout from './pages/Checkout';
 import Orders from './pages/Orders';
 import OrderDetails from './pages/OrderDetails';
 import Profile from './pages/Profile';
+import Dashboard from './pages/Dashboard';
 
 // Admin/POS pages are a meaningful chunk of code a regular customer
 // never needs — split them into their own lazily-loaded bundles so the
@@ -97,6 +98,14 @@ function App() {
                   }
                 />
 
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute role="user">
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route
                   path="/admin/dashboard"
                   element={

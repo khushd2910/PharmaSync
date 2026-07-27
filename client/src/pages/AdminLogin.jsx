@@ -26,7 +26,7 @@ const AdminLogin = () => {
       const res = await api.post('/auth/admin/login', form);
       login(res.data.user);
       showToast('Welcome back, admin', 'success');
-      navigate('/');
+      navigate('/admin/dashboard');
     } catch (err) {
       const message = err.response?.data?.message || 'Admin login failed';
       setError(message);

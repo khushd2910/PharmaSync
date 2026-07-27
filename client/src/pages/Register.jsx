@@ -26,7 +26,7 @@ const Register = () => {
       const res = await api.post('/auth/register', form);
       login(res.data.user);
       showToast(res.data.message || 'Account created', 'success');
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
       const message = err.response?.data?.message || 'Registration failed';
       setError(message);

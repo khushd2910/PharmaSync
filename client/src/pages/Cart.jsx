@@ -1,8 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Minus, Plus, Trash2, Pill, ShoppingBag } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { formatCurrency } from '../utils/format';
+import { getMedicineVisual } from '../utils/medicineVisual';
 
 const Cart = () => {
   const { cart, updateQuantity, removeFromCart, loading } = useCart();
@@ -43,10 +44,12 @@ const Cart = () => {
       <h1 className="page-title">Your Cart</h1>
 
       <div className="cart-list">
-        {cart.items.map(({ medicine, quantity, lineTotal }) => (
+        {cart.items.map(({ medicine, quantity, lineTotal }) => {
+          const { icon: DosageIcon, tint, color } = getMedicineVisual(medicine);
+          return (
           <div className="cart-item" key={medicine._id}>
-            <div className="cart-item-icon">
-              <Pill size={20} strokeWidth={2} />
+            <div className="cart-item-icon" style={{ background: `var(${tint})`, color: `var(${color})` }}>
+              <DosageIcon size={20} strokeWidth={2} />
             </div>
             <div className="cart-item-info">
               <Link to={`/medicines/${medicine._id}`} className="cart-item-name">{medicine.name}</Link>
@@ -71,7 +74,8 @@ const Cart = () => {
               <Trash2 size={16} strokeWidth={2} />
             </button>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="cart-summary">

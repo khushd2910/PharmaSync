@@ -53,8 +53,8 @@ const Navbar = () => {
   return (
     <nav className="navbar" ref={navRef}>
       <Link to="/" className="navbar-brand" onClick={closeMenu}>
-        <span className="navbar-brand-icon"><Pill size={17} strokeWidth={2.3} /></span>
-        <span className="navbar-brand-name">Pharma<span className="accent">Sync</span></span>
+        <Pill size={20} strokeWidth={2.2} />
+        <span>PharmaCare</span>
       </Link>
 
       <button
@@ -80,6 +80,9 @@ const Navbar = () => {
 
         {user && user.role === 'user' && (
           <>
+            <Link to="/dashboard" className="navbar-link icon-link" onClick={closeMenu}>
+              <LayoutDashboard size={16} strokeWidth={2} /> Dashboard
+            </Link>
             <Link to="/orders" className="navbar-link icon-link" onClick={closeMenu}>
               <ClipboardList size={16} strokeWidth={2} /> Orders
             </Link>

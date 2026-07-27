@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Pill, ShoppingCart, Minus, Plus, FileWarning, Calendar, Factory, Boxes } from 'lucide-react';
+import { ShoppingCart, Minus, Plus, FileWarning, Calendar, Factory, Boxes } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { addRecentlyViewed } from '../utils/recentlyViewed';
+import { getMedicineVisual } from '../utils/medicineVisual';
 
 const MedicineDetails = () => {
   const { id } = useParams();
@@ -61,12 +62,13 @@ const MedicineDetails = () => {
   const expiryLabel = medicine.expiryDate
     ? new Date(medicine.expiryDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short' })
     : 'N/A';
+  const { icon: DosageIcon, tint, color } = getMedicineVisual(medicine);
 
   return (
     <div className="details-page">
       <div className="details-grid">
-        <div className="details-image">
-          <Pill size={64} strokeWidth={1.5} />
+        <div className="details-image" style={{ background: `var(${tint})`, color: `var(${color})` }}>
+          <DosageIcon size={64} strokeWidth={1.5} />
         </div>
 
         <div className="details-main">

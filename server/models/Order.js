@@ -50,9 +50,15 @@ const orderSchema = new mongoose.Schema(
       default: 'Not Required',
     },
     prescription: { type: mongoose.Schema.Types.ObjectId, ref: 'Prescription', default: null },
-    // Defaults to Pending at checkout; only an admin (via order management)
-    // or the user (cancellation) ever changes it from here on.
+    // Real status, settable by admin in a later module — defaults to
+    // Pending; the frontend also computes a simulated in-progress status
+    // for demo purposes until admin order management exists.
     orderStatus: { type: String, enum: ORDER_STATUSES, default: 'Pending' },
+    // true while no admin has manually set a status — the frontend/backend
+    // both fall back to a time-based demo progression in that case. Once
+    // an admin updates the status (or a user cancels), this flips false
+    // and orderStatus is trusted as-is everywhere.
+    demoMode: { type: Boolean, default: true },
     invoiceNumber: { type: String, required: true, unique: true },
   },
   { timestamps: true }

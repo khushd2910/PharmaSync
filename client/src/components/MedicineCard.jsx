@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
-import { Pill, ShoppingCart, FileWarning, Layers } from 'lucide-react';
+import { ShoppingCart, FileWarning } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
-import { getStripSize } from '../utils/stripSize';
+import { getMedicineVisual } from '../utils/medicineVisual';
 
 // Below this many units left, show an urgency hint ("Only 3 left")
 // instead of a flat "in stock" — a trust/transparency signal that sets
@@ -16,29 +16,20 @@ const MedicineCard = ({ medicine, onAddToCart }) => {
     : medicine.price;
   const outOfStock = medicine.stock <= 0;
   const lowStock = !outOfStock && medicine.stock <= LOW_STOCK_THRESHOLD;
-  const stripSize = getStripSize(medicine._id);
-
-  // The whole card navigates to the detail page. The Add to Cart button
-  // sits inside that same clickable area, so its own click must be
-  // stopped from bubbling up to (and its default <a> navigation prevented
-  // by) the card link — otherwise pressing it would both add to cart and
-  // navigate away.
-  const handleAddToCartClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onAddToCart(medicine);
-  };
+  const { icon: DosageIcon, tint, color } = getMedicineVisual(medicine);
 
   return (
-    <Link to={`/medicines/${medicine._id}`} className="medicine-card">
+    <div className="medicine-card">
       <div className="medicine-card-top">
-        <div className="medicine-card-icon">
-          <Pill size={18} strokeWidth={2} />
+        <div className="medicine-card-icon" style={{ background: `var(${tint})`, color: `var(${color})` }}>
+          <DosageIcon size={18} strokeWidth={2} />
         </div>
-        {hasDiscount && <span className="badge badge-ribbon">{medicine.discountPercent}% OFF</span>}
+        {hasDiscount && <span className="badge badge-discount">{medicine.discountPercent}% OFF</span>}
       </div>
 
-      <span className="medicine-card-name">{medicine.name}</span>
+      <Link to={`/medicines/${medicine._id}`} className="medicine-card-name">
+        {medicine.name}
+      </Link>
       {medicine.manufacturer && <p className="medicine-card-manufacturer">{medicine.manufacturer}</p>}
       {composition && <p className="medicine-card-composition">{composition}</p>}
 
@@ -48,9 +39,6 @@ const MedicineCard = ({ medicine, onAddToCart }) => {
             <FileWarning size={11} strokeWidth={2} /> Rx required
           </span>
         )}
-        <span className="badge badge-strip" title="Tablets per strip">
-          <Layers size={11} strokeWidth={2} /> {stripSize}/strip
-        </span>
         {outOfStock && <span className="badge badge-outofstock">Out of stock</span>}
         {lowStock && <span className="badge badge-discount">Only {medicine.stock} left</span>}
       </div>
@@ -68,14 +56,14 @@ const MedicineCard = ({ medicine, onAddToCart }) => {
         </span>
         <button
           className="medicine-card-btn"
-          onClick={handleAddToCartClick}
+          onClick={() => onAddToCart(medicine)}
           disabled={outOfStock}
           title={outOfStock ? 'Out of stock' : 'Add to cart'}
         >
           <ShoppingCart size={14} strokeWidth={2} />
         </button>
       </div>
-    </Link>
+    </div>
   );
 };
 

@@ -4,7 +4,7 @@ import { FileText, MapPin, CreditCard, Download, XCircle, ShieldAlert } from 'lu
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import OrderStatusStepper from '../components/OrderStatusStepper';
-import { isCancellable, computeDisplayStatus } from '../utils/orderStatus';
+import { isCancellable } from '../utils/orderStatus';
 import { formatCurrency, formatDateTime } from '../utils/format';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -58,16 +58,14 @@ const OrderDetails = () => {
           </p>
         </div>
         <div className="order-actions">
-          {computeDisplayStatus(order) === 'Delivered' && (
-            <a
-              className="btn-secondary"
-              href={`${API_BASE_URL}/orders/${order._id}/invoice`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Download size={14} strokeWidth={2} /> Invoice
-            </a>
-          )}
+          <a
+            className="btn-secondary"
+            href={`${API_BASE_URL}/orders/${order._id}/invoice`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Download size={14} strokeWidth={2} /> Invoice
+          </a>
           {isCancellable(order) && (
             <button className="btn-secondary danger" onClick={handleCancel} disabled={cancelling}>
               <XCircle size={14} strokeWidth={2} /> {cancelling ? 'Cancelling…' : 'Cancel order'}
