@@ -45,6 +45,8 @@ const AdminSalesAnalysis = () => {
   const [running, setRunning] = useState(false);
   const [runningForecast, setRunningForecast] = useState(false);
   const [runningRevenue, setRunningRevenue] = useState(false);
+  const [forecastPage, setForecastPage] = useState(1);
+  const FORECAST_PAGE_SIZE = 20;
 
   const load = () => {
     setLoading(true);
@@ -57,6 +59,7 @@ const AdminSalesAnalysis = () => {
         setAnalysis(salesRes.data.analysis);
         setForecast(forecastRes.data.analysis);
         setRevenueForecast(revenueRes.data.analysis);
+        setForecastPage(1);
       })
       .catch((err) => showToast(err.response?.data?.message || 'Could not load analysis data', 'error'))
       .finally(() => setLoading(false));
@@ -82,6 +85,7 @@ const AdminSalesAnalysis = () => {
     try {
       const res = await api.post('/admin/demand-forecast/run');
       setForecast(res.data.analysis);
+      setForecastPage(1);
       showToast('AI Demand Forecast generated successfully', 'success');
     } catch (err) {
       showToast(err.response?.data?.message || 'Could not run demand forecast', 'error');
@@ -259,7 +263,9 @@ const AdminSalesAnalysis = () => {
                   {forecast.predictions.length === 0 && (
                     <p className="info-text center-text">No active medicines found to forecast.</p>
                   )}
-                  {forecast.predictions.map((p) => (
+                  {forecast.predictions
+                    .slice((forecastPage - 1) * FORECAST_PAGE_SIZE, forecastPage * FORECAST_PAGE_SIZE)
+                    .map((p) => (
                     <div className="admin-order-row" key={p.medicineId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', border: '1px solid #e5e7eb', borderRadius: '8px', background: '#fff' }}>
                       <div className="admin-order-main">
                         <p className="order-invoice" style={{ fontWeight: '600', fontSize: '1.05rem', margin: '0 0 4px 0', color: '#1f2937' }}>{p.name}</p>
@@ -288,6 +294,41 @@ const AdminSalesAnalysis = () => {
                     </div>
                   ))}
                 </div>
+                {forecast.predictions.length > FORECAST_PAGE_SIZE && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      gap: '12px',
+                      marginTop: '1.25rem',
+                    }}
+                  >
+                    <button
+                      className="btn-secondary admin"
+                      onClick={() => setForecastPage((p) => Math.max(1, p - 1))}
+                      disabled={forecastPage === 1}
+                    >
+                      Previous
+                    </button>
+                    <span className="muted-text" style={{ fontSize: '0.875rem' }}>
+                      Page {forecastPage} of {Math.ceil(forecast.predictions.length / FORECAST_PAGE_SIZE)}
+                      {' · '}
+                      {forecast.predictions.length} medicines
+                    </span>
+                    <button
+                      className="btn-secondary admin"
+                      onClick={() =>
+                        setForecastPage((p) =>
+                          Math.min(Math.ceil(forecast.predictions.length / FORECAST_PAGE_SIZE), p + 1)
+                        )
+                      }
+                      disabled={forecastPage >= Math.ceil(forecast.predictions.length / FORECAST_PAGE_SIZE)}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
               </>
             )}
           </section>

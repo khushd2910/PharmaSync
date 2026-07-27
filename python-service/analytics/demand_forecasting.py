@@ -172,7 +172,7 @@ def generate_forecast():
     
     result = {
         'generatedAt': datetime.now(timezone.utc),
-        'predictions': predictions[:50]  # Store top 50 suggestions for the dashboard display
+        'predictions': predictions  # Full set — the dashboard paginates through these
     }
     
     db[RESULT_COLLECTION].insert_one(result)
