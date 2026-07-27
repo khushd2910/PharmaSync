@@ -142,8 +142,15 @@ html, body {
      a horizontal scrollbar, which then reveals empty page background
      past the real content. Nothing on this site is meant to scroll
      horizontally at the page level — anything that needs it (the
-     .browse-row-scroll medicine strip) scrolls within its own box. */
-  overflow-x: hidden;
+     .browse-row-scroll medicine strip) scrolls within its own box.
+     `clip` (not `hidden`) deliberately: setting any overflow value other
+     than `visible` on html/body turns it into a scroll container, and a
+     `position: sticky` descendant (the navbar) then sticks relative to
+     *that* container instead of the viewport — which silently breaks
+     "sticky" the moment body's own box is taller than the viewport.
+     `clip` still stops the horizontal overflow but isn't a scroll
+     container, so sticky positioning keeps working. */
+  overflow-x: clip;
   width: 100%;
 }
 
@@ -490,17 +497,29 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: 0 1px 0 rgba(14, 30, 25, 0.02), 0 4px 20px -14px rgba(14, 30, 25, 0.25);
 }
 .navbar-brand {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 17px;
-  color: var(--teal-dark);
+  gap: 10px;
   text-decoration: none;
 }
+.navbar-brand-icon {
+  width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 160%);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25), 0 4px 10px -4px var(--teal);
+}
+.navbar-brand-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--teal-dark);
+  letter-spacing: -0.01em;
+}
+.navbar-brand-name .accent { color: var(--amber); }
 .navbar-links { display: flex; align-items: center; gap: 20px; }
 .navbar-link { font-size: 13.5px; color: var(--ink); text-decoration: none; font-weight: 500; }
 .navbar-link:hover { color: var(--teal); }
@@ -602,37 +621,74 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
    Medicine cards & badges
    ============================================================ */
 .medicine-card {
+  position: relative;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  padding: 15px;
+  border-radius: 16px;
+  padding: 16px 16px 15px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   transition: border-color var(--ease), box-shadow var(--ease), transform var(--ease);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
 }
-.medicine-card:hover { border-color: var(--teal); box-shadow: var(--shadow-md); transform: translateY(-2px); }
-.medicine-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.medicine-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--teal) 0%, var(--amber) 100%);
+  opacity: 0;
+  transition: opacity var(--ease);
+}
+.medicine-card:hover {
+  border-color: var(--teal);
+  box-shadow: 0 16px 36px -14px rgba(14, 30, 25, 0.22);
+  transform: translateY(-4px);
+}
+.medicine-card:hover::before { opacity: 1; }
+.medicine-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
 .medicine-card-icon {
-  width: 32px; height: 32px; border-radius: var(--r-sm);
-  background: var(--teal-tint); color: var(--teal);
+  width: 38px; height: 38px; border-radius: 11px;
+  background: linear-gradient(135deg, var(--teal-tint) 0%, var(--teal) 160%);
+  color: var(--teal);
   display: flex; align-items: center; justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
 }
-.medicine-card-name { font-size: 14px; font-weight: 600; color: var(--ink); margin: 0 0 3px; line-height: 1.3; text-decoration: none; display: block; }
-.medicine-card-name:hover { color: var(--teal); }
+.medicine-card-name {
+  font-family: var(--font-display);
+  font-size: 15px; font-weight: 600; color: var(--ink); margin: 0 0 3px; line-height: 1.3;
+  text-decoration: none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.medicine-card:hover .medicine-card-name { color: var(--teal); }
 .medicine-card-manufacturer { font-size: 12px; color: var(--muted); margin: 0 0 3px; }
 .medicine-card-composition { font-size: 11.5px; color: var(--amber); margin: 0 0 8px; line-height: 1.4; }
-.medicine-card-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
+.medicine-card-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
 .medicine-card-footer {
   margin-top: auto; display: flex; align-items: center; justify-content: space-between;
-  padding-top: 10px; border-top: 1px solid var(--line);
+  padding-top: 11px; border-top: 1px dashed var(--line);
 }
-.medicine-card-price { font-size: 13.5px; }
+.medicine-card-price { font-size: 16px; font-weight: 700; color: var(--teal-dark); }
 .medicine-card-btn {
-  width: 28px; height: 28px; border-radius: var(--r-full); border: none;
+  width: 34px; height: 34px; border-radius: var(--r-full); border: none;
   background: var(--teal); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  box-shadow: 0 6px 16px -6px var(--teal);
+  transition: background var(--ease), transform var(--ease), box-shadow var(--ease);
 }
-.medicine-card-btn:hover { background: var(--teal-dark); }
-.medicine-card-btn:disabled { background: var(--line); cursor: not-allowed; }
+.medicine-card-btn:hover { background: var(--teal-dark); transform: scale(1.08); }
+.medicine-card-btn:disabled { background: var(--line); box-shadow: none; cursor: not-allowed; }
+.badge-ribbon {
+  position: absolute; top: 12px; right: -30px;
+  transform: rotate(38deg);
+  padding: 3px 34px;
+  border-radius: 0;
+  background: linear-gradient(90deg, var(--amber) 0%, #d99a3f 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(184, 121, 30, 0.35);
+}
 
 .price-strike { text-decoration: line-through; color: var(--muted); font-size: 11.5px; margin-left: 6px; font-weight: 400; }
 .pos-rx-inline { margin-left: 7px; vertical-align: middle; }
@@ -648,6 +704,7 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 .badge-category { background: var(--teal-tint); color: var(--teal-dark); }
 .badge-status { background: var(--teal-tint); color: var(--teal-dark); }
 .badge-success { background: var(--green-tint); color: var(--green); }
+.badge-strip { background: var(--paper); color: var(--muted); border: 1px solid var(--line); text-transform: none; letter-spacing: 0; }
 .badge-cancelled { background: var(--red-tint); color: var(--red); display: inline-block; padding: 8px 14px; border-radius: var(--r-sm); }
 
 /* ============================================================
@@ -973,3 +1030,99 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 .bulk-action-bar span { font-size: 13px; color: var(--teal-dark); font-weight: 600; }
 .bulk-action-buttons { display: flex; gap: 8px; }
 .row-select-checkbox { margin-right: 4px; }
+
+/* ============================================================
+   Site footer
+   ============================================================ */
+.site-footer {
+  margin-top: 64px;
+  background: var(--teal-dark);
+  color: #dfe8e4;
+}
+[data-theme='dark'] .site-footer { background: #0c1613; }
+
+.footer-trust-strip {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 20px 32px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 36px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.footer-trust-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #eef3f0;
+}
+.footer-trust-item svg { color: #8fd9c9; flex-shrink: 0; }
+
+.footer-main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 40px 32px 28px;
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr 1.2fr;
+  gap: 28px;
+}
+.footer-col { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+.footer-col-title {
+  font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  color: #ffffff; margin: 0 0 4px;
+}
+.footer-link {
+  font-size: 13px; color: #c3d3cc; text-decoration: none; width: fit-content;
+  transition: color var(--ease);
+}
+.footer-link:hover { color: #ffffff; }
+
+.footer-brand-col { gap: 12px; }
+.footer-brand { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; width: fit-content; }
+.footer-brand-icon {
+  width: 30px; height: 30px; border-radius: 9px;
+  background: linear-gradient(135deg, #3f9c8c 0%, #14453f 160%);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+.footer-brand-name { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: #ffffff; }
+.footer-brand-name .accent { color: #8fd9c9; }
+.footer-tagline { font-size: 12.5px; line-height: 1.6; color: #b7c7c0; margin: 0; max-width: 280px; }
+.footer-social { display: flex; gap: 10px; margin-top: 2px; }
+.footer-social a {
+  width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, 0.08); color: #dfe8e4; transition: background var(--ease), color var(--ease);
+}
+.footer-social a:hover { background: #3f9c8c; color: #fff; }
+
+.footer-contact-line {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 12.5px; color: #c3d3cc; margin: 0; line-height: 1.5;
+}
+.footer-contact-line svg { flex-shrink: 0; margin-top: 2px; color: #8fd9c9; }
+
+.footer-bottom {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 16px 32px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 20px;
+  font-size: 12px;
+  color: #9fb2aa;
+}
+.footer-bottom p { margin: 0; }
+
+@media (max-width: 900px) {
+  .footer-main { grid-template-columns: 1fr 1fr; }
+  .footer-brand-col { grid-column: 1 / -1; }
+}
+@media (max-width: 560px) {
+  .footer-main { grid-template-columns: 1fr; padding: 32px 20px 20px; }
+  .footer-trust-strip { padding: 16px 20px; gap: 12px 24px; }
+  .footer-bottom { padding: 14px 20px 20px; flex-direction: column; }
+}

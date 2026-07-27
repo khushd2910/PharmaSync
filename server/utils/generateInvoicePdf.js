@@ -36,7 +36,7 @@ const renderInvoicePdf = (invoiceData, res) => {
   const leftX = doc.page.margins.left;
 
   // --- Header -------------------------------------------------------
-  doc.font('Helvetica-Bold').fontSize(20).fillColor('#123B36').text('PharmaCare', leftX, 50);
+  doc.font('Helvetica-Bold').fontSize(20).fillColor('#123B36').text('PharmaSync', leftX, 50);
   doc
     .font('Helvetica')
     .fontSize(9)
