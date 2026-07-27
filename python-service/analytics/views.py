@@ -39,9 +39,12 @@ from django.views.decorators.http import require_http_methods
 from . import expiry_analysis as expiry_engine
 from . import inventory_analysis as inventory_engine
 from . import sales_analysis as sales_engine
+from . import demand_forecasting as forecast_engine
+from . import revenue_forecasting as revenue_forecast_engine
 
 
 def _json_safe(value):
+
     """Recursively converts Mongo/pandas-native types into whatever
     JsonResponse can encode on its own. Every read from Mongo comes back
     with an `_id` (ObjectId) that the old Mongoose models never exposed to
@@ -149,3 +152,47 @@ def run_expiry_analysis(request):
     db[expiry_engine.RESULT_COLLECTION].insert_one(result)
 
     return JsonResponse({'message': 'Analysis complete', 'analysis': _json_safe(result)})
+
+
+# ---------------------------------------------------------------------------
+# ML Demand Forecasting
+# ---------------------------------------------------------------------------
+
+@require_http_methods(['GET'])
+def demand_forecast(request):
+    """GET /api/demand-forecast — returns the latest ML demand forecast"""
+    db = forecast_engine.get_db()
+    return JsonResponse({'analysis': _latest(db, forecast_engine.RESULT_COLLECTION)})
+
+
+@require_http_methods(['POST'])
+def run_demand_forecast(request):
+    """POST /api/demand-forecast/run — triggers generating a new ML forecast"""
+    try:
+        result = forecast_engine.generate_forecast()
+        return JsonResponse({'message': 'Forecast generated successfully', 'analysis': _json_safe(result)})
+    except Exception as e:
+        return JsonResponse({'error': f'Failed to generate forecast: {str(e)}'}, status=500)
+
+
+# ---------------------------------------------------------------------------
+# ML Revenue Forecasting
+# ---------------------------------------------------------------------------
+
+@require_http_methods(['GET'])
+def revenue_forecast(request):
+    """GET /api/revenue-forecast — returns the latest ML revenue forecast"""
+    db = revenue_forecast_engine.get_db()
+    return JsonResponse({'analysis': _latest(db, revenue_forecast_engine.RESULT_COLLECTION)})
+
+
+@require_http_methods(['POST'])
+def run_revenue_forecast(request):
+    """POST /api/revenue-forecast/run — triggers generating a new ML revenue forecast"""
+    try:
+        result = revenue_forecast_engine.generate_forecast()
+        return JsonResponse({'message': 'Revenue forecast generated successfully', 'analysis': _json_safe(result)})
+    except Exception as e:
+        return JsonResponse({'error': f'Failed to generate revenue forecast: {str(e)}'}, status=500)
+
+

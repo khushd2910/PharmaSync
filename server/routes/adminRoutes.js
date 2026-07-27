@@ -4,7 +4,7 @@ const { protect, adminOnly } = require('../middleware/authMiddleware');
 const { adminListOrders, adminUpdateOrderStatus } = require('../controllers/orderController');
 const { getDashboardStats } = require('../controllers/adminController');
 const { getInventoryAnalysis, runInventoryAnalysis } = require('../controllers/inventoryAnalysisController');
-const { getSalesAnalysis, runSalesAnalysis } = require('../controllers/salesAnalysisController');
+const { getSalesAnalysis, runSalesAnalysis, getDemandForecast, runDemandForecast, getRevenueForecast, runRevenueForecast } = require('../controllers/salesAnalysisController');
 const { getExpiryAnalysis, runExpiryAnalysis } = require('../controllers/expiryAnalysisController');
 const { listReports, generateReports, downloadReport } = require('../controllers/reportController');
 const {
@@ -59,6 +59,23 @@ router.get('/sales-analysis', getSalesAnalysis);
 // @desc  Run the Python sales analysis job on demand
 // @route POST /api/admin/sales-analysis/run
 router.post('/sales-analysis/run', runSalesAnalysis);
+
+// @desc  Latest ML-based demand forecast snapshot
+// @route GET /api/admin/demand-forecast
+router.get('/demand-forecast', getDemandForecast);
+
+// @desc  Run the ML-based demand forecast job on demand
+// @route POST /api/admin/demand-forecast/run
+router.post('/demand-forecast/run', runDemandForecast);
+
+// @desc  Latest ML-based revenue forecast snapshot
+// @route GET /api/admin/revenue-forecast
+router.get('/revenue-forecast', getRevenueForecast);
+
+// @desc  Run the ML-based revenue forecast job on demand
+// @route POST /api/admin/revenue-forecast/run
+router.post('/revenue-forecast/run', runRevenueForecast);
+
 
 // @desc  Latest nightly expiry analysis snapshot (Expired, Expiring in
 //        30/60/90 Days, and the alert count) — written by the Python service

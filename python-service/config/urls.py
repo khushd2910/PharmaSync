@@ -24,4 +24,8 @@ urlpatterns = [
     path('api/inventory-analysis/run', analytics_views.run_inventory_analysis),
     path('api/expiry-analysis', analytics_views.expiry_analysis),
     path('api/expiry-analysis/run', analytics_views.run_expiry_analysis),
+    path('api/demand-forecast', analytics_views.demand_forecast),
+    path('api/demand-forecast/run', analytics_views.run_demand_forecast),
+    path('api/revenue-forecast', analytics_views.revenue_forecast),
+    path('api/revenue-forecast/run', analytics_views.run_revenue_forecast),
 ]

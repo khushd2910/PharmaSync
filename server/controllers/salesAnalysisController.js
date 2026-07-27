@@ -72,4 +72,85 @@ const runSalesAnalysis = catchAsync(async (req, res, next) => {
   return res.status(200).json(data);
 });
 
-module.exports = { getSalesAnalysis, runSalesAnalysis };
+// @desc    Latest demand forecast snapshot.
+// @route   GET /api/admin/demand-forecast
+// @access  Private (admin)
+const getDemandForecast = catchAsync(async (req, res, next) => {
+  let upstream;
+  try {
+    upstream = await forwardToDjango('/api/demand-forecast');
+  } catch (err) {
+    return next(new AppError('Demand forecasting service is temporarily unavailable', 502));
+  }
+  if (!upstream.ok) {
+    return next(new AppError('Demand forecasting service is temporarily unavailable', 502));
+  }
+
+  const data = await upstream.json();
+  return res.status(200).json(data);
+});
+
+// @desc    Run the demand forecast job right now.
+// @route   POST /api/admin/demand-forecast/run
+// @access  Private (admin)
+const runDemandForecast = catchAsync(async (req, res, next) => {
+  let upstream;
+  try {
+    upstream = await forwardToDjango('/api/demand-forecast/run', { method: 'POST' });
+  } catch (err) {
+    return next(new AppError('Demand forecasting service is temporarily unavailable', 502));
+  }
+  if (!upstream.ok) {
+    return next(new AppError('Could not generate demand forecast', 502));
+  }
+
+  const data = await upstream.json();
+  return res.status(200).json(data);
+});
+
+// @desc    Latest revenue forecast snapshot.
+// @route   GET /api/admin/revenue-forecast
+// @access  Private (admin)
+const getRevenueForecast = catchAsync(async (req, res, next) => {
+  let upstream;
+  try {
+    upstream = await forwardToDjango('/api/revenue-forecast');
+  } catch (err) {
+    return next(new AppError('Revenue forecasting service is temporarily unavailable', 502));
+  }
+  if (!upstream.ok) {
+    return next(new AppError('Revenue forecasting service is temporarily unavailable', 502));
+  }
+
+  const data = await upstream.json();
+  return res.status(200).json(data);
+});
+
+// @desc    Run the revenue forecast job right now.
+// @route   POST /api/admin/revenue-forecast/run
+// @access  Private (admin)
+const runRevenueForecast = catchAsync(async (req, res, next) => {
+  let upstream;
+  try {
+    upstream = await forwardToDjango('/api/revenue-forecast/run', { method: 'POST' });
+  } catch (err) {
+    return next(new AppError('Revenue forecasting service is temporarily unavailable', 502));
+  }
+  if (!upstream.ok) {
+    return next(new AppError('Could not generate revenue forecast', 502));
+  }
+
+  const data = await upstream.json();
+  return res.status(200).json(data);
+});
+
+module.exports = { 
+  getSalesAnalysis, 
+  runSalesAnalysis, 
+  getDemandForecast, 
+  runDemandForecast,
+  getRevenueForecast,
+  runRevenueForecast
+};
+
+

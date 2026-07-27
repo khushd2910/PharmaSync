@@ -39,15 +39,26 @@ const formatMonthlyLabel = (ym) => {
 const AdminSalesAnalysis = () => {
   const { showToast } = useToast();
   const [analysis, setAnalysis] = useState(null);
+  const [forecast, setForecast] = useState(null);
+  const [revenueForecast, setRevenueForecast] = useState(null);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
+  const [runningForecast, setRunningForecast] = useState(false);
+  const [runningRevenue, setRunningRevenue] = useState(false);
 
   const load = () => {
     setLoading(true);
-    api
-      .get('/admin/sales-analysis')
-      .then((res) => setAnalysis(res.data.analysis))
-      .catch((err) => showToast(err.response?.data?.message || 'Could not load sales analysis', 'error'))
+    Promise.all([
+      api.get('/admin/sales-analysis'),
+      api.get('/admin/demand-forecast'),
+      api.get('/admin/revenue-forecast')
+    ])
+      .then(([salesRes, forecastRes, revenueRes]) => {
+        setAnalysis(salesRes.data.analysis);
+        setForecast(forecastRes.data.analysis);
+        setRevenueForecast(revenueRes.data.analysis);
+      })
+      .catch((err) => showToast(err.response?.data?.message || 'Could not load analysis data', 'error'))
       .finally(() => setLoading(false));
   };
 
@@ -65,6 +76,34 @@ const AdminSalesAnalysis = () => {
       setRunning(false);
     }
   };
+
+  const handleRunForecast = async () => {
+    setRunningForecast(true);
+    try {
+      const res = await api.post('/admin/demand-forecast/run');
+      setForecast(res.data.analysis);
+      showToast('AI Demand Forecast generated successfully', 'success');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Could not run demand forecast', 'error');
+    } finally {
+      setRunningForecast(false);
+    }
+  };
+
+  const handleRunRevenue = async () => {
+    setRunningRevenue(true);
+    try {
+      const res = await api.post('/admin/revenue-forecast/run');
+      setRevenueForecast(res.data.analysis);
+      showToast('AI Revenue Forecast generated successfully', 'success');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Could not run revenue forecast', 'error');
+    } finally {
+      setRunningRevenue(false);
+    }
+  };
+
+
 
   return (
     <div className="dashboard-page admin-theme">
@@ -123,6 +162,53 @@ const AdminSalesAnalysis = () => {
             <TrendChart points={analysis.monthly} labelKey="month" formatLabel={formatMonthlyLabel} />
           </section>
 
+          <section className="checkout-section">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '10px' }}>
+              <h2 className="checkout-section-title" style={{ margin: 0 }}><BarChart3 size={16} strokeWidth={2} /> AI-Powered Daily Revenue Forecast <span className="muted-text">(next 30 days)</span></h2>
+              <button className="btn-secondary admin" onClick={handleRunRevenue} disabled={runningRevenue}>
+                <RefreshCw size={14} strokeWidth={2} className={runningRevenue ? 'spin' : ''} />
+                {runningRevenue ? 'Running Predictor…' : 'Run Revenue Predictor Now'}
+              </button>
+            </div>
+            
+            {!revenueForecast ? (
+              <p className="info-text center-text">
+                No revenue forecast has run yet. Click "Run Revenue Predictor Now" to forecast macro daily revenues.
+              </p>
+            ) : (
+              <>
+                <p className="muted-text analysis-meta" style={{ marginBottom: '1.5rem' }}>
+                  Generated {new Date(revenueForecast.generatedAt).toLocaleString('en-IN')} using {revenueForecast.modelType} modeling.
+                </p>
+                
+                <div className="stat-grid" style={{ marginBottom: '2rem' }}>
+                  <div className="stat-card" style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '15px' }}>
+                    <TrendingUp size={18} strokeWidth={2} className="stat-icon" style={{ color: '#10b981' }} />
+                    <div>
+                      <p className="stat-value" style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#111827', margin: 0 }}>₹{revenueForecast.totalForecastedRevenue.toFixed(2)}</p>
+                      <p className="stat-label" style={{ fontSize: '0.85rem', color: '#6b7280', margin: '4px 0 0 0' }}>Projected 30-Day Gross Revenue</p>
+                    </div>
+                  </div>
+                  <div className="stat-card" style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '15px' }}>
+                    <BarChart3 size={18} strokeWidth={2} className="stat-icon" style={{ color: '#4f46e5' }} />
+                    <div>
+                      <p className="stat-value" style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#111827', margin: 0 }}>
+                        {revenueForecast.growthRate >= 0 ? '+' : ''}{(revenueForecast.growthRate * 100).toFixed(2)}%
+                      </p>
+                      <p className="stat-label" style={{ fontSize: '0.85rem', color: '#6b7280', margin: '4px 0 0 0' }}>Projected vs. Last 30 Days Actuals</p>
+                    </div>
+                  </div>
+                </div>
+
+                <TrendChart 
+                  points={revenueForecast.predictions.map(p => ({ date: p.date, revenue: p.predictedRevenue, orders: 0 }))} 
+                  labelKey="date" 
+                  formatLabel={formatDailyLabel} 
+                />
+              </>
+            )}
+          </section>
+
           <div className="analysis-grid two-col">
             <section className="checkout-section">
               <h2 className="checkout-section-title"><TrendingUp size={16} strokeWidth={2} /> Best Sellers</h2>
@@ -150,6 +236,61 @@ const AdminSalesAnalysis = () => {
               </ul>
             </section>
           </div>
+
+          <section className="checkout-section" style={{ marginTop: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '10px' }}>
+              <h2 className="checkout-section-title" style={{ margin: 0 }}><BarChart3 size={16} strokeWidth={2} /> AI-Powered Weekly Demand Forecast & Restock suggestions</h2>
+              <button className="btn-secondary admin" onClick={handleRunForecast} disabled={runningForecast}>
+                <RefreshCw size={14} strokeWidth={2} className={runningForecast ? 'spin' : ''} />
+                {runningForecast ? 'Running AI Predictor…' : 'Run AI Predictor Now'}
+              </button>
+            </div>
+            
+            {!forecast ? (
+              <p className="info-text center-text">
+                No demand forecast has run yet. Click "Run AI Predictor Now" to forecast weekly demand.
+              </p>
+            ) : (
+              <>
+                <p className="muted-text analysis-meta" style={{ marginBottom: '1.5rem' }}>
+                  Forecast generated {new Date(forecast.generatedAt).toLocaleString('en-IN')} using Random Forest Regressor models based on historical sales patterns.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                  {forecast.predictions.length === 0 && (
+                    <p className="info-text center-text">No active medicines found to forecast.</p>
+                  )}
+                  {forecast.predictions.map((p) => (
+                    <div className="admin-order-row" key={p.medicineId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', border: '1px solid #e5e7eb', borderRadius: '8px', background: '#fff' }}>
+                      <div className="admin-order-main">
+                        <p className="order-invoice" style={{ fontWeight: '600', fontSize: '1.05rem', margin: '0 0 4px 0', color: '#1f2937' }}>{p.name}</p>
+                        <p className="muted-text" style={{ fontSize: '0.875rem', color: '#6b7280', margin: 0 }}>
+                          Current Stock: <span style={{ fontWeight: '500', color: '#1f2937' }}>{p.currentStock} units</span> · AI-Predicted 7-Day Demand: <span style={{ fontWeight: '500', color: '#1f2937' }}>{p.predictedWeeklyDemand} units</span>
+                        </p>
+                        {p.restockSuggested && (
+                          <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#ef4444', fontWeight: '500' }}>
+                            Suggested restock quantity: +{p.suggestedRestockQty} units
+                          </p>
+                        )}
+                      </div>
+                      <span
+                        className={`badge ${
+                          p.restockSuggested ? 'badge-outofstock' : 'badge-success'
+                        }`}
+                        style={{
+                          fontSize: '0.8rem',
+                          padding: '0.25rem 0.6rem',
+                          borderRadius: '6px',
+                          fontWeight: '600'
+                        }}
+                      >
+                        {p.restockSuggested ? 'Restock Needed' : 'Stock Adequate'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </section>
         </>
       )}
     </div>

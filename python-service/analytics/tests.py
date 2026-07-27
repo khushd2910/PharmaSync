@@ -22,7 +22,7 @@ from unittest.mock import patch
 import mongomock
 from django.test import SimpleTestCase
 
-from . import expiry_analysis, inventory_analysis, sales_analysis
+from . import expiry_analysis, inventory_analysis, sales_analysis, revenue_forecasting, demand_forecasting
 
 
 class SalesAnalysisRouteTests(SimpleTestCase):
@@ -95,3 +95,53 @@ class ExpiryAnalysisRouteTests(SimpleTestCase):
     def test_run_route_requires_post(self):
         response = self.client.get('/api/expiry-analysis/run')
         self.assertEqual(response.status_code, 405)
+
+
+class RevenueForecastingRouteTests(SimpleTestCase):
+    def setUp(self):
+        self.db = mongomock.MongoClient().get_database('pharmasync_test')
+        self.patcher = patch.object(revenue_forecasting, 'get_db', return_value=self.db)
+        self.patcher.start()
+        self.addCleanup(self.patcher.stop)
+
+    def test_get_route_returns_analysis_key_when_nothing_has_run_yet(self):
+        response = self.client.get('/api/revenue-forecast')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('analysis', response.json())
+        self.assertIsNone(response.json()['analysis'])
+
+    def test_get_route_returns_the_latest_snapshot(self):
+        self.db[revenue_forecasting.RESULT_COLLECTION].insert_one({'generatedAt': datetime(2026, 1, 1), 'totalForecastedRevenue': 15000.0})
+        response = self.client.get('/api/revenue-forecast')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['analysis']['totalForecastedRevenue'], 15000.0)
+
+    def test_run_route_requires_post(self):
+        response = self.client.get('/api/revenue-forecast/run')
+        self.assertEqual(response.status_code, 405)
+
+
+class DemandForecastRouteTests(SimpleTestCase):
+    def setUp(self):
+        self.db = mongomock.MongoClient().get_database('pharmasync_test')
+        self.patcher = patch.object(demand_forecasting, 'get_db', return_value=self.db)
+        self.patcher.start()
+        self.addCleanup(self.patcher.stop)
+
+    def test_get_route_returns_analysis_key_when_nothing_has_run_yet(self):
+        response = self.client.get('/api/demand-forecast')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('analysis', response.json())
+        self.assertIsNone(response.json()['analysis'])
+
+    def test_get_route_returns_the_latest_snapshot(self):
+        self.db[demand_forecasting.RESULT_COLLECTION].insert_one({'generatedAt': datetime(2026, 1, 1), 'predictions': []})
+        response = self.client.get('/api/demand-forecast')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['analysis']['predictions'], [])
+
+    def test_run_route_requires_post(self):
+        response = self.client.get('/api/demand-forecast/run')
+        self.assertEqual(response.status_code, 405)
+
+

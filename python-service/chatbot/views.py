@@ -22,6 +22,7 @@ from .knowledge_base import (
     match_all_symptoms,
     prescription_faq_response,
 )
+from .intent_classifier import get_classifier
 
 # Connect to MongoDB from django settings
 db = settings.MONGO_DB
@@ -67,7 +68,21 @@ def is_pure_greeting(message_lower):
 
 
 def detect_intent(message_lower):
+    # Try the ML intent classifier first
+    classifier = get_classifier()
+    ml_intent, confidence = classifier.predict_intent(message_lower)
+    
+    # If the classifier is confident, return its prediction
+    if ml_intent != 'general_question' and confidence >= 0.45:
+        # Avoid treating mixed queries (e.g. "hi, i have a fever") as pure greeting
+        if ml_intent == 'greeting' and not is_pure_greeting(message_lower):
+            pass
+        else:
+            return ml_intent
+
+    # Fallback to simple rule matching if ML is not confident
     if is_pure_greeting(message_lower):
+
         return 'greeting'
     if any(w in message_lower for w in ORDER_WORDS):
         return 'order_status'
@@ -84,6 +99,7 @@ def detect_intent(message_lower):
     if is_health_related(message_lower):
         return 'symptom_clarify'
     return 'general_question'
+
 
 
 # ---------------------------------------------------------------------------
