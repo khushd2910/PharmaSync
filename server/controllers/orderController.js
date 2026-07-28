@@ -181,7 +181,6 @@ const cancelOrder = catchAsync(async (req, res, next) => {
 
   await restockItems(order.items);
   order.orderStatus = 'Cancelled';
-  order.demoMode = false;
   if (order.paymentStatus === 'Paid') {
     order.paymentStatus = 'Refunded';
   }
@@ -190,7 +189,12 @@ const cancelOrder = catchAsync(async (req, res, next) => {
   return res.status(200).json({ message: 'Order cancelled and refund/restock processed', order });
 });
 
-// @desc    Download a GST-style PDF invoice for an order (owner or admin)
+// @desc    Download a GST-style PDF invoice for an order (owner or admin).
+//          Online storefront orders only get an invoice once they're
+//          actually Delivered — unlike an in-store POS sale (see
+//          posController.downloadReceipt), which is settled the moment
+//          it's rung up, an online order's payment/fulfillment isn't
+//          final until delivery, so the invoice isn't available before then.
 // @route   GET /api/orders/:id/invoice
 // @access  Private
 const downloadInvoice = catchAsync(async (req, res, next) => {
@@ -199,6 +203,10 @@ const downloadInvoice = catchAsync(async (req, res, next) => {
 
   if (!order) {
     return next(new AppError('Order not found', 404));
+  }
+
+  if (computeEffectiveStatus(order) !== 'Delivered') {
+    return next(new AppError('Invoice is available once the order has been delivered', 400));
   }
 
   res.setHeader('Content-Type', 'application/pdf');
@@ -256,7 +264,6 @@ const adminUpdateOrderStatus = catchAsync(async (req, res, next) => {
   }
 
   order.orderStatus = status;
-  order.demoMode = false;
   await order.save();
 
   return res.status(200).json({ message: 'Order status updated', order });

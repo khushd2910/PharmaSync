@@ -2,16 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Pill, LogOut, ShoppingCart, User as UserIcon, ClipboardList, LayoutDashboard, ScanBarcode,
-  BarChart3, FileSpreadsheet, ShieldAlert, Sun, Moon, Menu, X,
+  BarChart3, FileSpreadsheet, ShieldAlert, Menu, X,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { useTheme } from '../context/ThemeContext';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const { cart } = useCart();
-  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const navRef = useRef(null);
@@ -53,8 +51,8 @@ const Navbar = () => {
   return (
     <nav className="navbar" ref={navRef}>
       <Link to="/" className="navbar-brand" onClick={closeMenu}>
-        <Pill size={20} strokeWidth={2.2} />
-        <span>PharmaCare</span>
+        <span className="navbar-brand-icon"><Pill size={17} strokeWidth={2.3} /></span>
+        <span className="navbar-brand-name">Pharma<span className="accent">Sync</span></span>
       </Link>
 
       <button
@@ -80,9 +78,6 @@ const Navbar = () => {
 
         {user && user.role === 'user' && (
           <>
-            <Link to="/dashboard" className="navbar-link icon-link" onClick={closeMenu}>
-              <LayoutDashboard size={16} strokeWidth={2} /> Dashboard
-            </Link>
             <Link to="/orders" className="navbar-link icon-link" onClick={closeMenu}>
               <ClipboardList size={16} strokeWidth={2} /> Orders
             </Link>
@@ -128,16 +123,6 @@ const Navbar = () => {
             </button>
           </>
         )}
-
-        <button
-          type="button"
-          className="theme-toggle-btn"
-          onClick={toggleTheme}
-          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-        >
-          {theme === 'dark' ? <Sun size={17} strokeWidth={2} /> : <Moon size={17} strokeWidth={2} />}
-        </button>
       </div>
     </nav>
   );

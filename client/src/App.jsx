@@ -6,6 +6,7 @@ import { CartProvider } from './context/CartContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicLayout from './components/PublicLayout';
+import ScrollManager from './components/ScrollManager';
 
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -20,7 +21,6 @@ import Checkout from './pages/Checkout';
 import Orders from './pages/Orders';
 import OrderDetails from './pages/OrderDetails';
 import Profile from './pages/Profile';
-import Dashboard from './pages/Dashboard';
 
 // Admin/POS pages are a meaningful chunk of code a regular customer
 // never needs — split them into their own lazily-loaded bundles so the
@@ -44,6 +44,7 @@ function App() {
       <ToastProvider>
         <AuthProvider>
           <CartProvider>
+            <ScrollManager />
             <Suspense fallback={<AdminPageFallback />}>
             <Routes>
               {/* Public pages share the Navbar via PublicLayout */}
@@ -98,14 +99,6 @@ function App() {
                   }
                 />
 
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute role="user">
-                      <Dashboard />
-                    </ProtectedRoute>
-                  }
-                />
                 <Route
                   path="/admin/dashboard"
                   element={

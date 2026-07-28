@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ShoppingCart, Minus, Plus, FileWarning, Calendar, Factory, Boxes } from 'lucide-react';
+import { Pill, ShoppingCart, Minus, Plus, FileWarning, Calendar, Factory, Boxes } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
-import { addRecentlyViewed } from '../utils/recentlyViewed';
-import { getMedicineVisual } from '../utils/medicineVisual';
+import { addRecentlyViewed, removeRecentlyViewed } from '../utils/recentlyViewed';
 
 const MedicineDetails = () => {
   const { id } = useParams();
@@ -15,6 +14,13 @@ const MedicineDetails = () => {
   const [apiLoading, setApiLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
+  // 'notFound' = the medicine genuinely doesn't exist anymore (e.g. it was
+  // removed from the catalog, or a stale "recently viewed" entry points at
+  // an id from before the catalog was reseeded). 'error' = something else
+  // went wrong (network hiccup, server hiccup) and is worth retrying,
+  // rather than telling the person the medicine is gone when it might not be.
+  const [loadError, setLoadError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   const { user } = useAuth();
   const { addToCart } = useCart();
@@ -22,21 +28,46 @@ const MedicineDetails = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Guards against a slower, earlier request (e.g. from React StrictMode's
+    // double-invoke in dev, or quickly clicking between two medicines)
+    // resolving after a newer one and overwriting this page with the wrong
+    // — or a failed — result.
+    let cancelled = false;
+
     setLoading(true);
     setApiLoading(true);
+    setLoadError(null);
+    setMedicine(null);
+
     api
       .get(`/medicines/${id}`)
       .then((res) => {
+        if (cancelled) return;
         setMedicine(res.data.medicine);
         setApiInfo(res.data.apiInfo);
         addRecentlyViewed(res.data.medicine);
       })
-      .catch(() => showToast('Could not load this medicine', 'error'))
+      .catch((err) => {
+        if (cancelled) return;
+        if (err.response?.status === 404) {
+          setLoadError('notFound');
+          // Stop this dead link from resurfacing in "Recently Viewed".
+          removeRecentlyViewed(id);
+        } else {
+          setLoadError('error');
+          showToast(err.response?.data?.message || 'Could not load this medicine', 'error');
+        }
+      })
       .finally(() => {
+        if (cancelled) return;
         setLoading(false);
         setApiLoading(false);
       });
-  }, [id]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, retryCount]);
 
   const handleAddToCart = async () => {
     if (!user) {
@@ -53,7 +84,26 @@ const MedicineDetails = () => {
   };
 
   if (loading) return <p className="info-text center-text">Loading medicine details…</p>;
-  if (!medicine) return <p className="info-text center-text">Medicine not found.</p>;
+
+  if (loadError === 'notFound') {
+    return (
+      <div className="info-text center-text">
+        <p>This medicine is no longer available — it may have been removed from the catalog.</p>
+        <Link to="/" className="link-muted back-link">← Back to browsing</Link>
+      </div>
+    );
+  }
+
+  if (loadError === 'error' || !medicine) {
+    return (
+      <div className="info-text center-text">
+        <p>Something went wrong loading this medicine.</p>
+        <button type="button" className="btn-secondary" onClick={() => setRetryCount((c) => c + 1)} style={{ marginTop: 10 }}>
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   const composition = [medicine.composition1, medicine.composition2].filter(Boolean).join(' + ');
   const hasDiscount = medicine.discountPercent > 0;
@@ -62,13 +112,12 @@ const MedicineDetails = () => {
   const expiryLabel = medicine.expiryDate
     ? new Date(medicine.expiryDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short' })
     : 'N/A';
-  const { icon: DosageIcon, tint, color } = getMedicineVisual(medicine);
 
   return (
     <div className="details-page">
       <div className="details-grid">
-        <div className="details-image" style={{ background: `var(${tint})`, color: `var(${color})` }}>
-          <DosageIcon size={64} strokeWidth={1.5} />
+        <div className="details-image">
+          <Pill size={64} strokeWidth={1.5} />
         </div>
 
         <div className="details-main">

@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { MapPin, CreditCard, Truck, ShieldAlert, UploadCloud, FileCheck2, CalendarCheck } from 'lucide-react';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { formatCurrency } from '../utils/format';
@@ -9,9 +10,23 @@ import { formatCurrency } from '../utils/format';
 const Checkout = () => {
   const { cart, refreshCart } = useCart();
   const { showToast } = useToast();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [address, setAddress] = useState({ line1: '', city: '', state: '', pincode: '', lat: null, lng: null });
+  // If the user has an address saved on their profile, pre-fill the
+  // delivery form with it so returning customers don't have to retype it
+  // on every order. They can still edit any field before placing the order.
+  const savedAddress = user?.address;
+  const hasSavedAddress = Boolean(savedAddress?.line1 || savedAddress?.city);
+
+  const [address, setAddress] = useState({
+    line1: savedAddress?.line1 || '',
+    city: savedAddress?.city || '',
+    state: savedAddress?.state || '',
+    pincode: savedAddress?.pincode || '',
+    lat: null,
+    lng: null,
+  });
   const [paymentMethod, setPaymentMethod] = useState('COD');
   const [locating, setLocating] = useState(false);
   const [placing, setPlacing] = useState(false);
@@ -112,6 +127,12 @@ const Checkout = () => {
         <div className="checkout-form-col">
           <section className="checkout-section">
             <h2 className="checkout-section-title"><MapPin size={16} strokeWidth={2} /> Delivery Address</h2>
+            {hasSavedAddress && (
+              <p className="muted-text" style={{ marginTop: -6, marginBottom: 12 }}>
+                Filled in from your saved profile address. You can edit it below just for this order,
+                or update it permanently on your <Link to="/profile">profile page</Link>.
+              </p>
+            )}
             <label className="field-label">Address line</label>
             <input name="line1" value={address.line1} onChange={handleChange} placeholder="House no, street, area" />
             <label className="field-label">City</label>

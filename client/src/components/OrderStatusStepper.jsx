@@ -1,20 +1,14 @@
-import { useEffect, useState } from 'react';
 import { Check, Circle } from 'lucide-react';
 import { ORDER_STAGES, computeDisplayStatus } from '../utils/orderStatus';
 
 /**
- * Renders the 5-stage delivery stepper and keeps itself live while the
- * order isn't yet Delivered — it ticks every few seconds so someone
- * watching the tracking page sees it progress without refreshing.
+ * Renders the 5-stage delivery stepper. The status only ever changes when
+ * an admin updates the order (or the user cancels it), both of which
+ * refetch the order from the server — so this simply renders whatever
+ * status the current `order` prop reflects, with no client-side ticking.
  */
 const OrderStatusStepper = ({ order }) => {
-  const [status, setStatus] = useState(() => computeDisplayStatus(order));
-
-  useEffect(() => {
-    if (status === 'Delivered' || status === 'Cancelled' || order.demoMode === false) return;
-    const interval = setInterval(() => setStatus(computeDisplayStatus(order)), 3000);
-    return () => clearInterval(interval);
-  }, [order, status]);
+  const status = computeDisplayStatus(order);
 
   if (status === 'Cancelled') {
     return <div className="badge badge-cancelled">Order Cancelled</div>;

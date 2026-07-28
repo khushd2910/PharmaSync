@@ -27,9 +27,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    // Structured so a saved profile address can be dropped straight into
+    // the checkout form's fields (line1/city/state/pincode) without any
+    // re-parsing of a single free-text string.
     address: {
-      type: String,
-      trim: true,
+      line1: { type: String, trim: true, default: '' },
+      city: { type: String, trim: true, default: '' },
+      state: { type: String, trim: true, default: '' },
+      pincode: { type: String, trim: true, default: '' },
     },
     role: {
       type: String,

@@ -22,3 +22,17 @@ export const getRecentlyViewed = () => {
     return [];
   }
 };
+
+// Drops one entry from the cache — used when a "recently viewed" medicine
+// turns out to no longer exist (deleted, or the catalog was reseeded with
+// new ids), so the same dead link doesn't keep showing up and confusing
+// the user every time they visit Home.
+export const removeRecentlyViewed = (id) => {
+  if (!id) return;
+  try {
+    const updated = getRecentlyViewed().filter((m) => m._id !== id);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  } catch {
+    // non-critical, skip silently
+  }
+};

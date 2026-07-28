@@ -27,6 +27,8 @@ const publicUser = (user) => ({
   id: user._id,
   name: user.name,
   email: user.email,
+  phone: user.phone,
+  address: user.address,
   role: user.role,
   isVerified: user.isVerified,
 });
