@@ -842,15 +842,22 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 .summary-line span:last-child { font-variant-numeric: tabular-nums; }
 .summary-line.total { font-weight: 600; font-size: 15px; border-top: 1px solid var(--line); padding-top: 10px; margin-top: 6px; }
 
-.orders-list { display: flex; flex-direction: column; gap: 8px; }
+.orders-list { display: flex; flex-direction: column; gap: 10px; }
+.order-card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md);
+  transition: border-color var(--ease);
+}
+.order-card:has(.order-row:hover) { border-color: var(--teal); }
 .order-row {
   display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 14px;
-  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md);
-  padding: 15px 18px; text-decoration: none; color: var(--ink); transition: border-color var(--ease);
+  padding: 15px 18px; text-decoration: none; color: var(--ink);
 }
-.order-row:hover { border-color: var(--teal); }
 .order-invoice { font-weight: 600; font-size: 13px; margin: 0 0 2px; }
+.order-items-preview { font-size: 12.5px; color: var(--muted); margin: 0 0 3px; }
 .order-row-total { font-size: 14px; }
+.order-invoice-btn {
+  display: inline-flex; align-items: center; gap: 6px; margin: 0 18px 14px; padding: 7px 14px; font-size: 12.5px;
+}
 
 .order-details-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
 .order-actions { display: flex; gap: 8px; }
@@ -967,6 +974,8 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
   .cart-item { grid-template-columns: 30px 1fr; row-gap: 8px; }
   .cart-item-total, .qty-stepper, .icon-btn-danger { grid-column: 2; }
   .admin-order-row { grid-template-columns: 1fr; row-gap: 8px; }
+  .order-row { grid-template-columns: 1fr; row-gap: 8px; }
+  .order-row .badge, .order-row-total { justify-self: start; }
   .pos-cart-item { grid-template-columns: 1fr; row-gap: 8px; }
   .pos-cart-item .cart-item-total, .pos-cart-item .qty-stepper, .pos-cart-item .icon-btn-danger { grid-column: 1; }
   .pos-customer-fields { grid-template-columns: 1fr; }
