@@ -904,6 +904,11 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 .orders-toolbar .sort-select { flex-shrink: 0; }
 
 .orders-list { display: flex; flex-direction: column; gap: 10px; }
+.order-list-item { display: flex; flex-direction: column; gap: 10px; }
+.order-month-header {
+  font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--muted); padding: 4px 2px 0;
+}
 .order-card {
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md);
   transition: border-color var(--ease), box-shadow var(--ease), opacity var(--ease);
@@ -916,9 +921,16 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
   padding: 15px 18px; text-decoration: none; color: var(--ink);
 }
 .order-row-top { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 14px; }
-.order-invoice { font-weight: 600; font-size: 13px; margin: 0 0 2px; }
-.order-items-preview { font-size: 12.5px; color: var(--muted); margin: 0 0 3px; }
+.order-invoice-row { display: flex; align-items: center; gap: 6px; }
+.order-invoice { font-weight: 600; font-size: 13px; margin: 0; }
+.icon-copy-btn {
+  background: none; border: none; padding: 2px; color: var(--muted); cursor: pointer;
+  display: inline-flex; align-items: center; transition: color var(--ease);
+}
+.icon-copy-btn:hover { color: var(--teal); }
+.order-items-preview { font-size: 12.5px; color: var(--muted); margin: 3px 0; }
 .order-row-total { font-size: 14px; }
+.inline-icon { vertical-align: -1px; }
 
 .order-mini-stepper { display: flex; align-items: center; }
 .order-mini-step { display: flex; align-items: center; }
@@ -944,11 +956,42 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
   display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
   padding: 10px 18px 14px; border-top: 1px solid var(--line);
 }
-.order-card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.order-card-tags { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .order-card-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
 .order-card-actions .btn-secondary {
   padding: 7px 13px; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px;
 }
+.order-help-link {
+  display: inline-flex; align-items: center; gap: 4px; font-size: 12px;
+  color: var(--muted); text-decoration: none;
+}
+.order-help-link:hover { color: var(--teal); text-decoration: underline; }
+
+.order-cancel-confirm { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+.order-cancel-confirm .btn-secondary { padding: 7px 13px; font-size: 12.5px; }
+
+.order-rating {
+  display: flex; align-items: center; gap: 8px; flex-basis: 100%;
+  padding-top: 10px; margin-top: 2px; border-top: 1px dashed var(--line);
+}
+.order-rating-stars { display: flex; gap: 2px; }
+.star-btn {
+  background: none; border: none; padding: 2px; cursor: pointer; color: var(--amber);
+  display: inline-flex; align-items: center; transition: transform var(--ease);
+}
+.star-btn:hover { transform: scale(1.15); }
+
+.empty-state.compact { padding: 30px 20px; }
+.empty-state.compact svg { margin-bottom: 8px; }
+
+@keyframes skeleton-pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+.order-skeleton { padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+.skeleton-block { background: var(--line); border-radius: var(--r-sm); animation: skeleton-pulse 1.4s ease-in-out infinite; }
+.skeleton-row { display: flex; justify-content: space-between; align-items: center; }
+.skeleton-title { width: 40%; height: 14px; }
+.skeleton-badge { width: 70px; height: 20px; border-radius: var(--r-full); }
+.skeleton-thumbs { display: flex; gap: 8px; }
+.skeleton-thumb { width: 52px; height: 52px; }
 
 .order-details-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
 .order-actions { display: flex; gap: 8px; }

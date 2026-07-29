@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  ClipboardList, Download, Search, XCircle, RotateCcw,
-  ChevronLeft, ChevronRight, ShieldAlert,
+  ClipboardList, Download, Search, SearchX, XCircle, RotateCcw,
+  ChevronLeft, ChevronRight, ShieldAlert, Copy, Clock, LifeBuoy, Star,
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '../utils/format';
 import api from '../api/axios';
@@ -15,6 +15,9 @@ import { getMedicineImage } from '../utils/medicineFormImage';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const PAGE_SIZE = 6;
 const MAX_THUMBS = 4;
+const NEW_ORDER_WINDOW_MS = 48 * 60 * 60 * 1000; // orders placed within this window get a "New" tag
+const ESTIMATED_DELIVERY_DAYS = 3; // no real ETA field yet — a simple placed-date + N estimate
+const RATINGS_STORAGE_KEY = 'pharmacare_order_ratings';
 
 // Turns an item list into a compact readable string, e.g.
 // "Paracetamol, Azithromycin +2 more" instead of dumping every name.
@@ -37,6 +40,38 @@ const rxBadgeClassFor = (prescriptionStatus) => {
   return 'badge-status';
 };
 
+const monthLabelFor = (dateStr) =>
+  new Date(dateStr).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+
+const isRecentOrder = (order) => Date.now() - new Date(order.createdAt).getTime() < NEW_ORDER_WINDOW_MS;
+
+const estimatedDeliveryDate = (order) =>
+  new Date(new Date(order.createdAt).getTime() + ESTIMATED_DELIVERY_DAYS * 24 * 60 * 60 * 1000);
+
+const loadStoredRatings = () => {
+  try {
+    return JSON.parse(localStorage.getItem(RATINGS_STORAGE_KEY) || '{}');
+  } catch {
+    return {};
+  }
+};
+
+// Loading placeholders shaped like the real card, so the layout doesn't
+// jump once orders arrive — feels like a real product, not a spinner.
+const OrderCardSkeleton = () => (
+  <div className="order-card order-skeleton">
+    <div className="skeleton-row">
+      <div className="skeleton-block skeleton-title" />
+      <div className="skeleton-block skeleton-badge" />
+    </div>
+    <div className="skeleton-thumbs">
+      {[1, 2, 3, 4].map((n) => (
+        <div key={n} className="skeleton-block skeleton-thumb" />
+      ))}
+    </div>
+  </div>
+);
+
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +79,9 @@ const Orders = () => {
   const [sortBy, setSortBy] = useState('newest');
   const [page, setPage] = useState(1);
   const [cancellingId, setCancellingId] = useState(null);
+  const [confirmingCancelId, setConfirmingCancelId] = useState(null);
   const [reorderingId, setReorderingId] = useState(null);
+  const [ratings, setRatings] = useState(loadStoredRatings);
   const { showToast } = useToast();
   const { addToCart } = useCart();
   const navigate = useNavigate();
@@ -83,11 +120,14 @@ const Orders = () => {
     });
   }, [orders, search, sortBy]);
 
+  // Month-grouping only makes sense when the list is in chronological
+  // order — sorting by amount would otherwise interleave months oddly.
+  const showMonthGroups = sortBy === 'newest' || sortBy === 'oldest';
+
   const totalPages = Math.max(Math.ceil(filteredOrders.length / PAGE_SIZE), 1);
   const pageOrders = filteredOrders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const handleCancel = async (orderId) => {
-    if (!window.confirm('Cancel this order? Stock will be released back.')) return;
     setCancellingId(orderId);
     try {
       const res = await api.patch(`/orders/${orderId}/cancel`);
@@ -97,7 +137,36 @@ const Orders = () => {
       showToast(err.response?.data?.message || 'Could not cancel order', 'error');
     } finally {
       setCancellingId(null);
+      setConfirmingCancelId(null);
     }
+  };
+
+  const handleCopyInvoice = (e, invoiceNumber) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!navigator.clipboard) {
+      showToast('Copying is not supported in this browser', 'error');
+      return;
+    }
+    navigator.clipboard
+      .writeText(invoiceNumber)
+      .then(() => showToast('Invoice number copied', 'success'))
+      .catch(() => showToast('Could not copy invoice number', 'error'));
+  };
+
+  const handleRate = (e, orderId, value) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setRatings((prev) => {
+      const next = { ...prev, [orderId]: value };
+      try {
+        localStorage.setItem(RATINGS_STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        // localStorage unavailable — rating just won't persist across reloads
+      }
+      return next;
+    });
+    showToast('Thanks for your feedback!', 'success');
   };
 
   // The medicine catalog is periodically wiped and re-imported (see
@@ -157,7 +226,20 @@ const Orders = () => {
     navigate('/checkout');
   };
 
-  if (loading) return <p className="info-text center-text">Loading your orders…</p>;
+  if (loading) {
+    return (
+      <div className="orders-page">
+        <div className="dashboard-header">
+          <h1 className="page-title">Order History</h1>
+        </div>
+        <div className="orders-list">
+          <OrderCardSkeleton />
+          <OrderCardSkeleton />
+          <OrderCardSkeleton />
+        </div>
+      </div>
+    );
+  }
 
   if (orders.length === 0) {
     return (
@@ -171,6 +253,8 @@ const Orders = () => {
       </div>
     );
   }
+
+  let lastMonthLabel = null;
 
   return (
     <div className="orders-page">
@@ -193,7 +277,10 @@ const Orders = () => {
       </div>
 
       {filteredOrders.length === 0 ? (
-        <p className="info-text center-text">No orders match “{search}”.</p>
+        <div className="empty-state compact">
+          <SearchX size={32} strokeWidth={1.5} />
+          <p className="muted-text">No orders match “{search}”.</p>
+        </div>
       ) : (
         <>
           <div className="orders-list">
@@ -201,96 +288,172 @@ const Orders = () => {
               const status = computeDisplayStatus(order);
               const isDelivered = status === 'Delivered';
               const isCancelled = status === 'Cancelled';
+              const isActive = !isDelivered && !isCancelled;
               const cancellable = isCancellable(order);
               const stageIndex = ORDER_STAGES.indexOf(status);
+              const monthLabel = monthLabelFor(order.createdAt);
+              const showHeader = showMonthGroups && monthLabel !== lastMonthLabel;
+              lastMonthLabel = monthLabel;
+              const rating = ratings[order._id] || 0;
+
               return (
-                <div className={`order-card ${isCancelled ? 'order-card-cancelled' : ''}`} key={order._id}>
-                  <Link to={`/orders/${order._id}`} className="order-row">
-                    <div className="order-row-top">
-                      <div className="order-row-main">
-                        <p className="order-invoice">{order.invoiceNumber}</p>
-                        <p className="order-items-preview">{summarizeItems(order.items)}</p>
-                        <p className="muted-text">
-                          {order.items.length} item{order.items.length > 1 ? 's' : ''}
-                          {' · '}
-                          {isDelivered
-                            ? `Delivered ${formatDate(order.updatedAt)}`
-                            : `Placed ${formatDate(order.createdAt)}`}
-                        </p>
-                      </div>
-                      <span className={`badge ${badgeClassFor(status)}`}>{status}</span>
-                      <span className="order-row-total num">{formatCurrency(order.totalAmount)}</span>
-                    </div>
-
-                    {!isCancelled && (
-                      <div className="order-mini-stepper" title={`Status: ${status}`}>
-                        {ORDER_STAGES.map((stage, i) => (
-                          <div key={stage} className="order-mini-step">
-                            <span className={`order-mini-dot ${i <= stageIndex ? 'filled' : ''} ${i === stageIndex ? 'current' : ''}`} />
-                            {i < ORDER_STAGES.length - 1 && (
-                              <span className={`order-mini-line ${i < stageIndex ? 'filled' : ''}`} />
-                            )}
+                <div key={order._id} className="order-list-item">
+                  {showHeader && <div className="order-month-header">{monthLabel}</div>}
+                  <div className={`order-card ${isCancelled ? 'order-card-cancelled' : ''}`}>
+                    <Link to={`/orders/${order._id}`} className="order-row">
+                      <div className="order-row-top">
+                        <div className="order-row-main">
+                          <div className="order-invoice-row">
+                            <p className="order-invoice">{order.invoiceNumber}</p>
+                            <button
+                              type="button"
+                              className="icon-copy-btn"
+                              onClick={(e) => handleCopyInvoice(e, order.invoiceNumber)}
+                              aria-label="Copy invoice number"
+                              title="Copy invoice number"
+                            >
+                              <Copy size={12} strokeWidth={2} />
+                            </button>
+                            {isRecentOrder(order) && <span className="badge badge-discount">New</span>}
                           </div>
-                        ))}
+                          <p className="order-items-preview">{summarizeItems(order.items)}</p>
+                          <p className="muted-text">
+                            {order.items.length} item{order.items.length > 1 ? 's' : ''}
+                            {' · '}
+                            {isDelivered
+                              ? `Delivered ${formatDate(order.updatedAt)}`
+                              : `Placed ${formatDate(order.createdAt)}`}
+                            {isActive && (
+                              <>
+                                {' · '}
+                                <Clock size={11} strokeWidth={2} className="inline-icon" />
+                                {' '}Expected by {formatDate(estimatedDeliveryDate(order))}
+                              </>
+                            )}
+                          </p>
+                        </div>
+                        <span className={`badge ${badgeClassFor(status)}`}>{status}</span>
+                        <span className="order-row-total num">{formatCurrency(order.totalAmount)}</span>
                       </div>
-                    )}
 
-                    <div className="order-thumbs">
-                      {order.items.slice(0, MAX_THUMBS).map((item, i) => (
-                        <img
-                          key={i}
-                          src={getMedicineImage({ name: item.name })}
-                          alt={item.name}
-                          className="order-thumb"
-                          loading="lazy"
-                        />
-                      ))}
-                      {order.items.length > MAX_THUMBS && (
-                        <span className="order-thumb order-thumb-more">
-                          +{order.items.length - MAX_THUMBS}
-                        </span>
+                      {!isCancelled && (
+                        <div className="order-mini-stepper" title={`Status: ${status}`}>
+                          {ORDER_STAGES.map((stage, i) => (
+                            <div key={stage} className="order-mini-step">
+                              <span className={`order-mini-dot ${i <= stageIndex ? 'filled' : ''} ${i === stageIndex ? 'current' : ''}`} />
+                              {i < ORDER_STAGES.length - 1 && (
+                                <span className={`order-mini-line ${i < stageIndex ? 'filled' : ''}`} />
+                              )}
+                            </div>
+                          ))}
+                        </div>
                       )}
-                    </div>
-                  </Link>
 
-                  <div className="order-card-footer">
-                    <div className="order-card-tags">
-                      {order.prescriptionRequired && (
-                        <span className={`badge ${rxBadgeClassFor(order.prescriptionStatus)}`}>
-                          <ShieldAlert size={11} strokeWidth={2} /> Rx {order.prescriptionStatus}
-                        </span>
-                      )}
-                    </div>
-                    <div className="order-card-actions">
-                      {isDelivered && (
+                      <div className="order-thumbs">
+                        {order.items.slice(0, MAX_THUMBS).map((item, i) => (
+                          <img
+                            key={i}
+                            src={getMedicineImage({ name: item.name })}
+                            alt={item.name}
+                            className="order-thumb"
+                            loading="lazy"
+                          />
+                        ))}
+                        {order.items.length > MAX_THUMBS && (
+                          <span className="order-thumb order-thumb-more">
+                            +{order.items.length - MAX_THUMBS}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+
+                    <div className="order-card-footer">
+                      <div className="order-card-tags">
+                        {order.prescriptionRequired && (
+                          <span className={`badge ${rxBadgeClassFor(order.prescriptionStatus)}`}>
+                            <ShieldAlert size={11} strokeWidth={2} /> Rx {order.prescriptionStatus}
+                          </span>
+                        )}
                         <a
-                          className="btn-secondary"
-                          href={`${API_BASE_URL}/orders/${order._id}/invoice`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          className="order-help-link"
+                          href={`mailto:support@pharmasync.app?subject=${encodeURIComponent(`Help with order ${order.invoiceNumber}`)}`}
                         >
-                          <Download size={14} strokeWidth={2} /> Invoice
+                          <LifeBuoy size={12} strokeWidth={2} /> Need help?
                         </a>
+                      </div>
+
+                      {confirmingCancelId === order._id ? (
+                        <div className="order-cancel-confirm">
+                          <span className="muted-text">Cancel this order?</span>
+                          <button
+                            type="button"
+                            className="btn-secondary danger"
+                            onClick={() => handleCancel(order._id)}
+                            disabled={cancellingId === order._id}
+                          >
+                            {cancellingId === order._id ? 'Cancelling…' : 'Yes, cancel'}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-secondary"
+                            onClick={() => setConfirmingCancelId(null)}
+                            disabled={cancellingId === order._id}
+                          >
+                            Keep order
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="order-card-actions">
+                          {isDelivered && (
+                            <a
+                              className="btn-secondary"
+                              href={`${API_BASE_URL}/orders/${order._id}/invoice`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Download size={14} strokeWidth={2} /> Invoice
+                            </a>
+                          )}
+                          <button
+                            type="button"
+                            className="btn-secondary"
+                            onClick={() => handleReorder(order)}
+                            disabled={reorderingId === order._id}
+                          >
+                            <RotateCcw size={14} strokeWidth={2} />
+                            {reorderingId === order._id ? 'Adding…' : 'Reorder'}
+                          </button>
+                          {cancellable && (
+                            <button
+                              type="button"
+                              className="btn-secondary danger"
+                              onClick={() => setConfirmingCancelId(order._id)}
+                            >
+                              <XCircle size={14} strokeWidth={2} /> Cancel
+                            </button>
+                          )}
+                        </div>
                       )}
-                      <button
-                        type="button"
-                        className="btn-secondary"
-                        onClick={() => handleReorder(order)}
-                        disabled={reorderingId === order._id}
-                      >
-                        <RotateCcw size={14} strokeWidth={2} />
-                        {reorderingId === order._id ? 'Adding…' : 'Reorder'}
-                      </button>
-                      {cancellable && (
-                        <button
-                          type="button"
-                          className="btn-secondary danger"
-                          onClick={() => handleCancel(order._id)}
-                          disabled={cancellingId === order._id}
-                        >
-                          <XCircle size={14} strokeWidth={2} />
-                          {cancellingId === order._id ? 'Cancelling…' : 'Cancel'}
-                        </button>
+
+                      {isDelivered && (
+                        <div className="order-rating">
+                          <span className="muted-text">
+                            {rating ? 'Thanks for rating this order!' : 'Rate this order:'}
+                          </span>
+                          <div className="order-rating-stars">
+                            {[1, 2, 3, 4, 5].map((n) => (
+                              <button
+                                key={n}
+                                type="button"
+                                className="star-btn"
+                                onClick={(e) => handleRate(e, order._id, n)}
+                                aria-label={`Rate ${n} star${n > 1 ? 's' : ''}`}
+                              >
+                                <Star size={14} strokeWidth={2} fill={rating >= n ? 'currentColor' : 'none'} />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </div>
                   </div>
