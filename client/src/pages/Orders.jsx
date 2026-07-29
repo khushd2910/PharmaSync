@@ -10,9 +10,11 @@ import { useToast } from '../context/ToastContext';
 import { useCart } from '../context/CartContext';
 import { computeDisplayStatus, isCancellable } from '../utils/orderStatus';
 import IconInput from '../components/IconInput';
+import { getMedicineImage } from '../utils/medicineFormImage';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const PAGE_SIZE = 6;
+const MAX_THUMBS = 4;
 
 // Turns an item list into a compact readable string, e.g.
 // "Paracetamol, Azithromycin +2 more" instead of dumping every name.
@@ -173,19 +175,38 @@ const Orders = () => {
               return (
                 <div className="order-card" key={order._id}>
                   <Link to={`/orders/${order._id}`} className="order-row">
-                    <div className="order-row-main">
-                      <p className="order-invoice">{order.invoiceNumber}</p>
-                      <p className="order-items-preview">{summarizeItems(order.items)}</p>
-                      <p className="muted-text">
-                        {order.items.length} item{order.items.length > 1 ? 's' : ''}
-                        {' · '}
-                        {isDelivered
-                          ? `Delivered ${formatDate(order.updatedAt)}`
-                          : `Placed ${formatDate(order.createdAt)}`}
-                      </p>
+                    <div className="order-row-top">
+                      <div className="order-row-main">
+                        <p className="order-invoice">{order.invoiceNumber}</p>
+                        <p className="order-items-preview">{summarizeItems(order.items)}</p>
+                        <p className="muted-text">
+                          {order.items.length} item{order.items.length > 1 ? 's' : ''}
+                          {' · '}
+                          {isDelivered
+                            ? `Delivered ${formatDate(order.updatedAt)}`
+                            : `Placed ${formatDate(order.createdAt)}`}
+                        </p>
+                      </div>
+                      <span className={`badge ${badgeClassFor(status)}`}>{status}</span>
+                      <span className="order-row-total num">{formatCurrency(order.totalAmount)}</span>
                     </div>
-                    <span className={`badge ${badgeClassFor(status)}`}>{status}</span>
-                    <span className="order-row-total num">{formatCurrency(order.totalAmount)}</span>
+
+                    <div className="order-thumbs">
+                      {order.items.slice(0, MAX_THUMBS).map((item, i) => (
+                        <img
+                          key={i}
+                          src={getMedicineImage({ name: item.name })}
+                          alt={item.name}
+                          className="order-thumb"
+                          loading="lazy"
+                        />
+                      ))}
+                      {order.items.length > MAX_THUMBS && (
+                        <span className="order-thumb order-thumb-more">
+                          +{order.items.length - MAX_THUMBS}
+                        </span>
+                      )}
+                    </div>
                   </Link>
 
                   <div className="order-card-footer">
