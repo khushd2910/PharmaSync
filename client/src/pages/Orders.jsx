@@ -100,16 +100,45 @@ const Orders = () => {
     }
   };
 
-  // Adds every item from a past order back into the cart. Items that are
-  // now out of stock or discontinued are skipped (addToCart reports the
-  // failure per-item) rather than blocking the whole reorder.
+  // The medicine catalog is periodically wiped and re-imported (see
+  // server/scripts/importMedicines.js), which mints a brand-new _id for
+  // every medicine even when its name/details haven't changed. An old
+  // order's item.medicine id can therefore go stale — the product is
+  // still very much purchasable, just under a different _id now. If the
+  // direct id lookup 404s, fall back to an exact (case-insensitive) name
+  // match against the current catalog before giving up on that item.
+  const findCurrentMedicineByName = async (name) => {
+    try {
+      const res = await api.get('/medicines', { params: { search: name, limit: 5 } });
+      const candidates = res.data.medicines || [];
+      return candidates.find((m) => m.name.trim().toLowerCase() === name.trim().toLowerCase()) || null;
+    } catch {
+      return null;
+    }
+  };
+
+  // Adds every item from a past order back into the cart, then takes the
+  // user straight to checkout. Items that are now genuinely out of stock
+  // or discontinued are skipped (reported to the user) rather than
+  // blocking the whole reorder.
   const handleReorder = async (order) => {
     setReorderingId(order._id);
     let added = 0;
     let failed = 0;
+
     for (const item of order.items) {
       // eslint-disable-next-line no-await-in-loop
-      const res = await addToCart(item.medicine, item.quantity);
+      let res = await addToCart(item.medicine, item.quantity);
+
+      if (!res.success) {
+        // eslint-disable-next-line no-await-in-loop
+        const match = await findCurrentMedicineByName(item.name);
+        if (match) {
+          // eslint-disable-next-line no-await-in-loop
+          res = await addToCart(match._id, item.quantity);
+        }
+      }
+
       if (res.success) added += 1;
       else failed += 1;
     }
@@ -125,7 +154,7 @@ const Orders = () => {
         : 'Items added to your cart',
       failed > 0 ? 'error' : 'success'
     );
-    navigate('/cart');
+    navigate('/checkout');
   };
 
   if (loading) return <p className="info-text center-text">Loading your orders…</p>;
