@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { formatCurrency } from '../utils/format';
+import { computeCouponDiscount } from '../utils/coupons';
 import IconInput from '../components/IconInput';
 
 const DELIVERY_FEE = 40;
@@ -38,7 +39,7 @@ const luhnValid = (digits) => {
 const formatCardNumber = (raw) => raw.replace(/(.{4})/g, '$1 ').trim();
 
 const Checkout = () => {
-  const { cart, refreshCart } = useCart();
+  const { cart, refreshCart, appliedCoupon } = useCart();
   const { showToast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -140,8 +141,12 @@ const Checkout = () => {
   );
   const discountedValue = cart.totalAmount;
   const mrpDiscount = Math.max(0, mrpTotal - discountedValue);
+  const couponDiscount = useMemo(
+    () => computeCouponDiscount(appliedCoupon, discountedValue),
+    [appliedCoupon, discountedValue]
+  );
   const deliveryFee = discountedValue >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
-  const amountToPay = Math.max(0, discountedValue + deliveryFee + PLATFORM_FEE);
+  const amountToPay = Math.max(0, discountedValue - couponDiscount + deliveryFee + PLATFORM_FEE);
   const codEligible = mrpTotal > COD_MIN_MRP;
 
   // ---------------- Payment ----------------
@@ -160,6 +165,7 @@ const Checkout = () => {
   const [walletErrors, setWalletErrors] = useState({});
 
   const [placedOrder, setPlacedOrder] = useState(null);
+  const [billSnapshot, setBillSnapshot] = useState(null);
   const [placing, setPlacing] = useState(false);
 
   const selectMethod = (m) => {
@@ -242,6 +248,11 @@ const Checkout = () => {
         prescriptionId: prescription?._id,
       });
       setPlacedOrder(res.data.order);
+      // Snapshot the bill as computed right now — cart.items (and therefore
+      // mrpTotal/couponDiscount/amountToPay above) get zeroed out the moment
+      // refreshCart() below picks up the now-empty server cart, and the
+      // Confirmation step still needs the coupon-inclusive numbers.
+      setBillSnapshot({ mrpTotal, mrpDiscount, appliedCoupon, couponDiscount, deliveryFee, amountToPay });
       await refreshCart();
       goNext();
     } catch (err) {
@@ -578,6 +589,9 @@ const Checkout = () => {
               {mrpDiscount > 0 && (
                 <div className="bill-row discount"><span>Discount</span><span className="num">-{formatCurrency(mrpDiscount)}</span></div>
               )}
+              {appliedCoupon && (
+                <div className="bill-row discount"><span>Coupon ({appliedCoupon.code})</span><span className="num">-{formatCurrency(couponDiscount)}</span></div>
+              )}
               <div className="bill-row"><span>Delivery Fee</span>
                 <span className="num">{deliveryFee === 0 ? 'Free' : formatCurrency(deliveryFee)}</span>
               </div>
@@ -589,10 +603,7 @@ const Checkout = () => {
       )}
 
       {/* ---------------- Confirmation ---------------- */}
-      {step === 'confirm' && placedOrder && (() => {
-        const orderDeliveryFee = placedOrder.totalAmount >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
-        const orderAmountPaid = placedOrder.totalAmount + orderDeliveryFee + PLATFORM_FEE;
-        return (
+      {step === 'confirm' && placedOrder && billSnapshot && (
         <div className="checkout-grid">
           <div className="checkout-form-col">
             <section className="checkout-section checkout-step-panel confirm-hero">
@@ -638,11 +649,20 @@ const Checkout = () => {
                   <span>{formatCurrency(item.price * item.quantity)}</span>
                 </div>
               ))}
+              {billSnapshot.mrpDiscount > 0 && (
+                <div className="bill-row discount"><span>Discount</span><span className="num">-{formatCurrency(billSnapshot.mrpDiscount)}</span></div>
+              )}
+              {billSnapshot.appliedCoupon && (
+                <div className="bill-row discount">
+                  <span>Coupon ({billSnapshot.appliedCoupon.code})</span>
+                  <span className="num">-{formatCurrency(billSnapshot.couponDiscount)}</span>
+                </div>
+              )}
               <div className="bill-row"><span>Delivery Fee</span>
-                <span className="num">{orderDeliveryFee === 0 ? 'Free' : formatCurrency(orderDeliveryFee)}</span>
+                <span className="num">{billSnapshot.deliveryFee === 0 ? 'Free' : formatCurrency(billSnapshot.deliveryFee)}</span>
               </div>
               <div className="bill-row"><span>Platform Fee</span><span className="num">{formatCurrency(PLATFORM_FEE)}</span></div>
-              <div className="bill-row total"><span>Amount Paid</span><span className="num">{formatCurrency(orderAmountPaid)}</span></div>
+              <div className="bill-row total"><span>Amount Paid</span><span className="num">{formatCurrency(billSnapshot.amountToPay)}</span></div>
 
               <button className="btn-primary place-order-btn" onClick={() => navigate(`/orders/${placedOrder._id}`)}>
                 View Order
@@ -653,8 +673,7 @@ const Checkout = () => {
             </section>
           </div>
         </div>
-        );
-      })()}
+      )}
     </div>
   );
 };

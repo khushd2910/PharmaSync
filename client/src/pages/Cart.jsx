@@ -7,29 +7,8 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { formatCurrency } from '../utils/format';
 import { getMedicineImage } from '../utils/medicineFormImage';
+import { COUPONS, computeCouponDiscount } from '../utils/coupons';
 import api from '../api/axios';
-
-// Client-side coupon catalog for the demo storefront — applied purely to
-// what's displayed in the cart's Bill Summary. WELCOME50 is gated behind
-// isFirstOrder (derived from the user's real order history below).
-const COUPONS = [
-  {
-    code: 'PYMED25',
-    description: 'Get 20% instant discount, up to ₹150',
-    type: 'percent',
-    value: 20,
-    maxDiscount: 150,
-    minOrder: 150,
-  },
-  {
-    code: 'WELCOME50',
-    description: 'Flat ₹50 off, exclusively for your very first order',
-    type: 'flat',
-    value: 50,
-    minOrder: 0,
-    firstOrderOnly: true,
-  },
-];
 
 const UPI_OFFERS = [
   { app: 'Google Pay', detail: '5% cashback up to ₹40 on UPI payments' },
@@ -42,13 +21,12 @@ const FREE_DELIVERY_THRESHOLD = 500;
 const PLATFORM_FEE = 12;
 
 const Cart = () => {
-  const { cart, updateQuantity, removeFromCart, loading } = useCart();
+  const { cart, updateQuantity, removeFromCart, loading, appliedCoupon, setAppliedCoupon } = useCart();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
   const [isFirstOrder, setIsFirstOrder] = useState(false);
   const [couponInput, setCouponInput] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState('');
 
   // Used only to unlock the first-order coupon — falls back to "not first
@@ -83,16 +61,10 @@ const Cart = () => {
   const discountedValue = cart.totalAmount;
   const mrpDiscount = Math.max(0, mrpTotal - discountedValue);
 
-  const couponDiscount = useMemo(() => {
-    if (!appliedCoupon) return 0;
-    if (appliedCoupon.type === 'percent') {
-      return Math.min(
-        discountedValue * (appliedCoupon.value / 100),
-        appliedCoupon.maxDiscount ?? Infinity
-      );
-    }
-    return Math.min(appliedCoupon.value, discountedValue);
-  }, [appliedCoupon, discountedValue]);
+  const couponDiscount = useMemo(
+    () => computeCouponDiscount(appliedCoupon, discountedValue),
+    [appliedCoupon, discountedValue]
+  );
 
   const deliveryFee = discountedValue >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
   const amountToPay = Math.max(0, discountedValue - couponDiscount + deliveryFee + PLATFORM_FEE);
