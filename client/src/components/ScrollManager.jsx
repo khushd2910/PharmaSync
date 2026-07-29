@@ -52,17 +52,35 @@ const ScrollManager = () => {
   useEffect(() => {
     const key = location.key;
 
-    if (navigationType === 'POP') {
-      const saved = positionsRef.current[key];
-      // Wait a tick so the page has actually rendered (and async data has
-      // had a chance to lay out) before scrolling — otherwise there's
-      // nothing to scroll to yet.
-      requestAnimationFrame(() => {
-        window.scrollTo(0, typeof saved === 'number' ? saved : 0);
-      });
-    } else {
+    if (navigationType !== 'POP') {
       window.scrollTo(0, 0);
+      return;
     }
+
+    const target = positionsRef.current[key];
+    if (typeof target !== 'number') return;
+
+    const restore = () => window.scrollTo(0, target);
+    restore();
+
+    // The page being returned to (Home, in particular) often fetches its
+    // content AFTER this mounts — its medicine grid isn't there yet on the
+    // first frame, so the page is still short and scrollTo clamps close to
+    // the bottom of that short page instead of the saved offset. Once the
+    // grid loads in and the page grows, the browser doesn't re-scroll for
+    // us, so the user is left stranded near the bottom. Re-applying the
+    // target scroll position every time the DOM changes (for a short
+    // window after navigating back) lets it "catch up" once the async
+    // content has actually rendered, without hard-coding which page fetches
+    // what or how long it takes.
+    const observer = new MutationObserver(restore);
+    observer.observe(document.body, { childList: true, subtree: true });
+    const stopTimer = setTimeout(() => observer.disconnect(), 1500);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(stopTimer);
+    };
   }, [location.key, navigationType]);
 
   return null;

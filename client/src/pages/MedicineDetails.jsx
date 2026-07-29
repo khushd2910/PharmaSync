@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Pill, ShoppingCart, Minus, Plus, FileWarning, Calendar, Factory, Boxes } from 'lucide-react';
+import { ShoppingCart, Minus, Plus, FileWarning, Calendar, Factory, Boxes } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { addRecentlyViewed, removeRecentlyViewed } from '../utils/recentlyViewed';
+import { getMedicineImage } from '../utils/medicineFormImage';
 
 const MedicineDetails = () => {
   const { id } = useParams();
@@ -117,7 +118,7 @@ const MedicineDetails = () => {
     <div className="details-page">
       <div className="details-grid">
         <div className="details-image">
-          <Pill size={64} strokeWidth={1.5} />
+          <img src={getMedicineImage(medicine)} alt={medicine.name} />
         </div>
 
         <div className="details-main">
