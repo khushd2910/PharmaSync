@@ -1,0 +1,18 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="vs-body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8a2f5e"/>
+      <stop offset="100%" stop-color="#5c1b3e"/>
+    </linearGradient>
+  </defs>
+  <rect x="60" y="66" width="80" height="102" rx="16" fill="url(#vs-body)"/>
+  <rect x="72" y="46" width="56" height="26" rx="7" fill="#3f1329"/>
+  <rect x="80" y="30" width="40" height="20" rx="5" fill="#2b0d1c"/>
+  <rect x="72" y="92" width="56" height="52" rx="8" fill="#ffffff"/>
+  <text x="100" y="112" font-family="Georgia, serif" font-size="13" font-weight="700" fill="#8a2f5e" text-anchor="middle">VITA</text>
+  <g fill="#e0a8c4">
+    <rect x="80" y="122" width="40" height="4" rx="2"/>
+    <rect x="80" y="130" width="30" height="4" rx="2"/>
+  </g>
+  <circle cx="100" cy="160" r="2.6" fill="#ffffff" opacity="0.6"/>
+</svg>

@@ -1,0 +1,32 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pr-foil" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f4a860"/>
+      <stop offset="100%" stop-color="#d97a2e"/>
+    </linearGradient>
+    <linearGradient id="pr-blister" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#eef1ec"/>
+    </linearGradient>
+  </defs>
+  <g transform="rotate(-8 100 100)">
+    <rect x="35" y="55" width="130" height="90" rx="14" fill="url(#pr-foil)"/>
+    <rect x="47" y="67" width="106" height="66" rx="10" fill="url(#pr-blister)"/>
+    <g fill="#f4f6f2" stroke="#d3d8cc" stroke-width="1.5">
+      <circle cx="70" cy="86" r="11"/>
+      <circle cx="100" cy="86" r="11"/>
+      <circle cx="130" cy="86" r="11"/>
+      <circle cx="70" cy="114" r="11"/>
+      <circle cx="100" cy="114" r="11"/>
+      <circle cx="130" cy="114" r="11"/>
+    </g>
+    <g fill="#ffffff" opacity="0.85">
+      <circle cx="66" cy="82" r="3.4"/>
+      <circle cx="96" cy="82" r="3.4"/>
+      <circle cx="126" cy="82" r="3.4"/>
+      <circle cx="66" cy="110" r="3.4"/>
+      <circle cx="96" cy="110" r="3.4"/>
+      <circle cx="126" cy="110" r="3.4"/>
+    </g>
+  </g>
+</svg>

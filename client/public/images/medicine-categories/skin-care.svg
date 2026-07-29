@@ -1,0 +1,17 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sk-body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f0a8bd"/>
+      <stop offset="100%" stop-color="#d1587e"/>
+    </linearGradient>
+  </defs>
+  <path d="M78 46 L122 46 L128 66 L72 66 Z" fill="#b8425f"/>
+  <rect x="66" y="66" width="68" height="100" rx="20" fill="url(#sk-body)"/>
+  <rect x="76" y="92" width="48" height="46" rx="7" fill="#ffffff"/>
+  <g fill="#d1587e">
+    <rect x="84" y="102" width="32" height="5" rx="2.5"/>
+    <rect x="84" y="112" width="24" height="5" rx="2.5"/>
+    <rect x="84" y="122" width="28" height="5" rx="2.5"/>
+  </g>
+  <rect x="82" y="34" width="36" height="14" rx="4" fill="#8f2f47"/>
+</svg>

@@ -1,0 +1,18 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="fa-sachet" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f7b06a"/>
+      <stop offset="100%" stop-color="#e07a2e"/>
+    </linearGradient>
+  </defs>
+  <path d="M56 46 L144 46 L150 158 C150 168 142 174 132 174 L68 174 C58 174 50 168 50 158 Z" fill="url(#fa-sachet)"/>
+  <path d="M56 46 L144 46 L142 62 L58 62 Z" fill="#c9631f"/>
+  <rect x="66" y="76" width="68" height="66" rx="8" fill="#ffffff" opacity="0.94"/>
+  <circle cx="100" cy="98" r="12" fill="#e07a2e" opacity="0.85"/>
+  <path d="M100 90 v16 M92 98 h16" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"/>
+  <g fill="#c9631f">
+    <rect x="76" y="118" width="48" height="4" rx="2"/>
+    <rect x="76" y="128" width="34" height="4" rx="2"/>
+  </g>
+  <path d="M50 158 L150 158 L146 170 C144 173 140 174 132 174 L68 174 C60 174 56 173 54 170 Z" fill="#c9631f"/>
+</svg>
