@@ -8,7 +8,7 @@ import { formatCurrency, formatDate } from '../utils/format';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import { useCart } from '../context/CartContext';
-import { computeDisplayStatus, isCancellable } from '../utils/orderStatus';
+import { computeDisplayStatus, isCancellable, ORDER_STAGES } from '../utils/orderStatus';
 import IconInput from '../components/IconInput';
 import { getMedicineImage } from '../utils/medicineFormImage';
 
@@ -176,20 +176,20 @@ const Orders = () => {
     <div className="orders-page">
       <div className="dashboard-header">
         <h1 className="page-title">Order History</h1>
-        <div className="orders-toolbar">
-          <IconInput
-            icon={Search}
-            placeholder="Search by invoice number…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <select className="sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-            <option value="newest">Newest first</option>
-            <option value="oldest">Oldest first</option>
-            <option value="amount-high">Amount: High to Low</option>
-            <option value="amount-low">Amount: Low to High</option>
-          </select>
-        </div>
+      </div>
+      <div className="orders-toolbar">
+        <IconInput
+          icon={Search}
+          placeholder="Search by invoice number…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <select className="sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="amount-high">Amount: High to Low</option>
+          <option value="amount-low">Amount: Low to High</option>
+        </select>
       </div>
 
       {filteredOrders.length === 0 ? (
@@ -200,9 +200,11 @@ const Orders = () => {
             {pageOrders.map((order) => {
               const status = computeDisplayStatus(order);
               const isDelivered = status === 'Delivered';
+              const isCancelled = status === 'Cancelled';
               const cancellable = isCancellable(order);
+              const stageIndex = ORDER_STAGES.indexOf(status);
               return (
-                <div className="order-card" key={order._id}>
+                <div className={`order-card ${isCancelled ? 'order-card-cancelled' : ''}`} key={order._id}>
                   <Link to={`/orders/${order._id}`} className="order-row">
                     <div className="order-row-top">
                       <div className="order-row-main">
@@ -219,6 +221,19 @@ const Orders = () => {
                       <span className={`badge ${badgeClassFor(status)}`}>{status}</span>
                       <span className="order-row-total num">{formatCurrency(order.totalAmount)}</span>
                     </div>
+
+                    {!isCancelled && (
+                      <div className="order-mini-stepper" title={`Status: ${status}`}>
+                        {ORDER_STAGES.map((stage, i) => (
+                          <div key={stage} className="order-mini-step">
+                            <span className={`order-mini-dot ${i <= stageIndex ? 'filled' : ''} ${i === stageIndex ? 'current' : ''}`} />
+                            {i < ORDER_STAGES.length - 1 && (
+                              <span className={`order-mini-line ${i < stageIndex ? 'filled' : ''}`} />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                     <div className="order-thumbs">
                       {order.items.slice(0, MAX_THUMBS).map((item, i) => (
