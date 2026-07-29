@@ -51,17 +51,20 @@ const restockItems = async (items) => {
   }
 };
 
+const PAYMENT_METHODS = ['COD', 'UPI', 'Card', 'Wallet'];
+const COD_MIN_ORDER = 500;
+
 // @desc    Place an order from the current cart
 // @route   POST /api/orders
 // @access  Private
 const createOrder = catchAsync(async (req, res, next) => {
-  const { address, paymentMethod } = req.body;
+  const { address, paymentMethod, paymentDetails } = req.body;
 
   if (!address || !address.line1 || !address.city) {
     return next(new AppError('A delivery address (line1, city) is required', 400));
   }
-  if (!['COD', 'UPI'].includes(paymentMethod)) {
-    return next(new AppError('paymentMethod must be COD or UPI', 400));
+  if (!PAYMENT_METHODS.includes(paymentMethod)) {
+    return next(new AppError(`paymentMethod must be one of ${PAYMENT_METHODS.join(', ')}`, 400));
   }
 
   const cart = await Cart.findOne({ user: req.user._id }).populate('items.medicine');
@@ -72,6 +75,15 @@ const createOrder = catchAsync(async (req, res, next) => {
   const validItems = cart.items.filter((item) => item.medicine && !item.medicine.isDiscontinued);
   if (validItems.length === 0) {
     return next(new AppError('No valid items in cart to order', 400));
+  }
+
+  // Cash on Delivery is only offered above a minimum MRP total — mirrors
+  // the same rule the Payment step enforces client-side, checked again here
+  // so it can't be bypassed by calling the API directly. Uses raw MRP
+  // (medicine.price), not the discounted price, to match the client check.
+  const mrpTotal = validItems.reduce((sum, item) => sum + item.medicine.price * item.quantity, 0);
+  if (paymentMethod === 'COD' && mrpTotal <= COD_MIN_ORDER) {
+    return next(new AppError(`Cash on Delivery is only available for orders above ₹${COD_MIN_ORDER} MRP`, 400));
   }
 
   // Module 10 — Prescription Medicine Alert. An order containing any
@@ -121,14 +133,18 @@ const createOrder = catchAsync(async (req, res, next) => {
       lng: address.lng,
     },
     paymentMethod,
-    // UPI (Demo) "succeeds" instantly for demo purposes; COD is settled on delivery
-    paymentStatus: paymentMethod === 'UPI' ? 'Paid' : 'Pending',
+    paymentDetails: typeof paymentDetails === 'string' ? paymentDetails.slice(0, 80) : undefined,
+    // COD settles on delivery; every other method "succeeds" instantly for
+    // demo purposes since no real payment processor is wired up.
+    paymentStatus: paymentMethod === 'COD' ? 'Pending' : 'Paid',
     orderStatus: 'Pending',
     invoiceNumber: generateInvoiceNumber(),
     prescriptionRequired: rxItems.length > 0,
     prescriptionStatus:
       rxItems.length === 0 ? 'Not Required' : prescription.status === 'Approved' ? 'Approved' : 'Pending Review',
     prescription: prescription ? prescription._id : null,
+    // Randomized once here so it's stable across refreshes/order-history views.
+    estimatedDeliveryMinutes: Math.floor(Math.random() * (25 - 15 + 1)) + 15,
   });
 
   if (prescription) {

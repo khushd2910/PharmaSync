@@ -965,6 +965,65 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 .summary-line span:last-child { font-variant-numeric: tabular-nums; }
 .summary-line.total { font-weight: 600; font-size: 15px; border-top: 1px solid var(--line); padding-top: 10px; margin-top: 6px; }
 
+/* Checkout wizard */
+.checkout-stepper { display: flex; align-items: center; margin-bottom: 26px; }
+.checkout-step { display: flex; align-items: center; gap: 8px; flex: 1; }
+.checkout-step:last-child { flex: 0; }
+.checkout-step-dot {
+  width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+  background: var(--teal-tint); color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+}
+.checkout-step.active .checkout-step-dot { background: var(--teal); color: #fff; }
+.checkout-step.done .checkout-step-dot { background: var(--green); color: #fff; }
+.checkout-step-label { font-size: 12.5px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.checkout-step.active .checkout-step-label, .checkout-step.done .checkout-step-label { color: var(--ink); }
+.checkout-step-line { flex: 1; height: 1px; background: var(--line); margin: 0 10px; }
+
+.checkout-step-panel { max-width: 100%; }
+.checkout-step-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+.checkout-step-actions .btn-secondary, .checkout-step-actions .btn-primary { display: inline-flex; align-items: center; gap: 6px; }
+
+.payment-method-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 4px; }
+.payment-method-tile {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface);
+  padding: 16px 10px; cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--ink);
+  text-align: center; transition: border-color var(--ease), background var(--ease);
+}
+.payment-method-tile svg { color: var(--teal); }
+.payment-method-tile:hover:not(.disabled) { border-color: var(--teal); }
+.payment-method-tile.active { border-color: var(--teal); border-width: 2px; background: var(--teal-tint); }
+.payment-method-tile.disabled { opacity: 0.5; cursor: not-allowed; }
+.payment-method-note { font-size: 10px; color: var(--muted); font-weight: 500; }
+
+.payment-method-form { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+.upi-verify-row { display: flex; gap: 10px; align-items: flex-start; }
+.upi-verify-row .icon-input { flex: 1; }
+.wallet-provider-row { display: flex; gap: 10px; margin-bottom: 14px; }
+.wallet-provider-tile {
+  flex: 1; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface);
+  padding: 10px; font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer;
+  transition: border-color var(--ease), background var(--ease);
+}
+.wallet-provider-tile.active { border-color: var(--teal); background: var(--teal-tint); color: var(--teal); }
+
+.error-text.small, .success-text.small { font-size: 12px; margin: 4px 0 0; display: flex; align-items: center; gap: 5px; }
+
+.confirm-hero { text-align: center; }
+.confirm-hero-icon {
+  width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 10px;
+  background: var(--green-tint); color: var(--green);
+  display: flex; align-items: center; justify-content: center;
+}
+.confirm-hero h2 { font-size: 20px; margin: 0 0 4px; }
+.confirm-eta {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 14px;
+  background: var(--amber-tint); color: #6b4c14; font-size: 13.5px; font-weight: 600;
+  padding: 10px 16px; border-radius: var(--r-full);
+}
+
 .orders-toolbar { display: flex; gap: 10px; justify-content: space-between; align-items: center; margin-bottom: 18px; }
 .orders-toolbar .icon-input { flex: 1; max-width: 360px; }
 .orders-toolbar .icon-input input { padding: 9px 12px 9px 36px; font-size: 13px; }
@@ -1165,6 +1224,8 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
   .hero-title { font-size: 28px; }
   .cart-grid { grid-template-columns: 1fr; }
   .cart-side { position: static; }
+  .payment-method-grid { grid-template-columns: repeat(2, 1fr); }
+  .checkout-stepper { overflow-x: auto; }
 }
 
 @media (max-width: 480px) {

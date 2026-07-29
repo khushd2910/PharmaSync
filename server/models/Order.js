@@ -33,8 +33,16 @@ const orderSchema = new mongoose.Schema(
     items: [orderItemSchema],
     totalAmount: { type: Number, required: true, min: 0 },
     address: { type: addressSchema, required: true },
-    paymentMethod: { type: String, enum: ['COD', 'UPI'], required: true },
+    paymentMethod: { type: String, enum: ['COD', 'UPI', 'Card', 'Wallet'], required: true },
+    // Short display string for the payment step's chosen instrument — e.g.
+    // "UPI · name@bank", "Card ending 4242", "PhonePe Wallet". Never store
+    // full card/wallet credentials; this is a masked label only, and the
+    // storefront demo doesn't process real payments.
+    paymentDetails: { type: String, trim: true },
     paymentStatus: { type: String, default: 'Pending' },
+    // Randomized 15–25 min ETA shown on the post-payment confirmation step,
+    // fixed at order creation so it stays consistent on refresh/revisit.
+    estimatedDeliveryMinutes: { type: Number, min: 15, max: 25 },
     // Module 10 — Prescription Medicine Alert. Set at checkout time if the
     // cart contained any requiresPrescription medicine; `prescription`
     // points at the actual uploaded file (server/models/Prescription.js)

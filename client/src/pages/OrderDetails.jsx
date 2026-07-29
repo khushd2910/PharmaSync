@@ -9,6 +9,15 @@ import { formatCurrency, formatDateTime } from '../utils/format';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+// Fallback labels for older orders that don't have a paymentDetails string
+// on file (placed before this field existed).
+const PAYMENT_METHOD_LABELS = {
+  COD: 'Cash on Delivery',
+  UPI: 'UPI',
+  Card: 'Card',
+  Wallet: 'Wallet',
+};
+
 const OrderDetails = () => {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
@@ -131,12 +140,17 @@ const OrderDetails = () => {
 
           <section className="checkout-section">
             <h2 className="checkout-section-title"><CreditCard size={16} strokeWidth={2} /> Payment</h2>
-            <p>{order.paymentMethod === 'UPI' ? 'UPI (Demo)' : 'Cash on Delivery'}</p>
+            <p>{order.paymentDetails || PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod}</p>
             <span className={`badge ${
               order.paymentStatus === 'Paid' ? 'badge-success' : order.paymentStatus === 'Refunded' ? 'badge-rx' : 'badge-status'
             }`}>
               {order.paymentStatus}
             </span>
+            {order.estimatedDeliveryMinutes && computeDisplayStatus(order) !== 'Delivered' && computeDisplayStatus(order) !== 'Cancelled' && (
+              <p className="muted-text" style={{ marginTop: 8 }}>
+                Estimated delivery: ~{order.estimatedDeliveryMinutes} minutes
+              </p>
+            )}
           </section>
         </div>
       </div>
