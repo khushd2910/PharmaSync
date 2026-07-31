@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { User, Phone, MapPin, ClipboardList, Lock, Sun, Moon } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useTheme } from '../context/ThemeContext';
 import IconInput from '../components/IconInput';
@@ -11,6 +12,7 @@ const emptyAddress = { line1: '', city: '', state: '', pincode: '' };
 
 const Profile = () => {
   const { user, login } = useAuth();
+  const { cart } = useCart();
   const { showToast } = useToast();
   const { theme, toggleTheme } = useTheme();
 
@@ -84,6 +86,11 @@ const Profile = () => {
             <strong>Quick actions</strong>
             <p>Update your address, review recent orders, or head to support with one tap.</p>
             <Link to="/orders" className="link-btn">View orders</Link>
+          </div>
+          <div className="profile-summary-card-block">
+            <strong>Saved items</strong>
+            <p>{cart.savedItems?.length || 0} item{(cart.savedItems?.length || 0) !== 1 ? 's' : ''} saved for later.</p>
+            <Link to="/saved-items" className="link-btn">View saved items</Link>
           </div>
           <div className="profile-summary-card-block">
             <strong>Health reminders</strong>

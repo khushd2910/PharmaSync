@@ -4,6 +4,7 @@ import {
   ClipboardList, Download, Search, SearchX, XCircle, RotateCcw,
   ChevronLeft, ChevronRight, ShieldAlert, Copy, Clock, LifeBuoy, Star,
 } from 'lucide-react';
+import ConfirmModal from '../components/ConfirmModal';
 import { formatCurrency, formatDate } from '../utils/format';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
@@ -86,7 +87,7 @@ const Orders = () => {
   const [sortBy, setSortBy] = useState('newest');
   const [page, setPage] = useState(1);
   const [cancellingId, setCancellingId] = useState(null);
-  const [confirmingCancelId, setConfirmingCancelId] = useState(null);
+  const [orderToCancel, setOrderToCancel] = useState(null);
   const [reorderingId, setReorderingId] = useState(null);
   const [ratingId, setRatingId] = useState(null);
   const { showToast } = useToast();
@@ -135,6 +136,7 @@ const Orders = () => {
   const pageOrders = filteredOrders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const handleCancel = async (orderId) => {
+    if (!orderId) return;
     setCancellingId(orderId);
     try {
       const res = await api.patch(`/orders/${orderId}/cancel`);
@@ -389,59 +391,36 @@ const Orders = () => {
                         </Link>
                       </div>
 
-                      {confirmingCancelId === order._id ? (
-                        <div className="order-cancel-confirm">
-                          <span className="muted-text">Cancel this order?</span>
-                          <button
-                            type="button"
-                            className="btn-secondary danger"
-                            onClick={() => handleCancel(order._id)}
-                            disabled={cancellingId === order._id}
-                          >
-                            {cancellingId === order._id ? 'Cancelling…' : 'Yes, cancel'}
-                          </button>
-                          <button
-                            type="button"
-                            className="btn-secondary"
-                            onClick={() => setConfirmingCancelId(null)}
-                            disabled={cancellingId === order._id}
-                          >
-                            Keep order
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="order-card-actions">
-                          {isDelivered && (
-                            <a
-                              className="btn-secondary"
-                              href={`${API_BASE_URL}/orders/${order._id}/invoice`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <Download size={14} strokeWidth={2} /> Invoice
-                            </a>
-                          )}
-                          <button
-                            type="button"
-                            className="btn-secondary"
-                            onClick={() => handleReorder(order)}
-                            disabled={reorderingId === order._id}
-                          >
-                            <RotateCcw size={14} strokeWidth={2} />
-                            {reorderingId === order._id ? 'Adding…' : 'Reorder'}
-                          </button>
-                          {cancellable && (
+                      <div className="order-card-actions">
+                            {isDelivered && (
+                              <a
+                                className="btn-secondary"
+                                href={`${API_BASE_URL}/orders/${order._id}/invoice`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <Download size={14} strokeWidth={2} /> Invoice
+                              </a>
+                            )}
                             <button
                               type="button"
-                              className="btn-secondary danger"
-                              onClick={() => setConfirmingCancelId(order._id)}
+                              className="btn-secondary"
+                              onClick={() => handleReorder(order)}
+                              disabled={reorderingId === order._id}
                             >
-                              <XCircle size={14} strokeWidth={2} /> Cancel
+                              <RotateCcw size={14} strokeWidth={2} />
+                              {reorderingId === order._id ? 'Adding…' : 'Reorder'}
                             </button>
-                          )}
-                        </div>
-                      )}
-
+                            {cancellable && (
+                              <button
+                                type="button"
+                                className="btn-secondary danger"
+                                onClick={() => setOrderToCancel(order)}
+                              >
+                                <XCircle size={14} strokeWidth={2} /> Cancel
+                              </button>
+                            )}
+                          </div>
                       {isDelivered && (
                         <div className="order-rating">
                           <span className="muted-text">
@@ -470,10 +449,20 @@ const Orders = () => {
             })}
           </div>
 
-          <div className="pagination-bar">
-            <span className="muted-text">
-              {filteredOrders.length} order{filteredOrders.length === 1 ? '' : 's'} · page {page} of {totalPages}
-            </span>
+      <ConfirmModal
+        open={!!orderToCancel}
+        title="Cancel this order?"
+        message="Your order will be cancelled and stock will be released back to inventory."
+        confirmLabel="Cancel order"
+        danger={true}
+        onConfirm={handleCancel}
+        onCancel={() => setOrderToCancel(null)}
+      />
+
+      <div className="pagination-bar">
+        <span className="muted-text">
+          {filteredOrders.length} order{filteredOrders.length === 1 ? '' : 's'} · page {page} of {totalPages}
+        </span>
             <div className="pagination-controls">
               <button
                 type="button"

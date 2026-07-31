@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { FileText, MapPin, CreditCard, Download, XCircle, ShieldAlert } from 'lucide-react';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
+import ConfirmModal from '../components/ConfirmModal';
 import OrderStatusStepper from '../components/OrderStatusStepper';
 import { isCancellable, computeDisplayStatus } from '../utils/orderStatus';
 import { formatCurrency, formatDateTime, formatDate } from '../utils/format';
@@ -23,6 +24,7 @@ const OrderDetails = () => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
+  const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -41,7 +43,7 @@ const OrderDetails = () => {
   }, [id]);
 
   const handleCancel = async () => {
-    if (!window.confirm('Cancel this order? Stock will be released back.')) return;
+    setConfirmCancelOpen(false);
     setCancelling(true);
     try {
       const res = await api.patch(`/orders/${id}/cancel`);
@@ -78,7 +80,7 @@ const OrderDetails = () => {
             </a>
           )}
           {isCancellable(order) && (
-            <button className="btn-secondary danger" onClick={handleCancel} disabled={cancelling}>
+            <button className="btn-secondary danger" onClick={() => setConfirmCancelOpen(true)} disabled={cancelling}>
               <XCircle size={14} strokeWidth={2} /> {cancelling ? 'Cancelling…' : 'Cancel order'}
             </button>
           )}
@@ -88,6 +90,16 @@ const OrderDetails = () => {
       <section className="checkout-section">
         <OrderStatusStepper order={order} />
       </section>
+
+      <ConfirmModal
+        open={confirmCancelOpen}
+        title="Cancel this order?"
+        message="Your order will be cancelled and stock will be released back to inventory."
+        confirmLabel="Cancel order"
+        danger={true}
+        onConfirm={handleCancel}
+        onCancel={() => setConfirmCancelOpen(false)}
+      />
 
       <div className="order-details-grid">
         <section className="checkout-section">
@@ -173,7 +185,15 @@ const OrderDetails = () => {
         </div>
       </div>
 
-      <Link to="/orders" className="link-muted back-link">← Back to order history</Link>
+      <ConfirmModal
+        open={confirmCancelOpen}
+        title="Cancel this order?"
+        message="Your order will be cancelled and stock will be released back to inventory."
+        confirmLabel="Cancel order"
+        danger={true}
+        onConfirm={handleCancel}
+        onCancel={() => setConfirmCancelOpen(false)}
+      />
     </div>
   );
 };

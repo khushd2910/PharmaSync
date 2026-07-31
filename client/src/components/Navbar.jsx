@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LogOut, ShoppingCart, User as UserIcon, ClipboardList, LayoutDashboard, ScanBarcode,
-  BarChart3, FileSpreadsheet, ShieldAlert, Menu, X,
+  BarChart3, FileSpreadsheet, ShieldAlert, Pill, Menu, X,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import ConfirmModal from './ConfirmModal';
 import BrandLogo from './BrandLogo';
 
 const Navbar = () => {
@@ -40,8 +41,15 @@ const Navbar = () => {
     };
   }, [menuOpen]);
 
+  const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
+
   const handleLogout = async () => {
     setMenuOpen(false);
+    setConfirmLogoutOpen(true);
+  };
+
+  const confirmLogout = async () => {
+    setConfirmLogoutOpen(false);
     await logout();
     navigate('/login');
   };
@@ -123,6 +131,15 @@ const Navbar = () => {
           </>
         )}
       </div>
+      <ConfirmModal
+        open={confirmLogoutOpen}
+        title="Log out of PharmaSync?"
+        message="You will need to sign in again to access your account."
+        confirmLabel="Log out"
+        danger={false}
+        onConfirm={confirmLogout}
+        onCancel={() => setConfirmLogoutOpen(false)}
+      />
     </nav>
   );
 };

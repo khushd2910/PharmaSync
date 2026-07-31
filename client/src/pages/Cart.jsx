@@ -29,8 +29,6 @@ const Cart = () => {
     removeFromCart,
     addToCart,
     saveForLater,
-    moveSavedToCart,
-    removeSavedItem,
     loading,
     cartLoaded,
     appliedCoupon,
@@ -208,6 +206,16 @@ const Cart = () => {
   return (
     <div className="cart-page">
       <h1 className="page-title">Your Cart</h1>
+      {cart.savedItems && cart.savedItems.length > 0 && (
+        <div className="saved-items-banner">
+          <p>
+            You have {cart.savedItems.length} saved item{cart.savedItems.length > 1 ? 's' : ''}.
+            <Link to="/saved-items" className="link-btn" style={{ marginLeft: 12 }}>
+              View saved items
+            </Link>
+          </p>
+        </div>
+      )}
 
       <div className="cart-grid">
         {/* ---------------- Left column: items + coupons ---------------- */}
@@ -304,44 +312,6 @@ const Cart = () => {
             )})}
           </div>
 
-          {cart.savedItems && cart.savedItems.length > 0 && (
-            <div className="saved-items-card">
-              <h3>Saved for later</h3>
-              <div className="saved-items-list">
-                {cart.savedItems.map(({ medicine, quantity }) => (
-                  <div className="saved-item" key={medicine._id}>
-                    <div className="saved-item-info">
-                      <Link to={`/medicines/${medicine._id}`} className="saved-item-name">{medicine.name}</Link>
-                      <p className="muted-text">{medicine.manufacturer}</p>
-                      <p className="saved-item-meta">{quantity} unit{quantity > 1 ? 's' : ''}</p>
-                    </div>
-                    <div className="saved-item-actions">
-                      <button className="link-btn" onClick={async () => {
-                        const result = await moveSavedToCart(medicine._id);
-                        if (result.success) {
-                          showToast(`${medicine.name} moved back to cart`, 'success');
-                        } else {
-                          showToast(result.message, 'error');
-                        }
-                      }}>
-                        Move to cart
-                      </button>
-                      <button className="link-btn" onClick={async () => {
-                        const result = await removeSavedItem(medicine._id);
-                        if (result.success) {
-                          showToast(`${medicine.name} removed from saved items`, 'info');
-                        } else {
-                          showToast(result.message, 'error');
-                        }
-                      }}>
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           <div className="coupon-section">
             <h3 className="coupon-section-title"><Tag size={16} /> Coupons &amp; Offers</h3>

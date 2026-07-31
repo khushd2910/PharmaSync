@@ -27,6 +27,7 @@ import ShippingPolicy from './pages/ShippingPolicy';
 import ReturnsPolicy from './pages/ReturnsPolicy';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Terms from './pages/Terms';
+import SavedForLater from './pages/SavedForLater';
 
 // Admin/POS pages are a meaningful chunk of code a regular customer
 // never needs — split them into their own lazily-loaded bundles so the
@@ -101,6 +102,14 @@ function App() {
                   element={
                     <ProtectedRoute role="user">
                       <Profile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/saved-items"
+                  element={
+                    <ProtectedRoute role="user">
+                      <SavedForLater />
                     </ProtectedRoute>
                   }
                 />
