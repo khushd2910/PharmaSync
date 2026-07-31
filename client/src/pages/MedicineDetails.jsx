@@ -8,6 +8,7 @@ import { useToast } from '../context/ToastContext';
 import { addRecentlyViewed, removeRecentlyViewed } from '../utils/recentlyViewed';
 import { getMedicineImage } from '../utils/medicineFormImage';
 import MedicineRow from '../components/MedicineRow';
+import MedicineReviews from '../components/MedicineReviews';
 
 const MedicineDetails = () => {
   const { id } = useParams();
@@ -246,6 +247,8 @@ const MedicineDetails = () => {
         <DetailSection title="Dosage">
           <p>{medicine.dosage || 'Please consult your pharmacist or doctor for dosage guidance.'}</p>
         </DetailSection>
+
+        <MedicineReviews medicineId={medicine._id} />
 
         <DetailSection title="Additional Information (live lookup)">
           {apiLoading ? (

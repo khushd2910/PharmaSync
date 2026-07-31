@@ -866,6 +866,39 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 .detail-section p { font-size: 13.5px; color: var(--ink); line-height: 1.6; margin: 0 0 4px; }
 .api-info-block p { margin-bottom: 8px; }
 .api-source { margin-top: 6px; font-size: 11px; }
+
+/* Medicine reviews (CRUD) — sits just above "Additional Information" on
+   the medicine detail page. Reuses .star-btn (from the order-rating
+   widget) for the interactive picker so both stay visually consistent. */
+.reviews-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+.reviews-header h3 { margin: 0; }
+.reviews-summary { display: flex; align-items: center; gap: 12px; padding: 10px 0 14px; }
+.reviews-summary-average { font-size: 28px; font-weight: 700; line-height: 1; color: var(--ink); }
+.review-star-display { display: flex; gap: 1px; color: var(--amber); }
+.review-star-picker { display: flex; gap: 4px; }
+.review-star-picker .star-btn { padding: 2px; }
+
+.review-form { display: flex; flex-direction: column; gap: 10px; padding: 12px 0 16px; border-bottom: 1px dashed var(--line); margin-bottom: 14px; }
+.review-form-textarea {
+  width: 100%; resize: vertical; font-family: inherit; font-size: 13.5px;
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-sm);
+  background: var(--paper); color: var(--ink);
+}
+.review-form-textarea:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+.review-form-actions { display: flex; justify-content: flex-end; gap: 10px; }
+
+.reviews-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.review-item { padding-top: 12px; border-top: 1px solid var(--line); }
+.review-item:first-child { padding-top: 0; border-top: none; }
+.review-item-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.review-item-top > div:first-child { display: flex; flex-direction: column; gap: 3px; }
+.review-author { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+.review-date { font-size: 11.5px; white-space: nowrap; }
+.review-comment { font-size: 13.5px; color: var(--ink); line-height: 1.6; margin: 6px 0 0; }
+.review-item-actions { display: flex; gap: 14px; margin-top: 6px; }
+.review-action-btn { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; background: none; border: none; cursor: pointer; padding: 0; }
+.review-action-btn.danger:hover { color: var(--red); }
+
 .disclaimer-text { font-size: 11.5px; color: var(--muted); text-align: center; line-height: 1.6; margin-bottom: 18px; }
 
 /* ============================================================

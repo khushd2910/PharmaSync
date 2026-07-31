@@ -13,6 +13,22 @@ const buildCartResponse = async (userId) => {
     cart = await Cart.create({ user: userId, items: [], savedItems: [] });
   }
 
+  // A cart item's medicine reference can go stale if that medicine was
+  // later removed from the catalog outside the normal cascading-delete
+  // path (a reseed/bulk import that swaps ids, for example) — populate()
+  // then silently returns null for that item instead of throwing. This
+  // used to only be filtered out of savedItems (see validSaved below),
+  // never out of items itself, so a stale item shipped to the client as
+  // `{ medicine: null, ... }` and crashed every component that assumes
+  // item.medicine exists (MedicineCard's cart lookup, Cart, Checkout).
+  // Drop it here too, and persist the cleanup so it only has to happen
+  // once per cart rather than re-triggering on every request.
+  const hasStaleItems = cart.items.some((item) => !item.medicine);
+  if (hasStaleItems) {
+    cart.items = cart.items.filter((item) => item.medicine);
+    await cart.save();
+  }
+
   const items = cart.items.map((item) => {
     const medicine = item.medicine;
     const currentPrice = medicine ? getEffectivePrice(medicine) : 0;

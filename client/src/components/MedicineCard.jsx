@@ -27,7 +27,7 @@ const MedicineCard = ({ medicine, onAddToCart }) => {
   // Once this medicine is already in the cart, the ADD button becomes a
   // quantity stepper (- N +) instead — mirrors quick-commerce cards, and
   // means the same tap target always reflects the cart's actual state.
-  const cartLine = cart.items.find((item) => item.medicine._id === medicine._id);
+  const cartLine = cart.items.find((item) => item.medicine && item.medicine._id === medicine._id);
   const quantityInCart = cartLine?.quantity || 0;
 
   // The whole card navigates to the detail page. All the buttons below sit

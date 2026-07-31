@@ -7,6 +7,7 @@ from django.urls import path
 from medicine_api import views as medicine_views
 from chatbot import views as chatbot_views
 from analytics import views as analytics_views
+from reviews import views as reviews_views
 
 
 def root_health(request):
@@ -28,4 +29,6 @@ urlpatterns = [
     path('api/demand-forecast/run', analytics_views.run_demand_forecast),
     path('api/revenue-forecast', analytics_views.revenue_forecast),
     path('api/revenue-forecast/run', analytics_views.run_revenue_forecast),
+    path('api/medicines/<str:medicine_id>/reviews', reviews_views.medicine_reviews),
+    path('api/reviews/<str:review_id>', reviews_views.review_detail),
 ]

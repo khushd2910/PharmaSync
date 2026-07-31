@@ -17,6 +17,7 @@ const couponRoutes = require('./routes/couponRoutes');
 const posRoutes = require('./routes/posRoutes');
 const prescriptionRoutes = require('./routes/prescriptionRoutes');
 const chatRoutes = require('./routes/chatRoutes');
+const reviewRoutes = require('./routes/reviewRoutes');
 const seedCoupons = require('./utils/seedCoupons');
 
 const app = express();
@@ -56,6 +57,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/admin/pos', posRoutes);
 app.use('/api/prescriptions', prescriptionRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // 404 handler for unmatched routes
 app.all('*', (req, res, next) => {
