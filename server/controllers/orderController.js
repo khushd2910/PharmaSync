@@ -8,6 +8,7 @@ const catchAsync = require('../utils/catchAsync');
 const { buildCartResponse, getEffectivePrice } = require('./cartController');
 const { computeEffectiveStatus } = require('../utils/orderStatus');
 const generateInvoicePdf = require('../utils/generateInvoicePdf');
+const { validateCoupon } = require('../utils/couponUtils');
 
 const generateInvoiceNumber = () => {
   const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
@@ -53,12 +54,34 @@ const restockItems = async (items) => {
 
 const PAYMENT_METHODS = ['COD', 'UPI', 'Card', 'Wallet'];
 const COD_MIN_ORDER = 500;
+const DELIVERY_FEE = 40;
+const FREE_DELIVERY_THRESHOLD = 500;
+const PLATFORM_FEE = 12;
+
+// Default delivery window quoted at checkout, before an admin has touched
+// the order at all.
+const DEFAULT_DELIVERY_WINDOW_DAYS = 3;
+
+// Once an admin moves an order to a given status, the ETA is refreshed to
+// a sensible window measured from *now* — so "Expected by" tightens up as
+// the order actually progresses instead of staying pinned to the checkout
+// guess. Cancelled orders keep whatever date they last had; it's no longer
+// meaningful once cancelled, and the UI hides it for that status anyway.
+const STATUS_DELIVERY_OFFSET_DAYS = {
+  Pending: 3,
+  Confirmed: 3,
+  Packed: 2,
+  'Out for Delivery': 1,
+  Delivered: 0,
+};
+
+const addDays = (date, days) => new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
 
 // @desc    Place an order from the current cart
 // @route   POST /api/orders
 // @access  Private
 const createOrder = catchAsync(async (req, res, next) => {
-  const { address, paymentMethod, paymentDetails } = req.body;
+  const { address, paymentMethod, paymentDetails, couponCode } = req.body;
 
   if (!address || !address.line1 || !address.city) {
     return next(new AppError('A delivery address (line1, city) is required', 400));
@@ -118,12 +141,30 @@ const createOrder = catchAsync(async (req, res, next) => {
     price: getEffectivePrice(item.medicine),
     quantity: item.quantity,
   }));
-  const totalAmount = Math.round(orderItems.reduce((sum, i) => sum + i.price * i.quantity, 0) * 100) / 100;
+  const cartSubtotal = Math.round(orderItems.reduce((sum, i) => sum + i.price * i.quantity, 0) * 100) / 100;
+
+  let couponCodeToStore = null;
+  let couponDiscount = 0;
+  if (couponCode) {
+    const couponValidation = await validateCoupon({ code: couponCode, userId: req.user._id, cartAmount: cartSubtotal });
+    if (!couponValidation.valid) {
+      return next(new AppError(couponValidation.message, 400));
+    }
+    couponCodeToStore = couponValidation.coupon.code;
+    couponDiscount = Math.round(couponValidation.discount * 100) / 100;
+  }
+
+  const deliveryFee = cartSubtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
+  const totalAmount = Math.round((cartSubtotal - couponDiscount + deliveryFee + PLATFORM_FEE) * 100) / 100;
 
   const order = await Order.create({
     user: req.user._id,
     items: orderItems,
     totalAmount,
+    couponCode: couponCodeToStore,
+    couponDiscount,
+    deliveryFee,
+    platformFee: PLATFORM_FEE,
     address: {
       line1: address.line1,
       city: address.city,
@@ -145,6 +186,9 @@ const createOrder = catchAsync(async (req, res, next) => {
     prescription: prescription ? prescription._id : null,
     // Randomized once here so it's stable across refreshes/order-history views.
     estimatedDeliveryMinutes: Math.floor(Math.random() * (25 - 15 + 1)) + 15,
+    // Real "Expected by" date — a genuine field an admin can later correct,
+    // not a placeholder recomputed from createdAt every time it's shown.
+    estimatedDeliveryDate: addDays(new Date(), DEFAULT_DELIVERY_WINDOW_DAYS),
   });
 
   if (prescription) {
@@ -205,6 +249,34 @@ const cancelOrder = catchAsync(async (req, res, next) => {
   return res.status(200).json({ message: 'Order cancelled and refund/restock processed', order });
 });
 
+// @desc    Rate a delivered order (1-5 stars). Only the order's own owner
+//          can rate it, and only once it's actually Delivered — matches the
+//          client, which only shows the rating widget on delivered orders.
+//          Once set, a rating can be changed by rating again (re-PATCHing);
+//          there's no separate "unrate" endpoint.
+// @route   PATCH /api/orders/:id/rating
+// @access  Private
+const rateOrder = catchAsync(async (req, res, next) => {
+  const rating = Number(req.body.rating);
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    return next(new AppError('rating must be an integer between 1 and 5', 400));
+  }
+
+  const order = await Order.findOne({ _id: req.params.id, user: req.user._id });
+  if (!order) {
+    return next(new AppError('Order not found', 404));
+  }
+
+  if (computeEffectiveStatus(order) !== 'Delivered') {
+    return next(new AppError('You can only rate an order once it has been delivered', 400));
+  }
+
+  order.rating = rating;
+  await order.save();
+
+  return res.status(200).json({ message: 'Thanks for your feedback!', order });
+});
+
 // @desc    Download a GST-style PDF invoice for an order (owner or admin).
 //          Online storefront orders only get an invoice once they're
 //          actually Delivered — unlike an in-store POS sale (see
@@ -262,7 +334,7 @@ const adminListOrders = catchAsync(async (req, res) => {
 // @route   PATCH /api/admin/orders/:id/status
 // @access  Private (admin)
 const adminUpdateOrderStatus = catchAsync(async (req, res, next) => {
-  const { status } = req.body;
+  const { status, estimatedDeliveryDate } = req.body;
   if (!Order.ORDER_STATUSES.includes(status)) {
     return next(new AppError(`status must be one of: ${Order.ORDER_STATUSES.join(', ')}`, 400));
   }
@@ -279,7 +351,29 @@ const adminUpdateOrderStatus = catchAsync(async (req, res, next) => {
     }
   }
 
+  const statusChanged = status !== order.orderStatus;
   order.orderStatus = status;
+
+  // An admin can send an explicit estimatedDeliveryDate to correct the ETA
+  // directly (e.g. from the date picker in Order Management) — that always
+  // wins. Otherwise, if the status itself just changed, refresh the ETA to
+  // a sensible window measured from now, so it keeps reflecting reality as
+  // the order moves through fulfillment instead of sitting on the original
+  // checkout-time guess.
+  if (Object.prototype.hasOwnProperty.call(req.body, 'estimatedDeliveryDate')) {
+    if (estimatedDeliveryDate === null || estimatedDeliveryDate === '') {
+      order.estimatedDeliveryDate = null;
+    } else {
+      const parsedDate = new Date(estimatedDeliveryDate);
+      if (Number.isNaN(parsedDate.getTime())) {
+        return next(new AppError('estimatedDeliveryDate must be a valid date', 400));
+      }
+      order.estimatedDeliveryDate = parsedDate;
+    }
+  } else if (statusChanged && STATUS_DELIVERY_OFFSET_DAYS[status] !== undefined) {
+    order.estimatedDeliveryDate = addDays(new Date(), STATUS_DELIVERY_OFFSET_DAYS[status]);
+  }
+
   await order.save();
 
   return res.status(200).json({ message: 'Order status updated', order });
@@ -290,6 +384,7 @@ module.exports = {
   getMyOrders,
   getOrderById,
   cancelOrder,
+  rateOrder,
   downloadInvoice,
   adminListOrders,
   adminUpdateOrderStatus,

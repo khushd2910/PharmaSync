@@ -125,6 +125,9 @@ const renderInvoicePdf = (invoiceData, res) => {
     totalsY += 16;
   };
 
+  if (invoiceData.couponCode && invoiceData.couponDiscount > 0) {
+    totalsRow(`Coupon (${invoiceData.couponCode})`, `-${formatCurrency(invoiceData.couponDiscount)}`);
+  }
   totalsRow('Taxable Value', formatCurrency(taxableValue));
   totalsRow(`CGST @ ${(DEMO_GST_RATE / 2) * 100}%`, formatCurrency(cgst));
   totalsRow(`SGST @ ${(DEMO_GST_RATE / 2) * 100}%`, formatCurrency(sgst));
@@ -180,7 +183,18 @@ const generateInvoicePdf = (order, res) => {
     },
     items: order.items,
     totalAmount: order.totalAmount,
-    paymentMethod: order.paymentMethod === 'UPI' ? 'UPI (Demo)' : 'Cash on Delivery',
+    couponCode: order.couponCode,
+    couponDiscount: order.couponDiscount,
+    paymentMethod:
+      order.paymentMethod === 'UPI'
+        ? 'UPI (Demo)'
+        : order.paymentMethod === 'COD'
+        ? 'Cash on Delivery'
+        : order.paymentMethod === 'Card'
+        ? 'Card'
+        : order.paymentMethod === 'Wallet'
+        ? 'Wallet'
+        : order.paymentMethod,
     paymentStatus: order.paymentStatus,
   };
   renderInvoicePdf(invoiceData, res);

@@ -2,12 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Minus, Plus, Trash2, ShoppingBag, Tag, Sparkles, ChevronRight, Smartphone, X,
+  Heart, AlertTriangle,
 } from 'lucide-react';
+import MedicineRow from '../components/MedicineRow';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { formatCurrency } from '../utils/format';
 import { getMedicineImage } from '../utils/medicineFormImage';
-import { COUPONS, computeCouponDiscount } from '../utils/coupons';
+import { COUPONS, computeCouponDiscount, chooseBestCoupon } from '../utils/coupons';
 import api from '../api/axios';
 
 const UPI_OFFERS = [
@@ -21,13 +23,28 @@ const FREE_DELIVERY_THRESHOLD = 500;
 const PLATFORM_FEE = 12;
 
 const Cart = () => {
-  const { cart, updateQuantity, removeFromCart, loading, appliedCoupon, setAppliedCoupon } = useCart();
+  const {
+    cart,
+    updateQuantity,
+    removeFromCart,
+    addToCart,
+    saveForLater,
+    moveSavedToCart,
+    removeSavedItem,
+    loading,
+    cartLoaded,
+    appliedCoupon,
+    setAppliedCoupon,
+  } = useCart();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
   const [isFirstOrder, setIsFirstOrder] = useState(false);
+  const [availableCoupons, setAvailableCoupons] = useState(COUPONS);
   const [couponInput, setCouponInput] = useState('');
   const [couponError, setCouponError] = useState('');
+  const [relatedItems, setRelatedItems] = useState([]);
+  const [genericAlternatives, setGenericAlternatives] = useState({});
 
   // Used only to unlock the first-order coupon — falls back to "not first
   // order" (safe default) if the request fails for any reason.
@@ -36,7 +53,44 @@ const Cart = () => {
       .get('/orders')
       .then((res) => setIsFirstOrder((res.data.orders || []).length === 0))
       .catch(() => {});
+
+    api
+      .get('/coupons')
+      .then((res) => setAvailableCoupons(res.data.coupons || COUPONS))
+      .catch(() => setAvailableCoupons(COUPONS));
   }, []);
+
+  const loadRelatedItems = async () => {
+    if (cart.items.length === 0) return;
+    try {
+      const topItem = cart.items[0]?.medicine;
+      if (!topItem) return;
+      const res = await api.get(`/medicines/${topItem._id}/related`);
+      setRelatedItems(res.data.alsoBought || []);
+    } catch (err) {
+      setRelatedItems([]);
+    }
+  };
+
+  const loadGenericAlternatives = async () => {
+    if (cart.items.length === 0) {
+      setGenericAlternatives({});
+      return;
+    }
+
+    const ids = cart.items.map(({ medicine }) => medicine._id).join(',');
+    try {
+      const res = await api.get('/medicines/generics', { params: { ids } });
+      setGenericAlternatives(res.data.alternatives || {});
+    } catch (err) {
+      setGenericAlternatives({});
+    }
+  };
+
+  useEffect(() => {
+    loadRelatedItems();
+    loadGenericAlternatives();
+  }, [cart.items]);
 
   const handleQuantityChange = async (medicineId, newQty, stock) => {
     if (newQty < 1) return;
@@ -48,10 +102,34 @@ const Cart = () => {
     if (!result.success) showToast(result.message, 'error');
   };
 
-  const handleRemove = async (medicineId, name) => {
+  const handleRemove = async (medicineId, name, quantity) => {
     const result = await removeFromCart(medicineId);
-    if (result.success) showToast(`${name} removed from cart`, 'info');
-    else showToast(result.message, 'error');
+    if (result.success) {
+      showToast(`${name} removed from cart`, 'info', 5000, {
+        label: 'Undo',
+        callback: async () => {
+          const restored = await addToCart(medicineId, quantity || 1);
+          if (restored.success) {
+            showToast(`${name} restored to cart`, 'success');
+          }
+        },
+      });
+    } else showToast(result.message, 'error');
+  };
+
+  const handleSwitchToGeneric = async (sourceMedicine, alternative, quantity) => {
+    const result = await addToCart(alternative._id, quantity);
+    if (!result.success) {
+      showToast(result.message, 'error');
+      return;
+    }
+
+    const removed = await removeFromCart(sourceMedicine._id);
+    if (removed.success) {
+      showToast(`Switched to generic ${alternative.name} and saved ₹${Math.round((sourceMedicine.price - alternative.price) * quantity)}`, 'success');
+    } else {
+      showToast('Added generic item, but could not remove original product', 'warning');
+    }
   };
 
   const mrpTotal = useMemo(
@@ -66,38 +144,55 @@ const Cart = () => {
     [appliedCoupon, discountedValue]
   );
 
+  const gstAmount = Math.round(discountedValue * 0.05 * 100) / 100;
   const deliveryFee = discountedValue >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
-  const amountToPay = Math.max(0, discountedValue - couponDiscount + deliveryFee + PLATFORM_FEE);
+  const amountToPay = Math.max(0, discountedValue - couponDiscount + gstAmount + deliveryFee + PLATFORM_FEE);
   const totalSaved = mrpDiscount + couponDiscount;
 
-  const attemptApply = (rawCode) => {
+  const attemptApply = async (rawCode) => {
     const code = rawCode.trim().toUpperCase();
     if (!code) return;
-    const found = COUPONS.find((c) => c.code === code);
-    if (!found) {
-      setCouponError('Invalid coupon code');
-      return;
+    try {
+      const res = await api.post('/coupons/validate', {
+        code,
+        cartAmount: discountedValue,
+      });
+      setAppliedCoupon(res.data.coupon);
+      setCouponError('');
+      setCouponInput('');
+      showToast(`${res.data.coupon.code} applied to your order`, 'success');
+    } catch (err) {
+      setCouponError(err.response?.data?.message || 'Invalid coupon code');
     }
-    if (found.firstOrderOnly && !isFirstOrder) {
-      setCouponError(`${found.code} is valid only on your first order`);
-      return;
-    }
-    if (discountedValue < found.minOrder) {
-      setCouponError(`Add items worth ${formatCurrency(found.minOrder - discountedValue)} more to unlock ${found.code}`);
-      return;
-    }
-    setAppliedCoupon(found);
-    setCouponError('');
-    setCouponInput('');
-    showToast(`${found.code} applied to your order`, 'success');
   };
+
+  useEffect(() => {
+    if (appliedCoupon) return;
+    const best = chooseBestCoupon(availableCoupons, discountedValue, isFirstOrder);
+    if (best) {
+      setAppliedCoupon(best.coupon);
+    }
+  }, [availableCoupons, discountedValue, isFirstOrder, appliedCoupon, setAppliedCoupon]);
 
   const removeCoupon = () => {
     setAppliedCoupon(null);
     setCouponError('');
   };
 
-  if (cart.items.length === 0) {
+  if (!cartLoaded) {
+    return (
+      <div className="cart-page">
+        <div className="cart-skeleton">
+          <div className="skeleton-line" style={{ width: '40%' }} />
+          <div className="skeleton-card" />
+          <div className="skeleton-card" />
+          <div className="skeleton-card" />
+        </div>
+      </div>
+    );
+  }
+
+  if (cart.items.length === 0 && (!cart.savedItems || cart.savedItems.length === 0)) {
     return (
       <div className="cart-page">
         <div className="empty-state">
@@ -122,20 +217,60 @@ const Cart = () => {
           </p>
 
           <div className="cart-list">
-            {cart.items.map(({ medicine, quantity, lineTotal }) => (
-              <div className="cart-item" key={medicine._id}>
-                <img
-                  src={getMedicineImage(medicine)}
-                  alt={medicine.name}
-                  className="cart-item-icon cart-item-img"
-                  loading="lazy"
-                />
-                <div className="cart-item-info">
-                  <Link to={`/medicines/${medicine._id}`} className="cart-item-name">{medicine.name}</Link>
-                  <p className="muted-text">{medicine.manufacturer}</p>
-                  {medicine.packSizeLabel && <p className="cart-item-pack">{medicine.packSizeLabel}</p>}
-                  <p className="cart-item-unit-price">{formatCurrency(lineTotal / quantity)} each</p>
-                </div>
+            {cart.items.map(({ medicine, quantity, lineTotal, priceChanged, priceDelta, outOfStock, onlyLeft }) => {
+              const alternatives = genericAlternatives[medicine._id] || [];
+              const currentPrice = lineTotal / quantity;
+              const bestAlternative = alternatives.reduce((best, alt) => {
+                if (!alt || !alt.price) return best;
+                if (alt.price >= currentPrice) return best;
+                if (!best || alt.price < best.price) return alt;
+                return best;
+              }, null);
+              const savings = bestAlternative ? Math.round((currentPrice - bestAlternative.price) * quantity) : 0;
+              return (
+                <div className="cart-item" key={medicine._id}>
+                  <img
+                    src={getMedicineImage(medicine)}
+                    alt={medicine.name}
+                    className="cart-item-icon cart-item-img"
+                    loading="lazy"
+                  />
+                  <div className="cart-item-info">
+                    <Link to={`/medicines/${medicine._id}`} className="cart-item-name">
+                      {medicine.name}
+                      {medicine.requiresPrescription && (
+                        <span className="badge badge-rx" title="Requires prescription">Rx</span>
+                      )}
+                    </Link>
+                    <p className="muted-text">{medicine.manufacturer}</p>
+                    {medicine.packSizeLabel && <p className="cart-item-pack">{medicine.packSizeLabel}</p>}
+                    <p className="cart-item-unit-price">{formatCurrency(lineTotal / quantity)} each</p>
+                    {priceChanged && (
+                      <p className="cart-item-alert">
+                        <AlertTriangle size={14} /> Price changed {priceDelta > 0 ? 'up' : 'down'} by {formatCurrency(Math.abs(priceDelta))}
+                      </p>
+                    )}
+                    {outOfStock && (
+                      <p className="cart-item-status badge badge-outofstock">Out of stock</p>
+                    )}
+                    {onlyLeft && !outOfStock && (
+                      <p className="cart-item-status badge badge-warning">Only {medicine.stock} left</p>
+                    )}
+                    {bestAlternative && savings > 0 && (
+                      <div className="cart-item-substitution">
+                        <span className="cart-item-substitution-text">
+                          Save {formatCurrency(savings)} with generic {bestAlternative.name} from {bestAlternative.manufacturer}
+                        </span>
+                        <button
+                          type="button"
+                          className="link-btn"
+                          onClick={() => handleSwitchToGeneric(medicine, bestAlternative, quantity)}
+                        >
+                          Switch
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 <div className="qty-stepper">
                   <button onClick={() => handleQuantityChange(medicine._id, quantity - 1, medicine.stock)} disabled={quantity <= 1}>
                     <Minus size={14} />
@@ -150,12 +285,63 @@ const Cart = () => {
                   </button>
                 </div>
                 <span className="cart-item-total num">{formatCurrency(lineTotal)}</span>
-                <button className="icon-btn-danger" onClick={() => handleRemove(medicine._id, medicine.name)} aria-label="Remove item">
-                  <Trash2 size={16} strokeWidth={2} />
-                </button>
+                <div className="cart-item-actions">
+                  <button className="link-btn" onClick={async () => {
+                    const result = await saveForLater(medicine._id);
+                    if (result.success) {
+                      showToast(`${medicine.name} saved for later`, 'success');
+                    } else {
+                      showToast(result.message, 'error');
+                    }
+                  }}>
+                    <Heart size={14} /> Save for later
+                  </button>
+                  <button className="icon-btn-danger" onClick={() => handleRemove(medicine._id, medicine.name, quantity)} aria-label="Remove item">
+                    <Trash2 size={16} strokeWidth={2} />
+                  </button>
+                </div>
               </div>
-            ))}
+            )})}
           </div>
+
+          {cart.savedItems && cart.savedItems.length > 0 && (
+            <div className="saved-items-card">
+              <h3>Saved for later</h3>
+              <div className="saved-items-list">
+                {cart.savedItems.map(({ medicine, quantity }) => (
+                  <div className="saved-item" key={medicine._id}>
+                    <div className="saved-item-info">
+                      <Link to={`/medicines/${medicine._id}`} className="saved-item-name">{medicine.name}</Link>
+                      <p className="muted-text">{medicine.manufacturer}</p>
+                      <p className="saved-item-meta">{quantity} unit{quantity > 1 ? 's' : ''}</p>
+                    </div>
+                    <div className="saved-item-actions">
+                      <button className="link-btn" onClick={async () => {
+                        const result = await moveSavedToCart(medicine._id);
+                        if (result.success) {
+                          showToast(`${medicine.name} moved back to cart`, 'success');
+                        } else {
+                          showToast(result.message, 'error');
+                        }
+                      }}>
+                        Move to cart
+                      </button>
+                      <button className="link-btn" onClick={async () => {
+                        const result = await removeSavedItem(medicine._id);
+                        if (result.success) {
+                          showToast(`${medicine.name} removed from saved items`, 'info');
+                        } else {
+                          showToast(result.message, 'error');
+                        }
+                      }}>
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="coupon-section">
             <h3 className="coupon-section-title"><Tag size={16} /> Coupons &amp; Offers</h3>
@@ -181,10 +367,10 @@ const Cart = () => {
                 <button className="btn-secondary" onClick={() => attemptApply(couponInput)}>Apply</button>
               </div>
             )}
-            {couponError && <p className="coupon-error">{couponError}</p>}
+            {couponError && <p className="coupon-error" role="alert">{couponError}</p>}
 
             <div className="coupon-list">
-              {COUPONS.map((c) => {
+              {availableCoupons.map((c) => {
                 const eligible = (!c.firstOrderOnly || isFirstOrder) && discountedValue >= c.minOrder;
                 const active = appliedCoupon?.code === c.code;
                 return (
@@ -206,6 +392,22 @@ const Cart = () => {
                 );
               })}
             </div>
+            {relatedItems.length > 0 && (
+              <div className="related-items-strip">
+                <div className="related-strip-header">
+                  <h3>Frequently bought together</h3>
+                  <p className="muted-text">See what other customers added with items in your cart.</p>
+                </div>
+                <MedicineRow
+                  title=""
+                  medicines={relatedItems}
+                  onAddToCart={(medicine) => addToCart(medicine._id, 1).then((result) => {
+                    if (result.success) showToast(`${medicine.name} added to cart`, 'success');
+                    else showToast(result.message, 'error');
+                  })}
+                />
+              </div>
+            )}
 
             <div className="upi-offers">
               <p className="upi-offers-title"><Smartphone size={14} /> UPI App Offers</p>
@@ -253,6 +455,10 @@ const Cart = () => {
                 <span className="num">-{formatCurrency(couponDiscount)}</span>
               </div>
             )}
+            <div className="bill-row">
+              <span>GST &amp; taxes</span>
+              <span className="num">{formatCurrency(Math.round(discountedValue * 0.05 * 100) / 100)}</span>
+            </div>
             <div className="bill-row">
               <span>Delivery Fee</span>
               <span className="num">

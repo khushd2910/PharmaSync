@@ -16,8 +16,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 const PAGE_SIZE = 6;
 const MAX_THUMBS = 4;
 const NEW_ORDER_WINDOW_MS = 48 * 60 * 60 * 1000; // orders placed within this window get a "New" tag
-const ESTIMATED_DELIVERY_DAYS = 3; // no real ETA field yet — a simple placed-date + N estimate
-const RATINGS_STORAGE_KEY = 'pharmacare_order_ratings';
+const FALLBACK_DELIVERY_DAYS = 3; // only used for legacy orders placed before estimatedDeliveryDate existed
 
 // Turns an item list into a compact readable string, e.g.
 // "Paracetamol, Azithromycin +2 more" instead of dumping every name.
@@ -46,15 +45,9 @@ const monthLabelFor = (dateStr) =>
 const isRecentOrder = (order) => Date.now() - new Date(order.createdAt).getTime() < NEW_ORDER_WINDOW_MS;
 
 const estimatedDeliveryDate = (order) =>
-  new Date(new Date(order.createdAt).getTime() + ESTIMATED_DELIVERY_DAYS * 24 * 60 * 60 * 1000);
-
-const loadStoredRatings = () => {
-  try {
-    return JSON.parse(localStorage.getItem(RATINGS_STORAGE_KEY) || '{}');
-  } catch {
-    return {};
-  }
-};
+  order.estimatedDeliveryDate
+    ? new Date(order.estimatedDeliveryDate)
+    : new Date(new Date(order.createdAt).getTime() + FALLBACK_DELIVERY_DAYS * 24 * 60 * 60 * 1000);
 
 // Loading placeholders shaped like the real card, so the layout doesn't
 // jump once orders arrive — feels like a real product, not a spinner.
@@ -81,7 +74,7 @@ const Orders = () => {
   const [cancellingId, setCancellingId] = useState(null);
   const [confirmingCancelId, setConfirmingCancelId] = useState(null);
   const [reorderingId, setReorderingId] = useState(null);
-  const [ratings, setRatings] = useState(loadStoredRatings);
+  const [ratingId, setRatingId] = useState(null);
   const { showToast } = useToast();
   const { addToCart } = useCart();
   const navigate = useNavigate();
@@ -154,19 +147,19 @@ const Orders = () => {
       .catch(() => showToast('Could not copy invoice number', 'error'));
   };
 
-  const handleRate = (e, orderId, value) => {
+  const handleRate = async (e, orderId, value) => {
     e.preventDefault();
     e.stopPropagation();
-    setRatings((prev) => {
-      const next = { ...prev, [orderId]: value };
-      try {
-        localStorage.setItem(RATINGS_STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        // localStorage unavailable — rating just won't persist across reloads
-      }
-      return next;
-    });
-    showToast('Thanks for your feedback!', 'success');
+    setRatingId(orderId);
+    try {
+      const res = await api.patch(`/orders/${orderId}/rating`, { rating: value });
+      setOrders((prev) => prev.map((o) => (o._id === orderId ? res.data.order : o)));
+      showToast('Thanks for your feedback!', 'success');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Could not save your rating', 'error');
+    } finally {
+      setRatingId(null);
+    }
   };
 
   // The medicine catalog is periodically wiped and re-imported (see
@@ -294,7 +287,7 @@ const Orders = () => {
               const monthLabel = monthLabelFor(order.createdAt);
               const showHeader = showMonthGroups && monthLabel !== lastMonthLabel;
               lastMonthLabel = monthLabel;
-              const rating = ratings[order._id] || 0;
+              const rating = order.rating || 0;
 
               return (
                 <div key={order._id} className="order-list-item">
@@ -447,6 +440,7 @@ const Orders = () => {
                                 type="button"
                                 className="star-btn"
                                 onClick={(e) => handleRate(e, order._id, n)}
+                                disabled={ratingId === order._id}
                                 aria-label={`Rate ${n} star${n > 1 ? 's' : ''}`}
                               >
                                 <Star size={14} strokeWidth={2} fill={rating >= n ? 'currentColor' : 'none'} />

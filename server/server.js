@@ -13,14 +13,17 @@ const adminRoutes = require('./routes/adminRoutes');
 const medicineRoutes = require('./routes/medicineRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const couponRoutes = require('./routes/couponRoutes');
 const posRoutes = require('./routes/posRoutes');
 const prescriptionRoutes = require('./routes/prescriptionRoutes');
 const chatRoutes = require('./routes/chatRoutes');
+const seedCoupons = require('./utils/seedCoupons');
 
 const app = express();
 
 // Connect to MongoDB
 connectDB();
+seedCoupons();
 
 // Logging (dev-friendly request logs; skip in test)
 if (process.env.NODE_ENV !== 'test') {
@@ -48,6 +51,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/medicines', medicineRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/coupons', couponRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin/pos', posRoutes);
 app.use('/api/prescriptions', prescriptionRoutes);

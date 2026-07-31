@@ -39,10 +39,20 @@ const orderSchema = new mongoose.Schema(
     // full card/wallet credentials; this is a masked label only, and the
     // storefront demo doesn't process real payments.
     paymentDetails: { type: String, trim: true },
+    couponCode: { type: String, trim: true, uppercase: true, default: null },
+    couponDiscount: { type: Number, default: 0, min: 0 },
+    deliveryFee: { type: Number, default: 0, min: 0 },
+    platformFee: { type: Number, default: 0, min: 0 },
     paymentStatus: { type: String, default: 'Pending' },
     // Randomized 15–25 min ETA shown on the post-payment confirmation step,
     // fixed at order creation so it stays consistent on refresh/revisit.
     estimatedDeliveryMinutes: { type: Number, min: 15, max: 25 },
+    // Real multi-day delivery ETA shown on the order history/details pages
+    // (the "Expected by" date). Set at checkout to a default window, then
+    // kept current by an admin as the order moves through fulfillment — see
+    // orderController.adminUpdateOrderStatus. Replaces the old client-side
+    // "placed date + 3 days" guess that never reflected actual progress.
+    estimatedDeliveryDate: { type: Date },
     // Module 10 — Prescription Medicine Alert. Set at checkout time if the
     // cart contained any requiresPrescription medicine; `prescription`
     // points at the actual uploaded file (server/models/Prescription.js)
@@ -62,6 +72,11 @@ const orderSchema = new mongoose.Schema(
     // or the user (cancellation) ever changes it from here on.
     orderStatus: { type: String, enum: ORDER_STATUSES, default: 'Pending' },
     invoiceNumber: { type: String, required: true, unique: true },
+    // Customer's post-delivery rating for this order (1-5 stars). Set once
+    // via PATCH /orders/:id/rating after the order reaches "Delivered" —
+    // previously this only lived in the browser's localStorage, which meant
+    // it never showed up for admins and didn't survive a device switch.
+    rating: { type: Number, min: 1, max: 5, default: null },
   },
   { timestamps: true }
 );

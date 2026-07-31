@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Download, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import { computeDisplayStatus, ORDER_STAGES } from '../utils/orderStatus';
@@ -7,6 +7,16 @@ import { formatCurrency, formatDate } from '../utils/format';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const ALL_STATUSES = [...ORDER_STAGES, 'Cancelled'];
+
+// yyyy-mm-dd for a native <input type="date">'s value/onChange, in the
+// browser's local time so the picker shows the date an admin expects.
+const toDateInputValue = (date) => {
+  if (!date) return '';
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return '';
+  const offset = d.getTimezoneOffset();
+  return new Date(d.getTime() - offset * 60000).toISOString().slice(0, 10);
+};
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -55,6 +65,26 @@ const AdminOrders = () => {
     }
   };
 
+  // Lets an admin correct the "Expected by" date directly, independent of
+  // a status change — e.g. a delivery got delayed but the order is still
+  // "Out for Delivery". Sends the order's current status back unchanged
+  // so only the date moves.
+  const handleDeliveryDateChange = async (order, newDateValue) => {
+    setUpdatingId(order._id);
+    try {
+      const res = await api.patch(`/admin/orders/${order._id}/status`, {
+        status: order.orderStatus,
+        estimatedDeliveryDate: newDateValue ? new Date(`${newDateValue}T00:00:00`).toISOString() : null,
+      });
+      setOrders((prev) => prev.map((o) => (o._id === order._id ? res.data.order : o)));
+      showToast('Expected delivery date updated', 'success');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Could not update delivery date', 'error');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   return (
     <div className="admin-orders-page admin-theme">
       <div className="dashboard-header">
@@ -88,6 +118,18 @@ const AdminOrders = () => {
                   {' · '}{order.items.length} item{order.items.length > 1 ? 's' : ''}
                   {' · '}{formatCurrency(order.totalAmount)}
                 </p>
+                {order.rating && (
+                  <p className="muted-text order-rating-admin" title={`Customer rated this order ${order.rating}/5`}>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <Star
+                        key={n}
+                        size={12}
+                        strokeWidth={2}
+                        fill={order.rating >= n ? 'currentColor' : 'none'}
+                      />
+                    ))}
+                  </p>
+                )}
               </div>
 
               <span className="badge badge-status">{computeDisplayStatus(order)}</span>
@@ -102,6 +144,19 @@ const AdminOrders = () => {
                   <option key={s} value={s}>{s}</option>
                 ))}
               </select>
+
+              {order.orderStatus !== 'Cancelled' && (
+                <label className="admin-eta-field">
+                  <span className="muted-text" style={{ fontSize: 11 }}>Expected by</span>
+                  <input
+                    type="date"
+                    className="sort-select"
+                    value={toDateInputValue(order.estimatedDeliveryDate)}
+                    disabled={updatingId === order._id}
+                    onChange={(e) => handleDeliveryDateChange(order, e.target.value)}
+                  />
+                </label>
+              )}
 
               {computeDisplayStatus(order) === 'Delivered' && (
                 <a

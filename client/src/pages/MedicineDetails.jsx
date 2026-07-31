@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ShoppingCart, Minus, Plus, FileWarning, Calendar, Factory, Boxes } from 'lucide-react';
+import { ShoppingCart, Minus, Plus, FileWarning, Calendar, Factory, Boxes, Sparkles, TrendingUp, Users } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { addRecentlyViewed, removeRecentlyViewed } from '../utils/recentlyViewed';
 import { getMedicineImage } from '../utils/medicineFormImage';
+import MedicineRow from '../components/MedicineRow';
 
 const MedicineDetails = () => {
   const { id } = useParams();
@@ -22,11 +23,13 @@ const MedicineDetails = () => {
   // rather than telling the person the medicine is gone when it might not be.
   const [loadError, setLoadError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [related, setRelated] = useState({ similar: [], topInCategory: [], alsoBought: [] });
 
   const { user } = useAuth();
   const { addToCart } = useCart();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const recentScope = user?.id || 'guest';
 
   useEffect(() => {
     // Guards against a slower, earlier request (e.g. from React StrictMode's
@@ -46,14 +49,14 @@ const MedicineDetails = () => {
         if (cancelled) return;
         setMedicine(res.data.medicine);
         setApiInfo(res.data.apiInfo);
-        addRecentlyViewed(res.data.medicine);
+        addRecentlyViewed(res.data.medicine, recentScope);
       })
       .catch((err) => {
         if (cancelled) return;
         if (err.response?.status === 404) {
           setLoadError('notFound');
           // Stop this dead link from resurfacing in "Recently Viewed".
-          removeRecentlyViewed(id);
+          removeRecentlyViewed(id, recentScope);
         } else {
           setLoadError('error');
           showToast(err.response?.data?.message || 'Could not load this medicine', 'error');
@@ -68,7 +71,34 @@ const MedicineDetails = () => {
     return () => {
       cancelled = true;
     };
-  }, [id, retryCount]);
+  }, [id, retryCount, recentScope]);
+
+  // Separate from the main load above — this is a "nice to have" discovery
+  // row set, not something the page's own content should ever wait on or
+  // fail over, so its own errors are swallowed rather than surfaced as a
+  // toast.
+  useEffect(() => {
+    if (!medicine?._id) return;
+    let cancelled = false;
+
+    api
+      .get(`/medicines/${medicine._id}/related`)
+      .then((res) => {
+        if (cancelled) return;
+        setRelated({
+          similar: res.data.similar || [],
+          topInCategory: res.data.topInCategory || [],
+          alsoBought: res.data.alsoBought || [],
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setRelated({ similar: [], topInCategory: [], alsoBought: [] });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [medicine?._id]);
 
   const handleAddToCart = async () => {
     if (!user) {
@@ -82,6 +112,25 @@ const MedicineDetails = () => {
     }
     const result = await addToCart(medicine._id, quantity);
     showToast(result.success ? `${medicine.name} added to cart` : result.message, result.success ? 'success' : 'error');
+  };
+
+  // Used by the Similar Products / Top in Category / People Also Bought
+  // rows — always adds a single unit, same as a Home card's ADD button.
+  const handleRelatedAddToCart = async (relatedMedicine) => {
+    if (!user) {
+      showToast('Please log in to add items to your cart', 'info');
+      navigate('/login');
+      return;
+    }
+    if (user.role === 'admin') {
+      showToast('Admins manage stock, not carts', 'info');
+      return;
+    }
+    const result = await addToCart(relatedMedicine._id, 1);
+    showToast(
+      result.success ? `${relatedMedicine.name} added to cart` : result.message,
+      result.success ? 'success' : 'error'
+    );
   };
 
   if (loading) return <p className="info-text center-text">Loading medicine details…</p>;
@@ -215,6 +264,15 @@ const MedicineDetails = () => {
           )}
         </DetailSection>
       </div>
+
+      <MedicineRow title="Similar Products" icon={Sparkles} medicines={related.similar} onAddToCart={handleRelatedAddToCart} />
+      <MedicineRow
+        title={medicine.category ? `Top 10 in ${medicine.category}` : 'Top 10 Picks'}
+        icon={TrendingUp}
+        medicines={related.topInCategory}
+        onAddToCart={handleRelatedAddToCart}
+      />
+      <MedicineRow title="People Also Bought" icon={Users} medicines={related.alsoBought} onAddToCart={handleRelatedAddToCart} />
 
       <p className="disclaimer-text">
         This information is for general reference only and is not a substitute for professional

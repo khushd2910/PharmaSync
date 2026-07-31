@@ -7,25 +7,48 @@ const catchAsync = require('../utils/catchAsync');
 // shared by every endpoint below so the client always gets a ready-to-render
 // cart object instead of raw ids/quantities.
 const buildCartResponse = async (userId) => {
-  let cart = await Cart.findOne({ user: userId }).populate('items.medicine');
+  let cart = await Cart.findOne({ user: userId }).populate('items.medicine savedItems.medicine');
 
   if (!cart) {
-    cart = await Cart.create({ user: userId, items: [] });
+    cart = await Cart.create({ user: userId, items: [], savedItems: [] });
   }
 
-  // Drop any items whose medicine was deleted/discontinued since being added
-  const validItems = cart.items.filter((item) => item.medicine);
+  const items = cart.items.map((item) => {
+    const medicine = item.medicine;
+    const currentPrice = medicine ? getEffectivePrice(medicine) : 0;
+    const addedPrice = Number.isFinite(item.addedPrice) ? item.addedPrice : currentPrice;
+    const addedStock = Number.isFinite(item.addedStock) ? item.addedStock : (medicine?.stock ?? 0);
+    const priceChanged = medicine && currentPrice !== addedPrice;
+    const outOfStock = medicine && medicine.stock === 0;
+    const onlyLeft = medicine && medicine.stock > 0 && medicine.stock < item.quantity;
+    const lineTotal = Math.round(currentPrice * item.quantity * 100) / 100;
 
-  const items = validItems.map((item) => ({
+    return {
+      medicine,
+      quantity: item.quantity,
+      lineTotal,
+      currentPrice,
+      addedPrice,
+      addedStock,
+      priceChanged,
+      priceDelta: Math.round((currentPrice - addedPrice) * 100) / 100,
+      outOfStock,
+      onlyLeft,
+      stockLevel: medicine?.stock ?? 0,
+    };
+  });
+
+  const validSaved = cart.savedItems.filter((item) => item.medicine);
+  const savedItems = validSaved.map((item) => ({
     medicine: item.medicine,
     quantity: item.quantity,
-    lineTotal: Math.round(getEffectivePrice(item.medicine) * item.quantity * 100) / 100,
+    addedAt: item.addedAt,
   }));
 
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
   const totalAmount = Math.round(items.reduce((sum, i) => sum + i.lineTotal, 0) * 100) / 100;
 
-  return { items, totalItems, totalAmount };
+  return { items, savedItems, totalItems, totalAmount };
 };
 
 const getEffectivePrice = (medicine) => {
@@ -65,14 +88,23 @@ const addItem = catchAsync(async (req, res, next) => {
 
   let cart = await Cart.findOne({ user: req.user._id });
   if (!cart) {
-    cart = await Cart.create({ user: req.user._id, items: [] });
+    cart = await Cart.create({ user: req.user._id, items: [], savedItems: [] });
   }
 
   const existing = cart.items.find((i) => i.medicine.toString() === medicineId);
   if (existing) {
     existing.quantity = Math.min(existing.quantity + qty, medicine.stock);
   } else {
-    cart.items.push({ medicine: medicineId, quantity: Math.min(qty, medicine.stock) });
+    cart.items.push({
+      medicine: medicineId,
+      quantity: Math.min(qty, medicine.stock),
+      addedPrice: getEffectivePrice(medicine),
+      addedStock: medicine.stock,
+      addedName: medicine.name,
+      addedManufacturer: medicine.manufacturer,
+      addedPackSizeLabel: medicine.packSizeLabel,
+      addedRequiresPrescription: medicine.requiresPrescription,
+    });
   }
   await cart.save();
 
@@ -107,15 +139,12 @@ const updateItemQuantity = catchAsync(async (req, res, next) => {
     return next(new AppError('Item not in cart', 404));
   }
 
-  // `medicine.stock || qty` looks harmless but has a real bug: when stock is
-  // exactly 0, `0 || qty` evaluates to `qty` (0 is falsy in JS), so a fully
-  // out-of-stock medicine let this endpoint set ANY quantity instead of
-  // clamping to 0. Guard the actual value, not its truthiness.
   const availableStock = Number.isFinite(medicine.stock) ? medicine.stock : qty;
-  item.quantity = Math.min(qty, availableStock);
-  if (item.quantity <= 0) {
+  if (availableStock <= 0) {
     return next(new AppError('This medicine is currently out of stock', 400));
   }
+
+  item.quantity = Math.min(qty, availableStock);
   await cart.save();
 
   const cartResponse = await buildCartResponse(req.user._id);
@@ -134,6 +163,91 @@ const removeItem = catchAsync(async (req, res) => {
   return res.status(200).json({ cart: cartResponse });
 });
 
+// @desc    Save a cart item for later/wishlist
+// @route   POST /api/cart/items/:medicineId/save
+// @access  Private
+const saveItemForLater = catchAsync(async (req, res, next) => {
+  const { medicineId } = req.params;
+  const cart = await Cart.findOne({ user: req.user._id });
+  if (!cart) {
+    return next(new AppError('Cart not found', 404));
+  }
+
+  const itemIndex = cart.items.findIndex((i) => i.medicine.toString() === medicineId);
+  if (itemIndex === -1) {
+    return next(new AppError('Item not in cart', 404));
+  }
+
+  const [item] = cart.items.splice(itemIndex, 1);
+  const savedItem = cart.savedItems.find((s) => s.medicine.toString() === medicineId);
+  if (savedItem) {
+    savedItem.quantity = Math.max(savedItem.quantity, item.quantity);
+  } else {
+    cart.savedItems.push({ medicine: item.medicine, quantity: item.quantity });
+  }
+
+  await cart.save();
+  const cartResponse = await buildCartResponse(req.user._id);
+  return res.status(200).json({ message: 'Saved for later', cart: cartResponse });
+});
+
+// @desc    Move a saved item back to the cart
+// @route   POST /api/cart/saved/:medicineId/move-back
+// @access  Private
+const moveSavedItemToCart = catchAsync(async (req, res, next) => {
+  const { medicineId } = req.params;
+  const cart = await Cart.findOne({ user: req.user._id });
+  if (!cart) {
+    return next(new AppError('Cart not found', 404));
+  }
+
+  const savedItemIndex = cart.savedItems.findIndex((s) => s.medicine.toString() === medicineId);
+  if (savedItemIndex === -1) {
+    return next(new AppError('Saved item not found', 404));
+  }
+
+  const savedItem = cart.savedItems[savedItemIndex];
+  const medicine = await Medicine.findById(medicineId);
+  if (!medicine || medicine.isDiscontinued) {
+    return next(new AppError('Medicine not available to move back to cart', 400));
+  }
+  if (medicine.stock <= 0) {
+    return next(new AppError('Medicine is out of stock', 400));
+  }
+
+  const quantityToAdd = Math.min(savedItem.quantity, medicine.stock);
+  const existing = cart.items.find((i) => i.medicine.toString() === medicineId);
+  if (existing) {
+    existing.quantity = Math.min(existing.quantity + quantityToAdd, medicine.stock);
+  } else {
+    cart.items.push({
+      medicine: medicineId,
+      quantity: quantityToAdd,
+      addedPrice: getEffectivePrice(medicine),
+      addedStock: medicine.stock,
+      addedName: medicine.name,
+      addedManufacturer: medicine.manufacturer,
+      addedPackSizeLabel: medicine.packSizeLabel,
+      addedRequiresPrescription: medicine.requiresPrescription,
+    });
+  }
+  cart.savedItems.splice(savedItemIndex, 1);
+  await cart.save();
+
+  const cartResponse = await buildCartResponse(req.user._id);
+  return res.status(200).json({ message: 'Moved back to cart', cart: cartResponse });
+});
+
+// @desc    Remove a saved item from the wishlist
+// @route   DELETE /api/cart/saved/:medicineId
+// @access  Private
+const removeSavedItem = catchAsync(async (req, res) => {
+  const { medicineId } = req.params;
+  await Cart.updateOne({ user: req.user._id }, { $pull: { savedItems: { medicine: medicineId } } });
+  const cartResponse = await buildCartResponse(req.user._id);
+  return res.status(200).json({ cart: cartResponse });
+});
+
 // @desc    Empty the cart (used after a successful checkout)
 // @route   DELETE /api/cart
 // @access  Private
@@ -142,4 +256,15 @@ const clearCart = catchAsync(async (req, res) => {
   return res.status(200).json({ cart: { items: [], totalItems: 0, totalAmount: 0 } });
 });
 
-module.exports = { getCart, addItem, updateItemQuantity, removeItem, clearCart, buildCartResponse, getEffectivePrice };
+module.exports = {
+  getCart,
+  addItem,
+  updateItemQuantity,
+  removeItem,
+  saveItemForLater,
+  moveSavedItemToCart,
+  removeSavedItem,
+  clearCart,
+  buildCartResponse,
+  getEffectivePrice,
+};

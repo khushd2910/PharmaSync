@@ -29,3 +29,20 @@ export const computeCouponDiscount = (coupon, amount) => {
   }
   return Math.min(coupon.value, amount);
 };
+
+export const chooseBestCoupon = (coupons, cartAmount, isFirstOrder = false) => {
+  let best = null;
+  let bestDiscount = 0;
+
+  coupons.forEach((coupon) => {
+    if (coupon.firstOrderOnly && !isFirstOrder) return;
+    if (cartAmount < (coupon.minOrder || 0)) return;
+    const discount = computeCouponDiscount(coupon, cartAmount);
+    if (discount > bestDiscount) {
+      bestDiscount = discount;
+      best = coupon;
+    }
+  });
+
+  return best ? { coupon: best, discount: bestDiscount } : null;
+};

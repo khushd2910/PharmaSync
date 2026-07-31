@@ -6,6 +6,9 @@ const {
   addItem,
   updateItemQuantity,
   removeItem,
+  saveItemForLater,
+  moveSavedItemToCart,
+  removeSavedItem,
   clearCart,
 } = require('../controllers/cartController');
 
@@ -15,6 +18,9 @@ router.get('/', getCart);
 router.post('/items', addItem);
 router.patch('/items/:medicineId', updateItemQuantity);
 router.delete('/items/:medicineId', removeItem);
+router.post('/items/:medicineId/save', saveItemForLater);
+router.post('/saved/:medicineId/move-back', moveSavedItemToCart);
+router.delete('/saved/:medicineId', removeSavedItem);
 router.delete('/', clearCart);
 
 module.exports = router;

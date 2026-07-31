@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
 import {
-  Pill, Mail, Phone, MapPin, Facebook, Instagram, Twitter,
+  Mail, Phone, MapPin, Facebook, Instagram, Twitter,
   ShieldCheck, Truck, Clock3,
 } from 'lucide-react';
+import BrandLogo from './BrandLogo';
 
 // Non-functional placeholder links (Support/Legal columns, social icons) —
 // there's no backing page for these yet, so clicks are inert rather than
@@ -32,8 +33,7 @@ const Footer = () => {
       <div className="footer-main">
         <div className="footer-col footer-brand-col">
           <Link to="/" className="footer-brand">
-            <span className="footer-brand-icon"><Pill size={18} strokeWidth={2.3} /></span>
-            <span className="footer-brand-name">Pharma<span className="accent">Sync</span></span>
+            <BrandLogo />
           </Link>
           <p className="footer-tagline">
             Genuine medicines, clear pricing, and a pharmacist-verified prescription flow —

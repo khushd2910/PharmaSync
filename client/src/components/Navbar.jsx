@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {
-  Pill, LogOut, ShoppingCart, User as UserIcon, ClipboardList, LayoutDashboard, ScanBarcode,
+import { LogOut, ShoppingCart, User as UserIcon, ClipboardList, LayoutDashboard, ScanBarcode,
   BarChart3, FileSpreadsheet, ShieldAlert, Menu, X,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import BrandLogo from './BrandLogo';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -51,8 +51,7 @@ const Navbar = () => {
   return (
     <nav className="navbar" ref={navRef}>
       <Link to="/" className="navbar-brand" onClick={closeMenu}>
-        <span className="navbar-brand-icon"><Pill size={17} strokeWidth={2.3} /></span>
-        <span className="navbar-brand-name">Pharma<span className="accent">Sync</span></span>
+        <BrandLogo compact />
       </Link>
 
       <button

@@ -6,6 +6,7 @@ const {
   getMyOrders,
   getOrderById,
   cancelOrder,
+  rateOrder,
   downloadInvoice,
 } = require('../controllers/orderController');
 
@@ -15,6 +16,7 @@ router.post('/', createOrder);
 router.get('/', getMyOrders);
 router.get('/:id', getOrderById);
 router.patch('/:id/cancel', cancelOrder);
+router.patch('/:id/rating', rateOrder);
 router.get('/:id/invoice', downloadInvoice);
 
 module.exports = router;

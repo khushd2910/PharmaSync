@@ -116,6 +116,101 @@ const getBrands = catchAsync(async (req, res) => {
   return res.status(200).json({ brands: brands.filter(Boolean).sort() });
 });
 
+// @desc    Given a comma-separated list of ids, returns only the ones that
+//          still exist and are still live (not discontinued) — with their
+//          current data. Used by the client to self-heal its "Recently
+//          Viewed" cache: that list is stored in localStorage and can go
+//          stale (a medicine gets removed, or the catalog is reseeded with
+//          fresh ids), so on every Home page load the client re-validates
+//          against this instead of trusting the cache blindly, and drops
+//          anything that no longer comes back.
+// @route   GET /api/medicines/by-ids?ids=<id1>,<id2>,...
+// @access  Public
+const getMedicinesByIds = catchAsync(async (req, res) => {
+  const ids = (req.query.ids || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => /^[a-fA-F0-9]{24}$/.test(s)); // only well-formed ObjectIds — anything else can't match and would otherwise throw a CastError
+
+  if (ids.length === 0) {
+    return res.status(200).json({ medicines: [] });
+  }
+
+  const medicines = await Medicine.find({ _id: { $in: ids }, isDiscontinued: { $ne: true } });
+  return res.status(200).json({ medicines });
+});
+
+const getEffectivePrice = (medicine) => {
+  const price = medicine.price || 0;
+  if (medicine.discountPercent > 0) {
+    return Math.round(price * (1 - medicine.discountPercent / 100) * 100) / 100;
+  }
+  return price;
+};
+
+const getGenericAlternatives = catchAsync(async (req, res) => {
+  const ids = (req.query.ids || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => /^[a-fA-F0-9]{24}$/.test(s));
+
+  if (ids.length === 0) {
+    return res.status(200).json({ alternatives: {} });
+  }
+
+  const medicines = await Medicine.find({ _id: { $in: ids }, isDiscontinued: { $ne: true } });
+  const aliasToIds = medicines.reduce((map, medicine) => {
+    if (medicine.fdaAlias) {
+      map[medicine.fdaAlias] = map[medicine.fdaAlias] || [];
+      map[medicine.fdaAlias].push(String(medicine._id));
+    }
+    return map;
+  }, {});
+
+  const aliases = Object.keys(aliasToIds);
+  if (aliases.length === 0) {
+    return res.status(200).json({ alternatives: {} });
+  }
+
+  const alternatives = await Medicine.find({
+    fdaAlias: { $in: aliases },
+    isDiscontinued: { $ne: true },
+    stock: { $gt: 0 },
+    _id: { $nin: ids },
+  });
+
+  const alternativesByAlias = alternatives.reduce((map, medicine) => {
+    const alias = medicine.fdaAlias;
+    if (!alias) return map;
+    map[alias] = map[alias] || [];
+    map[alias].push({
+      _id: medicine._id,
+      name: medicine.name,
+      manufacturer: medicine.manufacturer,
+      packSizeLabel: medicine.packSizeLabel,
+      price: getEffectivePrice(medicine),
+      priceLabel: medicine.price,
+      discountPercent: medicine.discountPercent,
+      stock: medicine.stock,
+      requiresPrescription: medicine.requiresPrescription,
+    });
+    return map;
+  }, {});
+
+  Object.values(alternativesByAlias).forEach((list) => {
+    list.sort((a, b) => a.price - b.price || a.name.localeCompare(b.name));
+  });
+
+  const result = medicines.reduce((map, medicine) => {
+    const alias = medicine.fdaAlias;
+    const candidates = alias ? alternativesByAlias[alias] || [] : [];
+    map[String(medicine._id)] = candidates;
+    return map;
+  }, {});
+
+  return res.status(200).json({ alternatives: result });
+});
+
 // @desc    Get a single medicine's details, enriched with a live lookup
 //          (Uses/Side Effects/Warnings/Storage/Dosage) from the Module 8
 //          Medicine Information API (python-service/medicine_api), where a
@@ -132,6 +227,102 @@ const getMedicineById = catchAsync(async (req, res, next) => {
   const apiInfo = await fetchDrugInfo(medicine.fdaAlias);
 
   return res.status(200).json({ medicine, apiInfo });
+});
+
+// @desc    Three storefront-style discovery rows for the bottom of the
+//          medicine detail page:
+//            - similar: other medicines in the same category
+//            - topInCategory: the category's best-sellers, ranked by units
+//              actually sold (from Order history) rather than a stored
+//              popularity flag, so it reflects real demand
+//            - alsoBought: medicines most often bought IN THE SAME ORDER as
+//              this one (a real co-purchase signal, not a guess)
+//          A fresh/lightly-used catalog won't have much order history yet,
+//          so topInCategory and alsoBought both pad out with same-category
+//          picks (favoring featured/discounted/in-stock items) whenever the
+//          sales-based ranking alone would leave the row too sparse to be
+//          useful — every row always returns something to show.
+// @route   GET /api/medicines/:id/related
+// @access  Public
+const getRelatedMedicines = catchAsync(async (req, res, next) => {
+  const medicine = await Medicine.findById(req.params.id);
+  if (!medicine) {
+    return next(new AppError('Medicine not found', 404));
+  }
+
+  const ROW_SIZE = 10;
+  const baseFilter = { _id: { $ne: medicine._id }, isDiscontinued: { $ne: true } };
+  const categoryFilter = medicine.category
+    ? { ...baseFilter, category: medicine.category }
+    : { ...baseFilter, manufacturer: medicine.manufacturer };
+
+  // Generic "popular-ish" fallback ordering — used to pad out any row that
+  // sales data alone doesn't fill, and as the entire ordering for `similar`.
+  const popularFallback = (filter, limit) =>
+    Medicine.find(filter)
+      .sort({ isFeatured: -1, discountPercent: -1, stock: -1, name: 1 })
+      .limit(limit);
+
+  // Fills `results` (an array of Medicine docs, already ranked) up to
+  // ROW_SIZE using popularFallback, skipping anything already present.
+  const padWithFallback = async (results, filter) => {
+    if (results.length >= ROW_SIZE) return results.slice(0, ROW_SIZE);
+    const have = new Set(results.map((m) => String(m._id)));
+    const extra = await popularFallback(
+      { ...filter, _id: { $ne: medicine._id, $nin: [...have].map((id) => id) } },
+      ROW_SIZE - results.length
+    );
+    return [...results, ...extra];
+  };
+
+  const [similar, topSoldIds, coBoughtIds] = await Promise.all([
+    popularFallback(categoryFilter, ROW_SIZE),
+    medicine.category
+      ? Order.aggregate([
+          { $unwind: '$items' },
+          { $match: { 'items.medicine': { $ne: medicine._id } } },
+          {
+            $lookup: {
+              from: 'medicines',
+              localField: 'items.medicine',
+              foreignField: '_id',
+              as: 'med',
+            },
+          },
+          { $unwind: '$med' },
+          { $match: { 'med.category': medicine.category, 'med.isDiscontinued': { $ne: true } } },
+          { $group: { _id: '$med._id', totalSold: { $sum: '$items.quantity' } } },
+          { $sort: { totalSold: -1 } },
+          { $limit: ROW_SIZE },
+        ])
+      : [],
+    Order.aggregate([
+      { $match: { 'items.medicine': medicine._id } },
+      { $unwind: '$items' },
+      { $match: { 'items.medicine': { $ne: medicine._id } } },
+      { $group: { _id: '$items.medicine', timesBoughtWith: { $sum: 1 } } },
+      { $sort: { timesBoughtWith: -1 } },
+      { $limit: ROW_SIZE },
+    ]),
+  ]);
+
+  // Both aggregations only return ids + a rank — re-fetch the full,
+  // currently-live (not discontinued) documents and put them back in the
+  // aggregation's rank order, which a plain $in query wouldn't preserve.
+  const hydrateInRankOrder = async (rankedIds) => {
+    if (rankedIds.length === 0) return [];
+    const ids = rankedIds.map((r) => r._id);
+    const docs = await Medicine.find({ _id: { $in: ids }, isDiscontinued: { $ne: true } });
+    const byId = new Map(docs.map((d) => [String(d._id), d]));
+    return ids.map((id) => byId.get(String(id))).filter(Boolean);
+  };
+
+  const [topInCategory, alsoBought] = await Promise.all([
+    hydrateInRankOrder(topSoldIds).then((docs) => padWithFallback(docs, categoryFilter)),
+    hydrateInRankOrder(coBoughtIds).then((docs) => padWithFallback(docs, categoryFilter)),
+  ]);
+
+  return res.status(200).json({ similar, topInCategory, alsoBought });
 });
 
 // @desc    Add a new medicine to the catalog (admin manual entry). New
@@ -462,7 +653,10 @@ module.exports = {
   listMedicines,
   getCategories,
   getBrands,
+  getMedicinesByIds,
+  getGenericAlternatives,
   getMedicineById,
+  getRelatedMedicines,
   createMedicine,
   adminListMedicines,
   updateMedicine,

@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   MapPin, CreditCard, Truck, ShieldAlert, UploadCloud, FileCheck2,
   Smartphone, Wallet, Banknote, Check, ChevronLeft, ChevronRight, Loader2,
-  PartyPopper, Clock, ShieldCheck, CheckCircle2,
+  PartyPopper, Clock, ShieldCheck, CheckCircle2, MessageCircle,
 } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -11,6 +11,7 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { formatCurrency } from '../utils/format';
 import { computeCouponDiscount } from '../utils/coupons';
+import { buildInvoiceMailto, buildOrderShareLinks, getOrderTimelinePreview } from '../utils/checkoutConfirmation';
 import IconInput from '../components/IconInput';
 
 const DELIVERY_FEE = 40;
@@ -20,6 +21,9 @@ const COD_MIN_MRP = 500;
 
 const UPI_ID_REGEX = /^[a-zA-Z0-9.\-_]{2,49}@[a-zA-Z][a-zA-Z0-9]{1,49}$/;
 const MOBILE_REGEX = /^[6-9]\d{9}$/;
+const CHECKOUT_STORAGE_KEY = 'pharmasync.checkout.state';
+const PAYMENT_PREFERENCE_KEY = 'pharmasync.savedPaymentMethod';
+const COD_OTP = '123456';
 
 const luhnValid = (digits) => {
   let sum = 0;
@@ -38,8 +42,45 @@ const luhnValid = (digits) => {
 
 const formatCardNumber = (raw) => raw.replace(/(.{4})/g, '$1 ').trim();
 
+const getStoredCheckoutState = () => {
+  if (typeof window === 'undefined') return null;
+  try {
+    return JSON.parse(sessionStorage.getItem(CHECKOUT_STORAGE_KEY));
+  } catch {
+    return null;
+  }
+};
+
+const getStoredPaymentPreference = () => {
+  if (typeof window === 'undefined') return null;
+  try {
+    return JSON.parse(localStorage.getItem(PAYMENT_PREFERENCE_KEY));
+  } catch {
+    return null;
+  }
+};
+
+const maskUpiId = (upiId) => {
+  const trimmed = upiId.trim();
+  if (!trimmed) return 'not saved';
+  const [name, domain] = trimmed.split('@');
+  if (!domain) return `${trimmed.slice(0, 2)}****`;
+  return `${name.slice(0, 2)}****@${domain}`;
+};
+
+const maskCard = (cardNumber) => {
+  const digits = cardNumber.replace(/\D/g, '');
+  if (!digits) return 'not saved';
+  return `•••• ${digits.slice(-4)}`;
+};
+
+const maskMobile = (mobile) => {
+  if (!mobile) return 'not saved';
+  return `••••${mobile.slice(-2)}`;
+};
+
 const Checkout = () => {
-  const { cart, refreshCart, appliedCoupon } = useCart();
+  const { cart, refreshCart, appliedCoupon, cartLoaded } = useCart();
   const { showToast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -56,7 +97,10 @@ const Checkout = () => {
     () => [...(rxRequiredAtStart ? ['prescription'] : []), 'address', 'payment', 'confirm'],
     [rxRequiredAtStart]
   );
-  const [stepIndex, setStepIndex] = useState(0);
+  const [stepIndex, setStepIndex] = useState(() => {
+    const saved = getStoredCheckoutState();
+    return saved?.stepIndex ?? 0;
+  });
   const step = steps[stepIndex];
 
   const goNext = () => setStepIndex((i) => Math.min(i + 1, steps.length - 1));
@@ -65,7 +109,10 @@ const Checkout = () => {
   // ---------------- Prescription ----------------
   const [prescriptionFile, setPrescriptionFile] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [prescription, setPrescription] = useState(null);
+  const [prescription, setPrescription] = useState(() => {
+    const saved = getStoredCheckoutState();
+    return saved?.prescription || null;
+  });
 
   const handleUploadPrescription = async () => {
     if (!prescriptionFile) {
@@ -91,13 +138,16 @@ const Checkout = () => {
   // ---------------- Address ----------------
   const savedAddress = user?.address;
   const hasSavedAddress = Boolean(savedAddress?.line1 || savedAddress?.city);
-  const [address, setAddress] = useState({
-    line1: savedAddress?.line1 || '',
-    city: savedAddress?.city || '',
-    state: savedAddress?.state || '',
-    pincode: savedAddress?.pincode || '',
-    lat: null,
-    lng: null,
+  const [address, setAddress] = useState(() => {
+    const saved = getStoredCheckoutState();
+    return {
+      line1: saved?.address?.line1 || savedAddress?.line1 || '',
+      city: saved?.address?.city || savedAddress?.city || '',
+      state: saved?.address?.state || savedAddress?.state || '',
+      pincode: saved?.address?.pincode || savedAddress?.pincode || '',
+      lat: saved?.address?.lat ?? null,
+      lng: saved?.address?.lng ?? null,
+    };
   });
   const [locating, setLocating] = useState(false);
 
@@ -150,23 +200,53 @@ const Checkout = () => {
   const codEligible = mrpTotal > COD_MIN_MRP;
 
   // ---------------- Payment ----------------
-  const [method, setMethod] = useState(null); // 'UPI' | 'Card' | 'Wallet' | 'COD'
+  const [method, setMethod] = useState(() => {
+    const saved = getStoredCheckoutState();
+    return saved?.method || null;
+  }); // 'UPI' | 'Card' | 'Wallet' | 'COD'
   const [paying, setPaying] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
+  const [saveMethod, setSaveMethod] = useState(() => Boolean(getStoredPaymentPreference()?.enabled));
+  const [savedMethodPreference, setSavedMethodPreference] = useState(getStoredPaymentPreference);
 
-  const [upiId, setUpiId] = useState('');
+  const [upiId, setUpiId] = useState(() => {
+    const saved = getStoredCheckoutState();
+    return saved?.upiId || '';
+  });
   const [upiVerified, setUpiVerified] = useState(false);
   const [upiError, setUpiError] = useState('');
 
-  const [card, setCard] = useState({ number: '', name: '', expiry: '', cvv: '' });
+  const [card, setCard] = useState(() => {
+    const saved = getStoredCheckoutState();
+    return saved?.card || { number: '', name: '', expiry: '', cvv: '' };
+  });
   const [cardErrors, setCardErrors] = useState({});
 
-  const [walletProvider, setWalletProvider] = useState('PhonePe');
-  const [wallet, setWallet] = useState({ mobile: '', pin: '' });
+  const [walletProvider, setWalletProvider] = useState(() => {
+    const saved = getStoredCheckoutState();
+    return saved?.walletProvider || 'PhonePe';
+  });
+  const [wallet, setWallet] = useState(() => {
+    const saved = getStoredCheckoutState();
+    return saved?.wallet || { mobile: '', pin: '' };
+  });
   const [walletErrors, setWalletErrors] = useState({});
 
   const [placedOrder, setPlacedOrder] = useState(null);
   const [billSnapshot, setBillSnapshot] = useState(null);
   const [placing, setPlacing] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(() => {
+    const saved = getStoredCheckoutState();
+    return Boolean(saved?.agreeTerms);
+  });
+  const [codOtp, setCodOtp] = useState('');
+  const [codOtpVerified, setCodOtpVerified] = useState(() => {
+    const saved = getStoredCheckoutState();
+    return Boolean(saved?.codOtpVerified);
+  });
+  const [codOtpError, setCodOtpError] = useState('');
+  const [shareLinks, setShareLinks] = useState(null);
 
   const selectMethod = (m) => {
     setMethod(m);
@@ -174,6 +254,9 @@ const Checkout = () => {
     setUpiError('');
     setCardErrors({});
     setWalletErrors({});
+    setCodOtp('');
+    setCodOtpVerified(false);
+    setCodOtpError('');
   };
 
   const handleVerifyUpi = () => {
@@ -238,6 +321,50 @@ const Checkout = () => {
     return Object.keys(errors).length === 0;
   };
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const state = {
+      stepIndex,
+      address,
+      method,
+      upiId,
+      card,
+      wallet,
+      walletProvider,
+      prescription,
+      agreeTerms,
+      codOtpVerified,
+    };
+    sessionStorage.setItem(CHECKOUT_STORAGE_KEY, JSON.stringify(state));
+  }, [stepIndex, address, method, upiId, card, wallet, walletProvider, prescription, agreeTerms, codOtpVerified]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!saveMethod || !method) {
+      localStorage.removeItem(PAYMENT_PREFERENCE_KEY);
+      setSavedMethodPreference(null);
+      return;
+    }
+
+    const maskedPreference = (() => {
+      if (method === 'UPI') return { method, detail: maskUpiId(upiId) };
+      if (method === 'Card') return { method, detail: maskCard(card.number) };
+      if (method === 'Wallet') return { method, detail: maskMobile(wallet.mobile) };
+      if (method === 'COD') return { method, detail: 'OTP verified' };
+      return { method, detail: 'saved' };
+    })();
+
+    const payload = { enabled: true, method, detail: maskedPreference.detail };
+    localStorage.setItem(PAYMENT_PREFERENCE_KEY, JSON.stringify(payload));
+    setSavedMethodPreference(payload);
+  }, [saveMethod, method, upiId, card.number, wallet.mobile]);
+
+  useEffect(() => {
+    if (!method && savedMethodPreference) {
+      setMethod(savedMethodPreference.method);
+    }
+  }, [method, savedMethodPreference]);
+
   const handlePlaceOrder = async (paymentMethod, paymentDetails) => {
     setPlacing(true);
     try {
@@ -245,14 +372,18 @@ const Checkout = () => {
         address,
         paymentMethod,
         paymentDetails,
+        couponCode: appliedCoupon?.code || null,
         prescriptionId: prescription?._id,
       });
       setPlacedOrder(res.data.order);
+      const orderUrl = `${window.location.origin}/orders/${res.data.order._id}`;
+      setShareLinks(buildOrderShareLinks(res.data.order, orderUrl));
       // Snapshot the bill as computed right now — cart.items (and therefore
       // mrpTotal/couponDiscount/amountToPay above) get zeroed out the moment
       // refreshCart() below picks up the now-empty server cart, and the
       // Confirmation step still needs the coupon-inclusive numbers.
       setBillSnapshot({ mrpTotal, mrpDiscount, appliedCoupon, couponDiscount, deliveryFee, amountToPay });
+      sessionStorage.removeItem(CHECKOUT_STORAGE_KEY);
       await refreshCart();
       goNext();
     } catch (err) {
@@ -263,7 +394,37 @@ const Checkout = () => {
     }
   };
 
+  const sendCodOtp = () => {
+    if (!MOBILE_REGEX.test(wallet.mobile.trim())) {
+      setCodOtpError('Enter a valid 10-digit mobile number to receive the OTP');
+      return;
+    }
+    setCodOtpError('');
+    setCodOtpVerified(false);
+    showToast(`OTP sent to ${wallet.mobile.slice(-2).padStart(10, '•')}`, 'success');
+  };
+
+  const verifyCodOtp = () => {
+    if (!codOtp.trim()) {
+      setCodOtpError('Enter the 6-digit OTP');
+      return;
+    }
+    if (codOtp.trim() !== COD_OTP) {
+      setCodOtpError('That OTP is incorrect. Try 123456 for the demo.');
+      setCodOtpVerified(false);
+      return;
+    }
+    setCodOtpVerified(true);
+    setCodOtpError('');
+    showToast('OTP verified', 'success');
+  };
+
   const handlePay = async () => {
+    if (submittingRef.current) return;
+    if (!agreeTerms) {
+      showToast('Please accept the terms and refund policy before paying', 'error');
+      return;
+    }
     if (!method) {
       showToast('Choose a payment method', 'error');
       return;
@@ -293,18 +454,44 @@ const Checkout = () => {
         showToast(`Cash on Delivery is only available for orders above ${formatCurrency(COD_MIN_MRP)}`, 'error');
         return;
       }
-      paymentDetails = 'Cash on Delivery';
+      if (!codOtpVerified) {
+        showToast('Verify the COD OTP before placing the order', 'error');
+        return;
+      }
+      paymentDetails = 'Cash on Delivery · OTP verified';
     }
 
+    submittingRef.current = true;
+    setSubmitting(true);
     setPaying(true);
     // Brief simulated processing delay so the "Pay" action feels real before
     // the order is actually created — this demo has no live payment gateway.
     setTimeout(() => {
+      const paymentSucceeded = Math.random() > 0.2;
+      if (!paymentSucceeded) {
+        showToast('Payment was declined by the simulated gateway. Please try again.', 'error');
+        submittingRef.current = false;
+        setSubmitting(false);
+        setPaying(false);
+        return;
+      }
       handlePlaceOrder(method, paymentDetails);
     }, 1100);
   };
 
   // ---------------- Guards ----------------
+  if (!cartLoaded) {
+    return (
+      <div className="checkout-page">
+        <div className="cart-skeleton">
+          <div className="skeleton-line" style={{ width: '42%' }} />
+          <div className="skeleton-card" />
+          <div className="skeleton-card" />
+        </div>
+      </div>
+    );
+  }
+
   if (cart.items.length === 0 && step !== 'confirm') {
     return (
       <div className="checkout-page">
@@ -329,9 +516,14 @@ const Checkout = () => {
     <div className="checkout-page">
       <h1 className="page-title">Checkout</h1>
 
-      <div className="checkout-stepper">
+      <div className="checkout-stepper" role="list">
         {steps.map((s, i) => (
-          <div key={s} className={`checkout-step ${i === stepIndex ? 'active' : ''} ${i < stepIndex ? 'done' : ''}`}>
+          <div
+            key={s}
+            role="listitem"
+            aria-current={i === stepIndex ? 'step' : undefined}
+            className={`checkout-step ${i === stepIndex ? 'active' : ''} ${i < stepIndex ? 'done' : ''}`}
+          >
             <span className="checkout-step-dot">{i < stepIndex ? <Check size={12} strokeWidth={3} /> : i + 1}</span>
             <span className="checkout-step-label">{stepLabels[s]}</span>
             {i < steps.length - 1 && <span className="checkout-step-line" />}
@@ -430,38 +622,58 @@ const Checkout = () => {
           <div className="checkout-form-col">
             <section className="checkout-section checkout-step-panel">
               <h2 className="checkout-section-title"><CreditCard size={16} strokeWidth={2} /> Payment Method</h2>
+              <p className="muted-text small" style={{ marginBottom: 12 }}>
+                Payment processing is demo-only. No real payment gateway is connected in this storefront.
+              </p>
 
-              <div className="payment-method-grid">
-                <button
+              <div className={`payment-form-lock ${submitting ? 'locked' : ''}`}>
+                <div role="radiogroup" aria-label="Payment method selection" className="payment-method-grid">
+                  <button
                   type="button"
+                  role="radio"
+                  aria-checked={method === 'UPI'}
+                  aria-label="Use UPI payment"
                   className={`payment-method-tile ${method === 'UPI' ? 'active' : ''}`}
                   onClick={() => selectMethod('UPI')}
+                  disabled={submitting}
                 >
                   <Smartphone size={20} strokeWidth={2} />
                   <span>UPI</span>
                 </button>
                 <button
                   type="button"
+                  role="radio"
+                  aria-checked={method === 'Card'}
+                  aria-label="Use card payment"
                   className={`payment-method-tile ${method === 'Card' ? 'active' : ''}`}
                   onClick={() => selectMethod('Card')}
+                  disabled={submitting}
                 >
                   <CreditCard size={20} strokeWidth={2} />
                   <span>Credit / Debit Card</span>
                 </button>
                 <button
                   type="button"
+                  role="radio"
+                  aria-checked={method === 'Wallet'}
+                  aria-label="Use wallet payment"
                   className={`payment-method-tile ${method === 'Wallet' ? 'active' : ''}`}
                   onClick={() => selectMethod('Wallet')}
+                  disabled={submitting}
                 >
                   <Wallet size={20} strokeWidth={2} />
                   <span>Wallet</span>
                 </button>
                 <button
                   type="button"
+                  role="radio"
+                  aria-checked={method === 'COD'}
+                  aria-label="Use cash on delivery"
                   className={`payment-method-tile ${method === 'COD' ? 'active' : ''} ${!codEligible ? 'disabled' : ''}`}
                   onClick={() => codEligible && selectMethod('COD')}
-                  disabled={!codEligible}
+                  disabled={!codEligible || submitting}
                   title={!codEligible ? `Available on orders above ${formatCurrency(COD_MIN_MRP)} MRP` : undefined}
+                  aria-disabled={!codEligible || submitting}
                 >
                   <Banknote size={20} strokeWidth={2} />
                   <span>Cash on Delivery</span>
@@ -479,7 +691,7 @@ const Checkout = () => {
                       value={upiId}
                       onChange={(e) => { setUpiId(e.target.value); setUpiVerified(false); setUpiError(''); }}
                     />
-                    <button type="button" className="btn-secondary" onClick={handleVerifyUpi} disabled={!upiId.trim()}>
+                    <button type="button" className="btn-secondary" onClick={handleVerifyUpi} disabled={!upiId.trim() || submitting}>
                       Verify
                     </button>
                   </div>
@@ -504,18 +716,19 @@ const Checkout = () => {
                     placeholder="As printed on the card"
                     value={card.name}
                     onChange={(e) => setCard((prev) => ({ ...prev, name: e.target.value }))}
+                    disabled={submitting}
                   />
                   {cardErrors.name && <p className="error-text small">{cardErrors.name}</p>}
 
                   <div className="form-grid">
                     <div>
                       <label className="field-label">Expiry (MM/YY)</label>
-                      <input placeholder="MM/YY" value={card.expiry} onChange={(e) => handleCardChange('expiry', e.target.value)} />
+                      <input placeholder="MM/YY" value={card.expiry} onChange={(e) => handleCardChange('expiry', e.target.value)} disabled={submitting} />
                       {cardErrors.expiry && <p className="error-text small">{cardErrors.expiry}</p>}
                     </div>
                     <div>
                       <label className="field-label">CVV</label>
-                      <input type="password" inputMode="numeric" placeholder="•••" value={card.cvv} onChange={(e) => handleCardChange('cvv', e.target.value)} />
+                      <input type="password" inputMode="numeric" placeholder="•••" value={card.cvv} onChange={(e) => handleCardChange('cvv', e.target.value)} disabled={submitting} />
                       {cardErrors.cvv && <p className="error-text small">{cardErrors.cvv}</p>}
                     </div>
                   </div>
@@ -530,6 +743,7 @@ const Checkout = () => {
                       type="button"
                       className={`wallet-provider-tile ${walletProvider === 'PhonePe' ? 'active' : ''}`}
                       onClick={() => setWalletProvider('PhonePe')}
+                      disabled={submitting}
                     >
                       PhonePe Wallet
                     </button>
@@ -537,6 +751,7 @@ const Checkout = () => {
                       type="button"
                       className={`wallet-provider-tile ${walletProvider === 'AmazonPay' ? 'active' : ''}`}
                       onClick={() => setWalletProvider('AmazonPay')}
+                      disabled={submitting}
                     >
                       Amazon Pay Wallet
                     </button>
@@ -548,6 +763,7 @@ const Checkout = () => {
                     placeholder="10-digit mobile number"
                     value={wallet.mobile}
                     onChange={(e) => setWallet((prev) => ({ ...prev, mobile: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
+                    disabled={submitting}
                   />
                   {walletErrors.mobile && <p className="error-text small">{walletErrors.mobile}</p>}
 
@@ -558,6 +774,7 @@ const Checkout = () => {
                     placeholder="4–6 digit PIN"
                     value={wallet.pin}
                     onChange={(e) => setWallet((prev) => ({ ...prev, pin: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
+                    disabled={submitting}
                   />
                   {walletErrors.pin && <p className="error-text small">{walletErrors.pin}</p>}
                 </div>
@@ -568,16 +785,57 @@ const Checkout = () => {
                   <p className="muted-text">
                     Pay in cash when your order arrives. Please keep the exact amount handy where possible.
                   </p>
+                  <label className="field-label">Mobile number for OTP</label>
+                  <input
+                    inputMode="numeric"
+                    placeholder="10-digit mobile number"
+                    value={wallet.mobile}
+                    onChange={(e) => setWallet((prev) => ({ ...prev, mobile: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
+                    disabled={submitting}
+                  />
+                  <div className="upi-verify-row" style={{ marginTop: 10 }}>
+                    <button type="button" className="btn-secondary" onClick={sendCodOtp} disabled={submitting || !wallet.mobile.trim()}>
+                      Send OTP
+                    </button>
+                    <input
+                      inputMode="numeric"
+                      placeholder="Enter 6-digit OTP"
+                      value={codOtp}
+                      onChange={(e) => setCodOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      disabled={submitting}
+                    />
+                    <button type="button" className="btn-secondary" onClick={verifyCodOtp} disabled={submitting || !codOtp.trim()}>
+                      Verify OTP
+                    </button>
+                  </div>
+                  {codOtpError && <p className="error-text small">{codOtpError}</p>}
+                  {codOtpVerified && <p className="success-text small"><CheckCircle2 size={14} strokeWidth={2} /> OTP verified for COD</p>}
                 </div>
               )}
 
+              <label className="payment-terms-row">
+                <input type="checkbox" checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} disabled={submitting} />
+                <span>I agree to the terms and refund policy before placing this order.</span>
+              </label>
+
+              {savedMethodPreference && (
+                <p className="muted-text small" style={{ marginTop: 10 }}>
+                  Saved preference: {savedMethodPreference.method} · {savedMethodPreference.detail}
+                </p>
+              )}
+
               <div className="checkout-step-actions">
-                <button className="btn-secondary" onClick={goBack}><ChevronLeft size={16} /> Back</button>
-                <button className="btn-primary" onClick={handlePay} disabled={!method || paying || placing}>
+                <button className="btn-secondary" onClick={goBack} disabled={submitting}><ChevronLeft size={16} /> Back</button>
+                <label className="payment-save-row">
+                  <input type="checkbox" checked={saveMethod} onChange={(e) => setSaveMethod(e.target.checked)} disabled={submitting} />
+                  <span>Save this method for next time</span>
+                </label>
+                <button className="btn-primary" onClick={handlePay} disabled={!method || paying || placing || submitting || !agreeTerms}>
                   {paying || placing ? <><Loader2 size={16} className="spin" /> Processing…</> : (
                     method === 'COD' ? 'Place Order' : `Pay ${formatCurrency(amountToPay)}`
                   )}
                 </button>
+              </div>
               </div>
             </section>
           </div>
@@ -614,6 +872,53 @@ const Checkout = () => {
               <div className="confirm-eta">
                 <Clock size={16} strokeWidth={2} />
                 Arriving in an estimated <strong>{placedOrder.estimatedDeliveryMinutes} minutes</strong>
+              </div>
+
+              <div className="confirm-savings-banner">
+                You saved <strong>{formatCurrency(billSnapshot.mrpDiscount + billSnapshot.couponDiscount)}</strong> across MRP and coupon savings.
+              </div>
+
+              <div className="confirm-actions-row">
+                <a
+                  className="btn-secondary"
+                  href={buildInvoiceMailto(placedOrder, import.meta.env.VITE_API_URL || 'http://localhost:5000/api')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FileCheck2 size={14} strokeWidth={2} /> Email invoice
+                </a>
+                <a
+                  className="btn-secondary"
+                  href={`${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api')}/orders/${placedOrder._id}/invoice`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FileCheck2 size={14} strokeWidth={2} /> Download PDF
+                </a>
+              </div>
+
+              <div className="confirm-share-row">
+                <a className="btn-secondary" href={shareLinks?.sms}>
+                  <Smartphone size={14} strokeWidth={2} /> Share via SMS
+                </a>
+                <a className="btn-secondary" href={shareLinks?.whatsapp} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle size={14} strokeWidth={2} /> Share via WhatsApp
+                </a>
+              </div>
+
+              <div className="confirm-timeline-card">
+                <div className="confirm-timeline-title">Tracking preview</div>
+                <div className="confirm-timeline-list">
+                  {getOrderTimelinePreview(placedOrder).map((step) => (
+                    <div key={step.label} className={`confirm-timeline-step ${step.current ? 'current' : ''} ${step.completed ? 'completed' : ''}`}>
+                      <span className="confirm-timeline-dot" />
+                      <div>
+                        <div className="confirm-timeline-label">{step.label}</div>
+                        <div className="confirm-timeline-description">{step.description}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {placedOrder.prescriptionRequired && (

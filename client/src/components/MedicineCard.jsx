@@ -108,7 +108,7 @@ const MedicineCard = ({ medicine, onAddToCart }) => {
             <span className="medicine-card-price">Price unavailable</span>
           )}
         </div>
-        {hasDiscount && <span className="medicine-card-savings">{formatCurrency(savings)} OFF</span>}
+        <span className="medicine-card-savings">{hasDiscount ? `${formatCurrency(savings)} OFF` : '\u00A0'}</span>
 
         <span className="medicine-card-name">{medicine.name}</span>
         <p className="medicine-card-sub">

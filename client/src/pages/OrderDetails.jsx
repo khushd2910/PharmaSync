@@ -5,7 +5,7 @@ import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import OrderStatusStepper from '../components/OrderStatusStepper';
 import { isCancellable, computeDisplayStatus } from '../utils/orderStatus';
-import { formatCurrency, formatDateTime } from '../utils/format';
+import { formatCurrency, formatDateTime, formatDate } from '../utils/format';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -98,6 +98,16 @@ const OrderDetails = () => {
               <span>{formatCurrency(item.price * item.quantity)}</span>
             </div>
           ))}
+          <div className="summary-line">
+            <span>MRP Total</span>
+            <span>{formatCurrency(order.items.reduce((sum, item) => sum + item.price * item.quantity, 0))}</span>
+          </div>
+          {order.couponCode && order.couponDiscount > 0 && (
+            <div className="summary-line discount">
+              <span>Coupon ({order.couponCode})</span>
+              <span>-{formatCurrency(order.couponDiscount)}</span>
+            </div>
+          )}
           <div className="summary-line total">
             <span>Total</span>
             <span>{formatCurrency(order.totalAmount)}</span>
@@ -149,6 +159,11 @@ const OrderDetails = () => {
             {order.estimatedDeliveryMinutes && computeDisplayStatus(order) !== 'Delivered' && computeDisplayStatus(order) !== 'Cancelled' && (
               <p className="muted-text" style={{ marginTop: 8 }}>
                 Estimated delivery: ~{order.estimatedDeliveryMinutes} minutes
+              </p>
+            )}
+            {order.estimatedDeliveryDate && computeDisplayStatus(order) !== 'Delivered' && computeDisplayStatus(order) !== 'Cancelled' && (
+              <p className="muted-text" style={{ marginTop: 4 }}>
+                Expected by {formatDate(order.estimatedDeliveryDate)}
               </p>
             )}
           </section>

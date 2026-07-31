@@ -7,7 +7,8 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import IconInput from '../components/IconInput';
 import MedicineCard from '../components/MedicineCard';
-import { getRecentlyViewed } from '../utils/recentlyViewed';
+import MedicineRow from '../components/MedicineRow';
+import { getRecentlyViewed, setRecentlyViewed as persistRecentlyViewed } from '../utils/recentlyViewed';
 
 const highlights = [
   { icon: ShieldCheck, title: 'Verified accounts', text: 'Email verification keeps every account secure.' },
@@ -44,6 +45,9 @@ const Home = () => {
   const { addToCart } = useCart();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  // Each account (and guest browsing) gets its own Recently Viewed list —
+  // otherwise everyone sharing a browser would see each other's history.
+  const recentScope = user?.id || 'guest';
 
   const isBrowsing = !search.trim() && !category && !brand && !prescriptionRequired && !inStockOnly;
 
@@ -54,8 +58,47 @@ const Home = () => {
     api.get('/medicines', { params: { onOffer: true, limit: 8 } }).then((res) => setOffers(res.data.medicines)).catch(() => {});
     api.get('/medicines', { params: { featured: true, limit: 8 } }).then((res) => setPopular(res.data.medicines)).catch(() => {});
     api.get('/medicines', { params: { sort: 'newest', limit: 8 } }).then((res) => setRecent(res.data.medicines)).catch(() => {});
-    setRecentlyViewed(getRecentlyViewed());
   }, []);
+
+  // Recently Viewed is cached client-side, so it can go stale — a medicine
+  // gets removed, or the catalog gets reseeded with new ids. Rather than
+  // trusting the cache and only finding out it's wrong when the person
+  // clicks through to a "not found" page, re-check every cached id against
+  // the server on load and quietly drop anything that no longer comes back
+  // (also refreshing price/stock for the ones that do).
+  useEffect(() => {
+    const cached = getRecentlyViewed(recentScope);
+    if (cached.length === 0) {
+      setRecentlyViewed([]);
+      return;
+    }
+
+    let cancelled = false;
+    const ids = cached.map((m) => m._id).join(',');
+
+    api
+      .get('/medicines/by-ids', { params: { ids } })
+      .then((res) => {
+        if (cancelled) return;
+        const byId = new Map(res.data.medicines.map((m) => [m._id, m]));
+        // Keep the cache's most-recent-first order, just filtered down to
+        // (and refreshed with) whatever the server confirms still exists.
+        const stillValid = cached.map((m) => byId.get(m._id)).filter(Boolean);
+        setRecentlyViewed(stillValid);
+        persistRecentlyViewed(stillValid, recentScope);
+      })
+      .catch(() => {
+        // If the validation call itself fails (offline, server hiccup),
+        // fall back to showing the cache as-is rather than hiding the row —
+        // worst case a stale click still goes through the existing 404
+        // handling on the details page.
+        if (!cancelled) setRecentlyViewed(cached);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [recentScope]);
 
   const fetchMedicines = async (targetPage, append = false) => {
     setLoading(true);
@@ -156,16 +199,16 @@ const Home = () => {
 
       {/* Promo rows — additive, shown above the catalog only while browsing */}
       {isBrowsing && recentlyViewed.length > 0 && (
-        <BrowseRow title="Recently Viewed" medicines={recentlyViewed} onAddToCart={handleAddToCart} />
+        <MedicineRow title="Recently Viewed" medicines={recentlyViewed} onAddToCart={handleAddToCart} />
       )}
       {isBrowsing && offers.length > 0 && (
-        <BrowseRow title="Offers" icon={Tag} medicines={offers} onAddToCart={handleAddToCart} />
+        <MedicineRow title="Offers" icon={Tag} medicines={offers} onAddToCart={handleAddToCart} />
       )}
       {isBrowsing && popular.length > 0 && (
-        <BrowseRow title="Popular Medicines" medicines={popular} onAddToCart={handleAddToCart} />
+        <MedicineRow title="Popular Medicines" medicines={popular} onAddToCart={handleAddToCart} />
       )}
       {isBrowsing && recent.length > 0 && (
-        <BrowseRow title="Recently Added" medicines={recent} onAddToCart={handleAddToCart} />
+        <MedicineRow title="Recently Added" medicines={recent} onAddToCart={handleAddToCart} />
       )}
 
       {/* Filters + catalog grid — always visible and always functional */}
@@ -236,24 +279,5 @@ const Home = () => {
     </div>
   );
 };
-
-// Horizontal discovery row (Offers / Popular Medicines)
-const BrowseRow = ({ title, icon: Icon, medicines, onAddToCart }) => (
-  <section className="browse-row-section">
-    <div className="browse-header">
-      <h2 className="browse-title">
-        {Icon && <Icon size={18} strokeWidth={2} className="browse-title-icon" />}
-        {title}
-      </h2>
-    </div>
-    <div className="browse-row-scroll">
-      {medicines.map((m) => (
-        <div className="browse-row-item" key={m._id}>
-          <MedicineCard medicine={m} onAddToCart={onAddToCart} />
-        </div>
-      ))}
-    </div>
-  </section>
-);
 
 export default Home;
