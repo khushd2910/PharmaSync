@@ -27,6 +27,20 @@ const summarizeItems = (items) => {
   return `${names.slice(0, 2).join(', ')} +${names.length - 2} more`;
 };
 
+const renderOrderItems = (items) => (
+  <div className="order-items-preview">
+    {items.slice(0, 2).map((item, index) => (
+      <span key={index} className="order-items-preview-item">
+        <strong>{item.name}</strong>
+        {item.quantity > 1 ? ` ×${item.quantity}` : ''}
+      </span>
+    ))}
+    {items.length > 2 && (
+      <span className="order-items-preview-more">+{items.length - 2} more</span>
+    )}
+  </div>
+);
+
 const badgeClassFor = (status) => {
   if (status === 'Delivered') return 'badge-success';
   if (status === 'Cancelled') return 'badge-rx';
@@ -309,7 +323,7 @@ const Orders = () => {
                             </button>
                             {isRecentOrder(order) && <span className="badge badge-discount">New</span>}
                           </div>
-                          <p className="order-items-preview">{summarizeItems(order.items)}</p>
+                          {renderOrderItems(order.items)}
                           <p className="muted-text">
                             {order.items.length} item{order.items.length > 1 ? 's' : ''}
                             {' · '}

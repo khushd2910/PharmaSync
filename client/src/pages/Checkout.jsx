@@ -42,15 +42,6 @@ const luhnValid = (digits) => {
 
 const formatCardNumber = (raw) => raw.replace(/(.{4})/g, '$1 ').trim();
 
-const getStoredCheckoutState = () => {
-  if (typeof window === 'undefined') return null;
-  try {
-    return JSON.parse(sessionStorage.getItem(CHECKOUT_STORAGE_KEY));
-  } catch {
-    return null;
-  }
-};
-
 const getStoredPaymentPreference = () => {
   if (typeof window === 'undefined') return null;
   try {
@@ -97,10 +88,7 @@ const Checkout = () => {
     () => [...(rxRequiredAtStart ? ['prescription'] : []), 'address', 'payment', 'confirm'],
     [rxRequiredAtStart]
   );
-  const [stepIndex, setStepIndex] = useState(() => {
-    const saved = getStoredCheckoutState();
-    return saved?.stepIndex ?? 0;
-  });
+  const [stepIndex, setStepIndex] = useState(0);
   const step = steps[stepIndex];
 
   const goNext = () => setStepIndex((i) => Math.min(i + 1, steps.length - 1));
@@ -109,10 +97,7 @@ const Checkout = () => {
   // ---------------- Prescription ----------------
   const [prescriptionFile, setPrescriptionFile] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [prescription, setPrescription] = useState(() => {
-    const saved = getStoredCheckoutState();
-    return saved?.prescription || null;
-  });
+  const [prescription, setPrescription] = useState(null);
 
   const handleUploadPrescription = async () => {
     if (!prescriptionFile) {
@@ -138,16 +123,13 @@ const Checkout = () => {
   // ---------------- Address ----------------
   const savedAddress = user?.address;
   const hasSavedAddress = Boolean(savedAddress?.line1 || savedAddress?.city);
-  const [address, setAddress] = useState(() => {
-    const saved = getStoredCheckoutState();
-    return {
-      line1: saved?.address?.line1 || savedAddress?.line1 || '',
-      city: saved?.address?.city || savedAddress?.city || '',
-      state: saved?.address?.state || savedAddress?.state || '',
-      pincode: saved?.address?.pincode || savedAddress?.pincode || '',
-      lat: saved?.address?.lat ?? null,
-      lng: saved?.address?.lng ?? null,
-    };
+  const [address, setAddress] = useState({
+    line1: savedAddress?.line1 || '',
+    city: savedAddress?.city || '',
+    state: savedAddress?.state || '',
+    pincode: savedAddress?.pincode || '',
+    lat: savedAddress?.lat ?? null,
+    lng: savedAddress?.lng ?? null,
   });
   const [locating, setLocating] = useState(false);
 
@@ -200,51 +182,30 @@ const Checkout = () => {
   const codEligible = mrpTotal > COD_MIN_MRP;
 
   // ---------------- Payment ----------------
-  const [method, setMethod] = useState(() => {
-    const saved = getStoredCheckoutState();
-    return saved?.method || null;
-  }); // 'UPI' | 'Card' | 'Wallet' | 'COD'
+  const [method, setMethod] = useState(null); // 'UPI' | 'Card' | 'Wallet' | 'COD'
   const [paying, setPaying] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
   const [saveMethod, setSaveMethod] = useState(() => Boolean(getStoredPaymentPreference()?.enabled));
   const [savedMethodPreference, setSavedMethodPreference] = useState(getStoredPaymentPreference);
 
-  const [upiId, setUpiId] = useState(() => {
-    const saved = getStoredCheckoutState();
-    return saved?.upiId || '';
-  });
+  const [upiId, setUpiId] = useState('');
   const [upiVerified, setUpiVerified] = useState(false);
   const [upiError, setUpiError] = useState('');
 
-  const [card, setCard] = useState(() => {
-    const saved = getStoredCheckoutState();
-    return saved?.card || { number: '', name: '', expiry: '', cvv: '' };
-  });
+  const [card, setCard] = useState({ number: '', name: '', expiry: '', cvv: '' });
   const [cardErrors, setCardErrors] = useState({});
 
-  const [walletProvider, setWalletProvider] = useState(() => {
-    const saved = getStoredCheckoutState();
-    return saved?.walletProvider || 'PhonePe';
-  });
-  const [wallet, setWallet] = useState(() => {
-    const saved = getStoredCheckoutState();
-    return saved?.wallet || { mobile: '', pin: '' };
-  });
+  const [walletProvider, setWalletProvider] = useState('PhonePe');
+  const [wallet, setWallet] = useState({ mobile: '', pin: '' });
   const [walletErrors, setWalletErrors] = useState({});
 
   const [placedOrder, setPlacedOrder] = useState(null);
   const [billSnapshot, setBillSnapshot] = useState(null);
   const [placing, setPlacing] = useState(false);
-  const [agreeTerms, setAgreeTerms] = useState(() => {
-    const saved = getStoredCheckoutState();
-    return Boolean(saved?.agreeTerms);
-  });
+  const [agreeTerms, setAgreeTerms] = useState(false);
   const [codOtp, setCodOtp] = useState('');
-  const [codOtpVerified, setCodOtpVerified] = useState(() => {
-    const saved = getStoredCheckoutState();
-    return Boolean(saved?.codOtpVerified);
-  });
+  const [codOtpVerified, setCodOtpVerified] = useState(false);
   const [codOtpError, setCodOtpError] = useState('');
   const [shareLinks, setShareLinks] = useState(null);
 
@@ -323,23 +284,6 @@ const Checkout = () => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const state = {
-      stepIndex,
-      address,
-      method,
-      upiId,
-      card,
-      wallet,
-      walletProvider,
-      prescription,
-      agreeTerms,
-      codOtpVerified,
-    };
-    sessionStorage.setItem(CHECKOUT_STORAGE_KEY, JSON.stringify(state));
-  }, [stepIndex, address, method, upiId, card, wallet, walletProvider, prescription, agreeTerms, codOtpVerified]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
     if (!saveMethod || !method) {
       localStorage.removeItem(PAYMENT_PREFERENCE_KEY);
       setSavedMethodPreference(null);
@@ -383,7 +327,9 @@ const Checkout = () => {
       // refreshCart() below picks up the now-empty server cart, and the
       // Confirmation step still needs the coupon-inclusive numbers.
       setBillSnapshot({ mrpTotal, mrpDiscount, appliedCoupon, couponDiscount, deliveryFee, amountToPay });
-      sessionStorage.removeItem(CHECKOUT_STORAGE_KEY);
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem(CHECKOUT_STORAGE_KEY);
+      }
       await refreshCart();
       goNext();
     } catch (err) {

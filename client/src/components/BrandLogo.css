@@ -14,9 +14,9 @@
   align-items: center;
   justify-content: center;
   border-radius: 16px;
-  background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+  background: linear-gradient(135deg, var(--teal) 0%, var(--amber) 120%);
   color: #fff;
-  box-shadow: 0 12px 26px -16px rgba(20, 69, 63, 0.5);
+  box-shadow: 0 12px 26px -16px rgba(79, 57, 49, 0.35);
 }
 
 .brand-logo-icon svg {
@@ -68,7 +68,7 @@
 }
 
 [data-theme='dark'] .brand-logo-icon {
-  background: linear-gradient(135deg, rgba(143, 217, 201, 0.95) 0%, rgba(63, 156, 140, 0.95) 100%);
+  background: linear-gradient(135deg, rgba(181, 143, 114, 0.92) 0%, rgba(143, 102, 80, 0.92) 100%);
   box-shadow: 0 12px 24px -18px rgba(0, 0, 0, 0.45);
 }
 
