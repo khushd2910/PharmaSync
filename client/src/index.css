@@ -1083,9 +1083,9 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 .confirm-timeline-description { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
 .orders-toolbar { display: flex; gap: 10px; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-.orders-toolbar .icon-input { flex: 1; max-width: 360px; }
-.orders-toolbar .icon-input input { padding: 9px 12px 9px 36px; font-size: 13px; }
-.orders-toolbar .sort-select { flex-shrink: 0; }
+.orders-toolbar .icon-input { flex: 1; max-width: 520px; min-width: 260px; }
+.orders-toolbar .icon-input input { padding: 11px 14px 11px 40px; font-size: 14px; }
+.orders-toolbar .sort-select { flex-shrink: 0; min-width: 170px; max-width: 180px; padding: 10px 12px; }
 
 .orders-list { display: flex; flex-direction: column; gap: 10px; }
 .order-list-item { display: flex; flex-direction: column; gap: 10px; }
@@ -1140,6 +1140,43 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
   display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
   padding: 10px 18px 14px; border-top: 1px solid var(--line);
 }
+.order-item-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.order-item-row:last-child { border-bottom: none; }
+.order-item-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.order-item-total { font-weight: 700; }
+
+.profile-summary-card {
+  padding: 24px;
+  margin-bottom: 22px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.profile-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+.profile-summary-card-block {
+  padding: 16px;
+  border-radius: var(--r-sm);
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+.profile-summary-card-block strong { display: block; margin-bottom: 8px; font-size: 14px; }
+.profile-summary-card-block p { margin: 0 0 12px; color: var(--muted); line-height: 1.5; }
+.profile-summary-card-block .link-btn { margin-top: 4px; }
+
+.profile-page .checkout-section { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 20px; }
 .order-card-tags { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .order-card-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
 .order-card-actions .btn-secondary {
@@ -1197,6 +1234,7 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 .status-step-line.done { background: var(--green); }
 
 .profile-orders-link { margin-top: 12px; display: inline-flex; text-decoration: none; }
+.profile-page .checkout-section-title { margin-bottom: 16px; }
 
 .admin-orders-table { display: flex; flex-direction: column; gap: 8px; }
 .admin-order-row {

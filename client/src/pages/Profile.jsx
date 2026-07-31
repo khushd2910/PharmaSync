@@ -76,6 +76,27 @@ const Profile = () => {
     <div className="profile-page">
       <h1 className="page-title">Your Profile</h1>
 
+      <section className="checkout-section profile-summary-card">
+        <h2 className="checkout-section-title">Welcome back, {user?.name || 'PharmaSync user'}</h2>
+        <p className="muted-text">Your personal care center for orders, prescriptions and pharmacy support.</p>
+        <div className="profile-summary-grid">
+          <div className="profile-summary-card-block">
+            <strong>Quick actions</strong>
+            <p>Update your address, review recent orders, or head to support with one tap.</p>
+            <Link to="/orders" className="link-btn">View orders</Link>
+          </div>
+          <div className="profile-summary-card-block">
+            <strong>Health reminders</strong>
+            <p>Save your delivery preferences and keep a record of prescription notes for faster refills.</p>
+          </div>
+          <div className="profile-summary-card-block">
+            <strong>Support hub</strong>
+            <p>Need help with a delivery, refund or prescription? Our Help Center has guided support.</p>
+            <Link to="/support" className="link-btn">Open help</Link>
+          </div>
+        </div>
+      </section>
+
       <div className="profile-grid">
         <div>
           <section className="checkout-section">

@@ -93,9 +93,12 @@ const OrderDetails = () => {
         <section className="checkout-section">
           <h2 className="checkout-section-title"><FileText size={16} strokeWidth={2} /> Items</h2>
           {order.items.map((item, i) => (
-            <div className="summary-line" key={i}>
-              <span>{item.name} × {item.quantity}</span>
-              <span>{formatCurrency(item.price * item.quantity)}</span>
+            <div className="order-item-row" key={i}>
+              <div>
+                <div className="order-item-title">{item.name}</div>
+                <div className="muted-text">{item.quantity} unit{item.quantity > 1 ? 's' : ''} × {formatCurrency(item.price)} each</div>
+              </div>
+              <div className="order-item-total num">{formatCurrency(item.price * item.quantity)}</div>
             </div>
           ))}
           <div className="summary-line">

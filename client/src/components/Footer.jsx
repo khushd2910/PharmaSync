@@ -40,9 +40,9 @@ const Footer = () => {
             delivered to your door or ready at the counter.
           </p>
           <div className="footer-social">
-            <a href="#" onClick={preventDefault} aria-label="Facebook"><Facebook size={16} strokeWidth={2} /></a>
-            <a href="#" onClick={preventDefault} aria-label="Instagram"><Instagram size={16} strokeWidth={2} /></a>
-            <a href="#" onClick={preventDefault} aria-label="Twitter"><Twitter size={16} strokeWidth={2} /></a>
+            <a href="https://www.facebook.com/pharmasync" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><Facebook size={16} strokeWidth={2} /></a>
+            <a href="https://www.instagram.com/pharmasync" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Instagram size={16} strokeWidth={2} /></a>
+            <a href="https://twitter.com/pharmasync" target="_blank" rel="noopener noreferrer" aria-label="Twitter"><Twitter size={16} strokeWidth={2} /></a>
           </div>
         </div>
 
@@ -56,24 +56,24 @@ const Footer = () => {
 
         <div className="footer-col">
           <h4 className="footer-col-title">Support</h4>
-          <a href="#" className="footer-link" onClick={preventDefault}>Contact Us</a>
-          <a href="#" className="footer-link" onClick={preventDefault}>FAQs</a>
-          <a href="#" className="footer-link" onClick={preventDefault}>Shipping Policy</a>
-          <a href="#" className="footer-link" onClick={preventDefault}>Returns &amp; Refunds</a>
+          <Link to="/support" className="footer-link">Help Center</Link>
+          <Link to="/faqs" className="footer-link">FAQs</Link>
+          <Link to="/shipping-policy" className="footer-link">Shipping Policy</Link>
+          <Link to="/returns-policy" className="footer-link">Returns &amp; Refunds</Link>
         </div>
 
         <div className="footer-col">
           <h4 className="footer-col-title">Legal</h4>
-          <a href="#" className="footer-link" onClick={preventDefault}>Privacy Policy</a>
-          <a href="#" className="footer-link" onClick={preventDefault}>Terms of Service</a>
+          <Link to="/privacy-policy" className="footer-link">Privacy Policy</Link>
+          <Link to="/terms" className="footer-link">Terms of Service</Link>
           <Link to="/admin/login" className="footer-link">Pharmacy Staff Login</Link>
         </div>
 
         <div className="footer-col">
           <h4 className="footer-col-title">Get in Touch</h4>
           <p className="footer-contact-line"><MapPin size={14} strokeWidth={2} /> 12 MG Road, Ahmedabad, Gujarat</p>
-          <p className="footer-contact-line"><Phone size={14} strokeWidth={2} /> +91 79 4000 1234</p>
-          <p className="footer-contact-line"><Mail size={14} strokeWidth={2} /> support@pharmasync.app</p>
+          <a className="footer-contact-line footer-link" href="tel:+917940001234"><Phone size={14} strokeWidth={2} /> +91 79 4000 1234</a>
+          <a className="footer-contact-line footer-link" href="mailto:support@pharmasync.app"><Mail size={14} strokeWidth={2} /> support@pharmasync.app</a>
         </div>
       </div>
 

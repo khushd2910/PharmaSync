@@ -367,12 +367,12 @@ const Orders = () => {
                             <ShieldAlert size={11} strokeWidth={2} /> Rx {order.prescriptionStatus}
                           </span>
                         )}
-                        <a
+                        <Link
                           className="order-help-link"
-                          href={`mailto:support@pharmasync.app?subject=${encodeURIComponent(`Help with order ${order.invoiceNumber}`)}`}
+                          to={`/support?order=${encodeURIComponent(order.invoiceNumber)}`}
                         >
                           <LifeBuoy size={12} strokeWidth={2} /> Need help?
-                        </a>
+                        </Link>
                       </div>
 
                       {confirmingCancelId === order._id ? (

@@ -21,6 +21,12 @@ import Checkout from './pages/Checkout';
 import Orders from './pages/Orders';
 import OrderDetails from './pages/OrderDetails';
 import Profile from './pages/Profile';
+import Support from './pages/Support';
+import FAQs from './pages/FAQs';
+import ShippingPolicy from './pages/ShippingPolicy';
+import ReturnsPolicy from './pages/ReturnsPolicy';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import Terms from './pages/Terms';
 
 // Admin/POS pages are a meaningful chunk of code a regular customer
 // never needs — split them into their own lazily-loaded bundles so the
@@ -98,6 +104,12 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route path="/support" element={<Support />} />
+                <Route path="/faqs" element={<FAQs />} />
+                <Route path="/shipping-policy" element={<ShippingPolicy />} />
+                <Route path="/returns-policy" element={<ReturnsPolicy />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<Terms />} />
 
                 <Route
                   path="/admin/dashboard"
