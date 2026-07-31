@@ -28,7 +28,8 @@ const publicUser = (user) => ({
   name: user.name,
   email: user.email,
   phone: user.phone,
-  address: user.address,
+  addresses: user.addresses,
+  wishlist: user.wishlist,
   role: user.role,
   isVerified: user.isVerified,
 });
@@ -37,7 +38,7 @@ const publicUser = (user) => ({
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = catchAsync(async (req, res, next) => {
-  const { name, email, password, phone, address } = req.body;
+  const { name, email, password, phone } = req.body;
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
@@ -66,7 +67,7 @@ const registerUser = catchAsync(async (req, res, next) => {
     return next(new AppError('An account with this email already exists', 409));
   }
 
-  const user = new User({ name, email, password, phone, address, role: 'user' });
+  const user = new User({ name, email, password, phone, role: 'user' });
   const rawVerificationToken = user.createVerificationToken();
   await user.save();
 

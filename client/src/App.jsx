@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { CartProvider } from './context/CartContext';
+import { WishlistProvider } from './context/WishlistContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicLayout from './components/PublicLayout';
@@ -51,6 +52,7 @@ function App() {
       <ToastProvider>
         <AuthProvider>
           <CartProvider>
+          <WishlistProvider>
             <ScrollManager />
             <Suspense fallback={<AdminPageFallback />}>
             <Routes>
@@ -197,6 +199,7 @@ function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
             </Suspense>
+          </WishlistProvider>
           </CartProvider>
         </AuthProvider>
       </ToastProvider>

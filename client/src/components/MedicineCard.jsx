@@ -1,9 +1,11 @@
-import { Link } from 'react-router-dom';
-import { FileWarning, Plus, Minus } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { FileWarning, Plus, Minus, Heart } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
 import { getStripSize } from '../utils/stripSize';
 import { getMedicineImage } from '../utils/medicineFormImage';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
 // Below this many units left, show an urgency hint ("Only 3 left")
@@ -13,7 +15,24 @@ const LOW_STOCK_THRESHOLD = 5;
 
 const MedicineCard = ({ medicine, onAddToCart }) => {
   const { cart, updateQuantity, removeFromCart } = useCart();
+  const { user } = useAuth();
+  const wishlist = useWishlist();
   const { showToast } = useToast();
+  const navigate = useNavigate();
+  const wishlisted = wishlist?.isWishlisted(medicine._id) || false;
+
+  const handleWishlistClick = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) {
+      showToast('Please log in to save items to your wishlist', 'info');
+      navigate('/login');
+      return;
+    }
+    if (user.role === 'admin') return;
+    const result = await wishlist.toggleWishlist(medicine);
+    if (!result.success) showToast(result.message, 'error');
+  };
 
   const hasDiscount = medicine.discountPercent > 0;
   const effectivePrice = hasDiscount
@@ -64,6 +83,15 @@ const MedicineCard = ({ medicine, onAddToCart }) => {
     <Link to={`/medicines/${medicine._id}`} className="medicine-card">
       <div className="medicine-card-media">
         {hasDiscount && <span className="medicine-card-offtag">{medicine.discountPercent}% OFF</span>}
+        <button
+          type="button"
+          className={`medicine-card-wishlist ${wishlisted ? 'active' : ''}`}
+          onClick={handleWishlistClick}
+          aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+          title={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+        >
+          <Heart size={15} strokeWidth={2} fill={wishlisted ? 'currentColor' : 'none'} />
+        </button>
         <img
           src={getMedicineImage(medicine)}
           alt={medicine.name}

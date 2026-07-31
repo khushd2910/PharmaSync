@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { User, Phone, MapPin, ClipboardList, Lock, Sun, Moon } from 'lucide-react';
+import { User, Phone, MapPin, ClipboardList, Lock, Sun, Moon, Plus, Pencil, Trash2, Check, X } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -8,7 +8,7 @@ import { useToast } from '../context/ToastContext';
 import { useTheme } from '../context/ThemeContext';
 import IconInput from '../components/IconInput';
 
-const emptyAddress = { line1: '', city: '', state: '', pincode: '' };
+const emptyAddress = { label: 'Home', line1: '', city: '', state: '', pincode: '' };
 
 const Profile = () => {
   const { user, login } = useAuth();
@@ -19,16 +19,22 @@ const Profile = () => {
   const [form, setForm] = useState({
     name: user?.name || '',
     phone: user?.phone || '',
-    address: { ...emptyAddress, ...(user?.address || {}) },
   });
   const [saving, setSaving] = useState(false);
 
   const [pwForm, setPwForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
   const [changingPw, setChangingPw] = useState(false);
 
+  // ---------------- Saved addresses ----------------
+  const addresses = user?.addresses || [];
+  const [addingAddress, setAddingAddress] = useState(false);
+  const [newAddress, setNewAddress] = useState(emptyAddress);
+  const [savingAddress, setSavingAddress] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editAddress, setEditAddress] = useState(emptyAddress);
+  const [addressBusyId, setAddressBusyId] = useState(null);
+
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-  const handleAddressChange = (e) =>
-    setForm({ ...form, address: { ...form.address, [e.target.name]: e.target.value } });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,6 +47,81 @@ const Profile = () => {
       showToast(err.response?.data?.message || 'Could not update profile', 'error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleAddAddress = async (e) => {
+    e.preventDefault();
+    if (!newAddress.line1.trim() || !newAddress.city.trim()) {
+      showToast('Please enter at least an address line and city', 'error');
+      return;
+    }
+    setSavingAddress(true);
+    try {
+      const res = await api.post('/user/addresses', newAddress);
+      login(res.data.user);
+      showToast('Address added', 'success');
+      setNewAddress(emptyAddress);
+      setAddingAddress(false);
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Could not add address', 'error');
+    } finally {
+      setSavingAddress(false);
+    }
+  };
+
+  const startEditingAddress = (address) => {
+    setEditingId(address._id);
+    setEditAddress({
+      label: address.label || 'Home',
+      line1: address.line1 || '',
+      city: address.city || '',
+      state: address.state || '',
+      pincode: address.pincode || '',
+    });
+  };
+
+  const handleSaveEditAddress = async (addressId) => {
+    if (!editAddress.line1.trim() || !editAddress.city.trim()) {
+      showToast('Please enter at least an address line and city', 'error');
+      return;
+    }
+    setAddressBusyId(addressId);
+    try {
+      const res = await api.patch(`/user/addresses/${addressId}`, editAddress);
+      login(res.data.user);
+      showToast('Address updated', 'success');
+      setEditingId(null);
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Could not update address', 'error');
+    } finally {
+      setAddressBusyId(null);
+    }
+  };
+
+  const handleDeleteAddress = async (addressId) => {
+    setAddressBusyId(addressId);
+    try {
+      const res = await api.delete(`/user/addresses/${addressId}`);
+      login(res.data.user);
+      showToast('Address removed', 'success');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Could not remove address', 'error');
+    } finally {
+      setAddressBusyId(null);
+    }
+  };
+
+  const handleSetDefaultAddress = async (addressId) => {
+    setAddressBusyId(addressId);
+    try {
+      const res = await api.patch(`/user/addresses/${addressId}/default`);
+      login(res.data.user);
+      showToast('Default address updated', 'success');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Could not update default address', 'error');
+    } finally {
+      setAddressBusyId(null);
     }
   };
 
@@ -115,27 +196,159 @@ const Profile = () => {
               <label className="field-label">Phone</label>
               <IconInput icon={Phone} name="phone" value={form.phone} onChange={handleChange} placeholder="+91 98765 43210" />
 
-              <label className="field-label"><MapPin size={13} strokeWidth={2} /> Address line</label>
-              <input
-                name="line1"
-                value={form.address.line1}
-                onChange={handleAddressChange}
-                placeholder="House no, street, area"
-              />
-              <label className="field-label">City</label>
-              <input name="city" value={form.address.city} onChange={handleAddressChange} placeholder="City" />
-              <label className="field-label">State</label>
-              <input name="state" value={form.address.state} onChange={handleAddressChange} placeholder="State" />
-              <label className="field-label">Pincode</label>
-              <input name="pincode" value={form.address.pincode} onChange={handleAddressChange} placeholder="Pincode" />
-              <p className="muted-text" style={{ marginTop: 4 }}>
-                Saved here will be used to auto-fill your delivery address at checkout.
-              </p>
-
               <button type="submit" className="btn-primary" disabled={saving} style={{ marginTop: 18 }}>
                 {saving ? 'Saving…' : 'Save changes'}
               </button>
             </form>
+          </section>
+
+          <section className="checkout-section">
+            <h2 className="checkout-section-title"><MapPin size={16} strokeWidth={2} /> Saved addresses</h2>
+            <p className="muted-text" style={{ marginTop: 0 }}>
+              Keep a few addresses (Home, Work…) handy — the one marked default auto-fills at checkout.
+            </p>
+
+            {addresses.length === 0 && !addingAddress && (
+              <p className="info-text" style={{ margin: '10px 0' }}>You haven't saved an address yet.</p>
+            )}
+
+            <div className="address-list">
+              {addresses.map((address) => (
+                <div className="address-card" key={address._id}>
+                  {editingId === address._id ? (
+                    <div className="address-edit-form">
+                      <input
+                        value={editAddress.label}
+                        onChange={(e) => setEditAddress({ ...editAddress, label: e.target.value })}
+                        placeholder="Label (e.g. Home, Work)"
+                      />
+                      <input
+                        value={editAddress.line1}
+                        onChange={(e) => setEditAddress({ ...editAddress, line1: e.target.value })}
+                        placeholder="House no, street, area"
+                      />
+                      <input
+                        value={editAddress.city}
+                        onChange={(e) => setEditAddress({ ...editAddress, city: e.target.value })}
+                        placeholder="City"
+                      />
+                      <input
+                        value={editAddress.state}
+                        onChange={(e) => setEditAddress({ ...editAddress, state: e.target.value })}
+                        placeholder="State"
+                      />
+                      <input
+                        value={editAddress.pincode}
+                        onChange={(e) => setEditAddress({ ...editAddress, pincode: e.target.value })}
+                        placeholder="Pincode"
+                      />
+                      <div className="address-card-actions">
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          disabled={addressBusyId === address._id}
+                          onClick={() => handleSaveEditAddress(address._id)}
+                        >
+                          <Check size={14} strokeWidth={2} /> Save
+                        </button>
+                        <button type="button" className="btn-secondary ghost" onClick={() => setEditingId(null)}>
+                          <X size={14} strokeWidth={2} /> Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="address-card-header">
+                        <strong>{address.label || 'Address'}</strong>
+                        {address.isDefault && <span className="badge badge-success">Default</span>}
+                      </div>
+                      <p className="muted-text" style={{ margin: '4px 0 10px' }}>
+                        {address.line1}
+                        {address.line1 ? <br /> : null}
+                        {[address.city, address.state, address.pincode].filter(Boolean).join(', ')}
+                      </p>
+                      <div className="address-card-actions">
+                        {!address.isDefault && (
+                          <button
+                            type="button"
+                            className="link-btn"
+                            disabled={addressBusyId === address._id}
+                            onClick={() => handleSetDefaultAddress(address._id)}
+                          >
+                            Set as default
+                          </button>
+                        )}
+                        <button type="button" className="btn-secondary" onClick={() => startEditingAddress(address)}>
+                          <Pencil size={13} strokeWidth={2} /> Edit
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-secondary danger"
+                          disabled={addressBusyId === address._id}
+                          onClick={() => handleDeleteAddress(address._id)}
+                        >
+                          <Trash2 size={13} strokeWidth={2} /> Remove
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {addingAddress ? (
+              <form onSubmit={handleAddAddress} className="address-edit-form" style={{ marginTop: addresses.length > 0 ? 14 : 0 }}>
+                <input
+                  value={newAddress.label}
+                  onChange={(e) => setNewAddress({ ...newAddress, label: e.target.value })}
+                  placeholder="Label (e.g. Home, Work)"
+                />
+                <input
+                  value={newAddress.line1}
+                  onChange={(e) => setNewAddress({ ...newAddress, line1: e.target.value })}
+                  placeholder="House no, street, area"
+                />
+                <input
+                  value={newAddress.city}
+                  onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
+                  placeholder="City"
+                />
+                <input
+                  value={newAddress.state}
+                  onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
+                  placeholder="State"
+                />
+                <input
+                  value={newAddress.pincode}
+                  onChange={(e) => setNewAddress({ ...newAddress, pincode: e.target.value })}
+                  placeholder="Pincode"
+                />
+                <div className="address-card-actions">
+                  <button type="submit" className="btn-primary" disabled={savingAddress}>
+                    {savingAddress ? 'Saving…' : 'Save address'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-secondary ghost"
+                    onClick={() => {
+                      setAddingAddress(false);
+                      setNewAddress(emptyAddress);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ marginTop: addresses.length > 0 ? 14 : 10 }}
+                onClick={() => setAddingAddress(true)}
+              >
+                <Plus size={14} strokeWidth={2} /> Add a new address
+              </button>
+            )}
           </section>
 
           <section className="checkout-section">

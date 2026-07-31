@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShieldCheck, Truck, FileText, Tag } from 'lucide-react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Search, ShieldCheck, Truck, FileText, Tag, Heart } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '../context/ToastContext';
 import IconInput from '../components/IconInput';
 import MedicineCard from '../components/MedicineCard';
@@ -26,13 +27,22 @@ const Home = () => {
   const [recent, setRecent] = useState([]);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
 
-  // Search/filter state
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('');
-  const [brand, setBrand] = useState('');
-  const [sort, setSort] = useState('name');
-  const [prescriptionRequired, setPrescriptionRequired] = useState('');
-  const [inStockOnly, setInStockOnly] = useState(false);
+  // Search/filter state — initialized from the URL so a shared link,
+  // bookmark, or browser back/forward restores the same filtered view
+  // instead of always resetting to a blank Home page.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [search, setSearch] = useState(() => searchParams.get('q') || '');
+  const [category, setCategory] = useState(() => searchParams.get('category') || '');
+  const [brand, setBrand] = useState(() => searchParams.get('brand') || '');
+  const [sort, setSort] = useState(() => searchParams.get('sort') || 'name');
+  const [prescriptionRequired, setPrescriptionRequired] = useState(() => searchParams.get('rx') || '');
+  const [inStockOnly, setInStockOnly] = useState(() => searchParams.get('inStock') === 'true');
+
+  // Search suggestions dropdown — shown under the search bar while typing,
+  // built from whatever the main catalog fetch below already returned
+  // (no extra network round-trip needed).
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const suggestCloseRef = useRef(null);
 
   const [medicines, setMedicines] = useState([]);
   const [page, setPage] = useState(1);
@@ -43,6 +53,7 @@ const Home = () => {
 
   const { user } = useAuth();
   const { addToCart } = useCart();
+  const { medicines: wishlistMedicines } = useWishlist() || {};
   const { showToast } = useToast();
   const navigate = useNavigate();
   // Each account (and guest browsing) gets its own Recently Viewed list —
@@ -135,6 +146,22 @@ const Home = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, category, brand, sort, prescriptionRequired, inStockOnly]);
 
+  // Mirror the active filters into the URL (replacing, not pushing, so
+  // typing in the search box doesn't fill up browser history) — lets
+  // people bookmark/share a filtered view and makes back/forward and
+  // refresh restore it instead of dropping back to a blank Home page.
+  useEffect(() => {
+    const next = {};
+    if (search.trim()) next.q = search.trim();
+    if (category) next.category = category;
+    if (brand) next.brand = brand;
+    if (sort && sort !== 'name') next.sort = sort;
+    if (prescriptionRequired) next.rx = prescriptionRequired;
+    if (inStockOnly) next.inStock = 'true';
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, category, brand, sort, prescriptionRequired, inStockOnly]);
+
   const handleAddToCart = async (medicine) => {
     if (!user) {
       showToast('Please log in to add items to your cart', 'info');
@@ -148,6 +175,22 @@ const Home = () => {
     const result = await addToCart(medicine._id, 1);
     showToast(result.success ? `${medicine.name} added to cart` : result.message, result.success ? 'success' : 'error');
   };
+
+  const handleSuggestionClick = (medicine) => {
+    setSuggestOpen(false);
+    navigate(`/medicines/${medicine._id}`);
+  };
+
+  // A plain onBlur would close the dropdown before a click on one of its
+  // items has a chance to register, since blur fires first — delaying the
+  // close by a tick lets that click go through, and gets cancelled by
+  // onFocus/onMouseDown if the person is just clicking back into the input.
+  const handleSearchBlur = () => {
+    suggestCloseRef.current = setTimeout(() => setSuggestOpen(false), 150);
+  };
+  const cancelSuggestClose = () => clearTimeout(suggestCloseRef.current);
+
+  const searchSuggestions = search.trim() ? medicines.slice(0, 6) : [];
 
   return (
     <div className="home-page">
@@ -168,12 +211,34 @@ const Home = () => {
 
       {/* Search bar — always visible */}
       <section className="search-bar-section">
-        <IconInput
-          icon={Search}
-          placeholder="Search by name, manufacturer, or composition…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+        <div className="search-suggest-wrap">
+          <IconInput
+            icon={Search}
+            placeholder="Search by name, manufacturer, or composition…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onFocus={() => {
+              cancelSuggestClose();
+              setSuggestOpen(true);
+            }}
+            onBlur={handleSearchBlur}
+          />
+          {suggestOpen && searchSuggestions.length > 0 && (
+            <div className="search-suggest-dropdown" onMouseDown={cancelSuggestClose}>
+              {searchSuggestions.map((m) => (
+                <button
+                  type="button"
+                  key={m._id}
+                  className="search-suggest-item"
+                  onClick={() => handleSuggestionClick(m)}
+                >
+                  <span className="search-suggest-name">{m.name}</span>
+                  {m.manufacturer && <span className="search-suggest-sub">{m.manufacturer}</span>}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </section>
 
       {/* Medicine Categories — quick-filter pills */}
@@ -198,6 +263,9 @@ const Home = () => {
       )}
 
       {/* Promo rows — additive, shown above the catalog only while browsing */}
+      {isBrowsing && wishlistMedicines?.length > 0 && (
+        <MedicineRow title="My Wishlist" icon={Heart} medicines={wishlistMedicines} onAddToCart={handleAddToCart} />
+      )}
       {isBrowsing && recentlyViewed.length > 0 && (
         <MedicineRow title="Recently Viewed" medicines={recentlyViewed} onAddToCart={handleAddToCart} />
       )}

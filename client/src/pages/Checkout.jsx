@@ -121,7 +121,9 @@ const Checkout = () => {
   };
 
   // ---------------- Address ----------------
-  const savedAddress = user?.address;
+  // Pre-fill from whichever saved address is marked default — falling back
+  // to the first saved address if none is explicitly flagged yet.
+  const savedAddress = (user?.addresses || []).find((a) => a.isDefault) || user?.addresses?.[0];
   const hasSavedAddress = Boolean(savedAddress?.line1 || savedAddress?.city);
   const [address, setAddress] = useState({
     line1: savedAddress?.line1 || '',

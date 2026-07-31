@@ -27,14 +27,30 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    // Structured so a saved profile address can be dropped straight into
-    // the checkout form's fields (line1/city/state/pincode) without any
-    // re-parsing of a single free-text string.
-    address: {
-      line1: { type: String, trim: true, default: '' },
-      city: { type: String, trim: true, default: '' },
-      state: { type: String, trim: true, default: '' },
-      pincode: { type: String, trim: true, default: '' },
+    // Multiple saved addresses (e.g. Home / Work) instead of a single one —
+    // each still structured so it can be dropped straight into the checkout
+    // form's fields (line1/city/state/pincode) without any re-parsing of a
+    // single free-text string. Exactly one address should have isDefault
+    // true at a time; that's the one Checkout pre-fills.
+    addresses: {
+      type: [
+        {
+          label: { type: String, trim: true, default: 'Home' },
+          line1: { type: String, trim: true, default: '' },
+          city: { type: String, trim: true, default: '' },
+          state: { type: String, trim: true, default: '' },
+          pincode: { type: String, trim: true, default: '' },
+          isDefault: { type: Boolean, default: false },
+        },
+      ],
+      default: [],
+    },
+    // Medicines the user has bookmarked for later from the storefront —
+    // just ids; full medicine data is looked up fresh on read so it can
+    // never go stale the way a cached copy could.
+    wishlist: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Medicine' }],
+      default: [],
     },
     role: {
       type: String,
