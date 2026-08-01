@@ -5,6 +5,7 @@ const Prescription = require('../models/Prescription');
 const Cart = require('../models/Cart');
 const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
+const { isPasswordStrong, getPasswordPolicyMessage, checkPasswordExposure } = require('../utils/passwordHardening');
 
 // Shape returned to the client after any profile/address/wishlist mutation —
 // mirrors authController's publicUser so the account object in AuthContext
@@ -190,11 +191,16 @@ const changePassword = catchAsync(async (req, res, next) => {
   if (newPassword !== confirmPassword) {
     return next(new AppError('New password and confirm password do not match', 400));
   }
-  if (newPassword.length < 8) {
-    return next(new AppError('New password must be at least 8 characters', 400));
+  if (!isPasswordStrong(newPassword)) {
+    return next(new AppError(getPasswordPolicyMessage(), 400));
   }
   if (newPassword === oldPassword) {
     return next(new AppError('New password must be different from the old password', 400));
+  }
+
+  const breachResult = await checkPasswordExposure(newPassword);
+  if (breachResult.isCompromised) {
+    return next(new AppError(breachResult.message, 400));
   }
 
   const user = await User.findById(req.user._id).select('+password');

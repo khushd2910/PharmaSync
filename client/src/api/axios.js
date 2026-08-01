@@ -7,6 +7,19 @@ const api = axios.create({
 
 let isRefreshing = false;
 let pendingQueue = [];
+let csrfToken = null;
+
+const getCsrfToken = async () => {
+  if (csrfToken) return csrfToken;
+
+  try {
+    const response = await api.get('/auth/csrf-token');
+    csrfToken = response.data?.csrfToken || null;
+    return csrfToken;
+  } catch {
+    return null;
+  }
+};
 
 const processQueue = (error) => {
   pendingQueue.forEach(({ resolve, reject }) => (error ? reject(error) : resolve()));
@@ -17,6 +30,24 @@ const processQueue = (error) => {
 // refreshing it once via the refresh-token cookie, then retry the original
 // request. If refresh also fails, give up and let the caller handle it
 // (ProtectedRoute/AuthContext will redirect to login).
+api.interceptors.request.use(async (config) => {
+  const method = (config.method || 'get').toLowerCase();
+  const isSafeMethod = ['get', 'head', 'options'].includes(method);
+  const isAuthRequest = config.url?.includes('/auth/');
+
+  if (!isSafeMethod && !isAuthRequest) {
+    const token = await getCsrfToken();
+    if (token) {
+      config.headers = {
+        ...(config.headers || {}),
+        'X-CSRF-Token': token,
+      };
+    }
+  }
+
+  return config;
+});
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {

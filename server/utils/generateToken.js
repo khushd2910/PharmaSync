@@ -1,10 +1,21 @@
 const jwt = require('jsonwebtoken');
 
+const isSecureSecret = (value) => typeof value === 'string' && value.length >= 32 && !/^(changeme|replace-me|example|secret)$/i.test(value);
+
 // Exported (not just used locally) so cookieOptions.js can derive its
 // maxAge from the exact same value instead of hardcoding a separate copy —
 // see the note there about the cookie/token drift bug this fixes.
 const ACCESS_TOKEN_EXPIRES_IN = process.env.ACCESS_TOKEN_EXPIRES_IN || '15m';
 const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '30d';
+
+if (process.env.NODE_ENV === 'production') {
+  if (!isSecureSecret(process.env.JWT_SECRET)) {
+    throw new Error('JWT_SECRET must be set to a strong 32+ character value in production.');
+  }
+  if (!isSecureSecret(process.env.REFRESH_TOKEN_SECRET)) {
+    throw new Error('REFRESH_TOKEN_SECRET must be set to a strong 32+ character value in production.');
+  }
+}
 
 /**
  * Short-lived token used to authenticate normal API requests.

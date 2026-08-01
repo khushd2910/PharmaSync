@@ -42,6 +42,7 @@ const translateError = (err) => {
   if (err.name === 'ValidationError') return handleValidationError(err);
   if (err.name === 'JsonWebTokenError') return handleJWTError();
   if (err.name === 'TokenExpiredError') return handleJWTExpiredError();
+  if (err.code === 'EBADCSRFTOKEN') return new AppError('Invalid CSRF token. Please refresh and try again.', 403);
   if (err.name === 'MulterError') return handleMulterError(err);
 
   // Genuinely unexpected (programming) error — log it server-side either way.

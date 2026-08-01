@@ -1,5 +1,6 @@
 const { body, validationResult } = require('express-validator');
 const AppError = require('../utils/AppError');
+const { isPasswordStrong, getPasswordPolicyMessage } = require('../utils/passwordHardening');
 
 // Runs after any validator chain below; turns validation failures into a
 // single clean AppError instead of express-validator's raw error array
@@ -19,12 +20,22 @@ const registerRules = [
   body('name').trim().notEmpty().withMessage('Name is required').isLength({ max: 80 }),
   body('email').trim().notEmpty().withMessage('Email is required').isEmail().withMessage('Enter a valid email').normalizeEmail(),
   body('password')
-    .isLength({ min: 8 })
-    .withMessage('Password must be at least 8 characters')
-    .matches(/[A-Za-z]/)
-    .withMessage('Password must contain at least one letter')
+    .isLength({ min: 12 })
+    .withMessage('Password must be at least 12 characters')
+    .matches(/[A-Z]/)
+    .withMessage('Password must contain at least one uppercase letter')
+    .matches(/[a-z]/)
+    .withMessage('Password must contain at least one lowercase letter')
     .matches(/\d/)
-    .withMessage('Password must contain at least one number'),
+    .withMessage('Password must contain at least one number')
+    .matches(/[^A-Za-z0-9]/)
+    .withMessage('Password must contain at least one symbol')
+    .custom((value) => {
+      if (!isPasswordStrong(value)) {
+        throw new Error(getPasswordPolicyMessage());
+      }
+      return true;
+    }),
   body('phone').optional({ checkFalsy: true }).isMobilePhone('any').withMessage('Enter a valid phone number'),
 ];
 
@@ -39,12 +50,22 @@ const forgotPasswordRules = [
 
 const resetPasswordRules = [
   body('password')
-    .isLength({ min: 8 })
-    .withMessage('Password must be at least 8 characters')
-    .matches(/[A-Za-z]/)
-    .withMessage('Password must contain at least one letter')
+    .isLength({ min: 12 })
+    .withMessage('Password must be at least 12 characters')
+    .matches(/[A-Z]/)
+    .withMessage('Password must contain at least one uppercase letter')
+    .matches(/[a-z]/)
+    .withMessage('Password must contain at least one lowercase letter')
     .matches(/\d/)
-    .withMessage('Password must contain at least one number'),
+    .withMessage('Password must contain at least one number')
+    .matches(/[^A-Za-z0-9]/)
+    .withMessage('Password must contain at least one symbol')
+    .custom((value) => {
+      if (!isPasswordStrong(value)) {
+        throw new Error(getPasswordPolicyMessage());
+      }
+      return true;
+    }),
 ];
 
 const addMedicineRules = [

@@ -3,6 +3,7 @@ const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const csurf = require('csurf');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
 const AppError = require('./utils/AppError');
@@ -41,6 +42,7 @@ app.use(cors({ origin: true, credentials: true }));
 // which can legitimately be a few hundred KB of raw CSV text in one request.
 app.use(express.json({ limit: '2mb' }));
 app.use(cookieParser());
+app.use(csurf({ cookie: true }));
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // The API is entirely dynamic (order status, stock, prices all change

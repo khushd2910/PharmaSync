@@ -6,6 +6,8 @@ const catchAsync = require('../utils/catchAsync');
 const sendEmail = require('../utils/sendEmail');
 const { generateAccessToken, generateRefreshToken } = require('../utils/generateToken');
 const { accessTokenCookieOptions, refreshTokenCookieOptions } = require('../utils/cookieOptions');
+const { checkPasswordExposure } = require('../utils/passwordHardening');
+const { getLoginAttemptKey, getLoginFailureState, recordFailedLogin, clearFailedLogin } = require('../utils/loginLockout');
 
 const CLIENT_URL = (process.env.CLIENT_URL || 'http://localhost:5173').split(',')[0];
 const REQUIRE_EMAIL_VERIFICATION = process.env.REQUIRE_EMAIL_VERIFICATION === 'true';
@@ -69,6 +71,11 @@ const registerUser = catchAsync(async (req, res, next) => {
     return next(new AppError('An account with this email already exists', 409));
   }
 
+  const breachResult = await checkPasswordExposure(password);
+  if (breachResult.isCompromised) {
+    return next(new AppError(breachResult.message, 400));
+  }
+
   const user = new User({ name, email, password, phone, role: 'user' });
   const rawVerificationToken = user.createVerificationToken();
   await user.save();
@@ -96,12 +103,21 @@ const registerUser = catchAsync(async (req, res, next) => {
 // @access  Public
 const loginUser = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
+  const attemptKey = getLoginAttemptKey(req, email);
+  const failureState = getLoginFailureState(attemptKey);
+
+  if (failureState.blocked) {
+    return next(new AppError(`Too many failed login attempts. Please try again in ${failureState.retryAfterSeconds} seconds.`, 429));
+  }
 
   const user = await User.findOne({ email }).select('+password');
 
   if (!user || !(await user.matchPassword(password))) {
-    return next(new AppError('Invalid email or password', 401));
+    const retryState = recordFailedLogin(attemptKey);
+    return next(new AppError(retryState.blocked ? 'Too many failed login attempts. Please try again later.' : 'Invalid email or password', 401));
   }
+
+  clearFailedLogin(attemptKey);
 
   if (!user.isActive) {
     return next(new AppError('This account has been deactivated', 403));
@@ -130,12 +146,21 @@ const loginUser = catchAsync(async (req, res, next) => {
 // @access  Public
 const loginAdmin = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
+  const attemptKey = getLoginAttemptKey(req, email);
+  const failureState = getLoginFailureState(attemptKey);
+
+  if (failureState.blocked) {
+    return next(new AppError(`Too many failed login attempts. Please try again in ${failureState.retryAfterSeconds} seconds.`, 429));
+  }
 
   const user = await User.findOne({ email }).select('+password');
 
   if (!user || !(await user.matchPassword(password))) {
-    return next(new AppError('Invalid email or password', 401));
+    const retryState = recordFailedLogin(attemptKey);
+    return next(new AppError(retryState.blocked ? 'Too many failed login attempts. Please try again later.' : 'Invalid email or password', 401));
   }
+
+  clearFailedLogin(attemptKey);
 
   if (user.role !== 'admin') {
     return next(new AppError('Access denied. Not an admin account.', 403));
@@ -180,6 +205,13 @@ const refreshAccessToken = catchAsync(async (req, res, next) => {
   await issueTokens(user, res);
 
   return res.status(200).json({ message: 'Session refreshed', user: publicUser(user) });
+});
+
+// @desc    Get a CSRF token for cookie-based browser sessions
+// @route   GET /api/auth/csrf-token
+// @access  Public
+const getCsrfToken = catchAsync(async (req, res) => {
+  res.status(200).json({ csrfToken: req.csrfToken() });
 });
 
 // @desc    Get currently logged-in user's profile
@@ -285,6 +317,7 @@ module.exports = {
   loginUser,
   loginAdmin,
   refreshAccessToken,
+  getCsrfToken,
   getMe,
   logoutUser,
   verifyEmail,
