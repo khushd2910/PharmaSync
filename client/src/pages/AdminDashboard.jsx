@@ -142,31 +142,74 @@ const AdminDashboard = () => {
       <section className="checkout-section analysis-section">
         <div className="analysis-header">
           <h2 className="checkout-section-title">
-            <CalendarClock size={16} strokeWidth={2} /> Expiry Management
-            {expiryAnalysis?.alertCount > 0 && (
-              <span className="badge badge-rx expiry-alert-badge">
-                <BellRing size={12} strokeWidth={2.2} /> {expiryAnalysis.alertCount} urgent
-              </span>
-            )}
+            <BarChart3 size={16} strokeWidth={2} /> Sales and Expiration
           </h2>
-          <button className="btn-secondary admin" onClick={handleRunExpiryAnalysis} disabled={runningExpiry}>
-            <RefreshCw size={14} strokeWidth={2} className={runningExpiry ? 'spin' : ''} />
-            {runningExpiry ? 'Running…' : 'Run Analysis Now'}
-          </button>
+        </div>
+
+        <div className="analysis-grid">
+          <Link to="/admin/sales-analysis" className="placeholder-card admin-action-card">
+            <BarChart3 size={20} strokeWidth={2} className="placeholder-icon" />
+            <div>
+              <strong>Sales Analysis</strong>
+              <p className="muted-text">Daily, weekly, and monthly trends, revenue, and best/worst sellers.</p>
+            </div>
+          </Link>
+
+          <Link to="/admin/revenue-analysis" className="placeholder-card admin-action-card">
+            <Wallet size={20} strokeWidth={2} className="placeholder-icon" />
+            <div>
+              <strong>Revenue Analysis</strong>
+              <p className="muted-text">Medicine-by-medicine revenue totals across both online and offline sales channels.</p>
+            </div>
+          </Link>
+
+          <div className="placeholder-card admin-action-card admin-expiry-card">
+            <CalendarClock size={20} strokeWidth={2} className="placeholder-icon" />
+            <div>
+              <strong>Expiry Management</strong>
+              <p className="muted-text">Track urgent medicines that are expired or soon to expire.</p>
+            </div>
+          </div>
         </div>
 
         {expiryLoading ? (
-          <p className="info-text center-text">Loading…</p>
+          <p className="info-text center-text">Loading expiry snapshot…</p>
         ) : !expiryAnalysis ? (
           <p className="info-text center-text">
             No expiry analysis has run yet. It runs automatically every night — or click "Run Analysis Now" above.
           </p>
         ) : (
           <>
-            <p className="muted-text analysis-meta">
-              Last run {formatDateTime(expiryAnalysis.generatedAt)} · {expiryAnalysis.totalTracked}{' '}
-              medicines with a known expiry date · {expiryAnalysis.expired.length} already expired
-            </p>
+            <div className="analysis-header section-spacer-sm">
+              <div>
+                <p className="muted-text analysis-meta">
+                  Last run {formatDateTime(expiryAnalysis.generatedAt)} · {expiryAnalysis.totalTracked}{' '}
+                  medicines with a known expiry date · {expiryAnalysis.expired.length} already expired
+                </p>
+              </div>
+              <button className="btn-secondary admin" onClick={handleRunExpiryAnalysis} disabled={runningExpiry}>
+                <RefreshCw size={14} strokeWidth={2} className={runningExpiry ? 'spin' : ''} />
+                {runningExpiry ? 'Running…' : 'Run Analysis Now'}
+              </button>
+            </div>
+
+            <div className="analysis-grid expiry-summary-grid">
+              <div className="analysis-col expiry-summary-card">
+                <span className="expiry-summary-label">Urgent alerts</span>
+                <strong className="expiry-summary-value">{expiryAnalysis.alertCount}</strong>
+                <span className="muted-text">Expired or expiring within {expiryAnalysis.expiryAlertDays} days</span>
+              </div>
+              <div className="analysis-col expiry-summary-card">
+                <span className="expiry-summary-label">Expired now</span>
+                <strong className="expiry-summary-value">{expiryAnalysis.expired.length}</strong>
+                <span className="muted-text">Medicines to pull or discount immediately</span>
+              </div>
+              <div className="analysis-col expiry-summary-card">
+                <span className="expiry-summary-label">Tracked batch window</span>
+                <strong className="expiry-summary-value">{expiryAnalysis.totalTracked}</strong>
+                <span className="muted-text">Known expiry dates under review</span>
+              </div>
+            </div>
 
             <div className="analysis-grid">
               <div className="analysis-col">
@@ -209,45 +252,20 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            {expiryAnalysis.expired.length > 0 && (
-              <div className="analysis-col expiry-expired-col">
-                <h3>Already Expired</h3>
-                <ul className="analysis-list">
-                  {expiryAnalysis.expired.map((item) => (
-                    <li key={item.medicineId}>
-                      <span>{item.name}</span>
-                      <span className="num">{formatExpiry(item.expiryDate)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <div className="analysis-col expiry-expired-col section-spacer-sm">
+              <h3>Already Expired</h3>
+              <ul className="analysis-list">
+                {expiryAnalysis.expired.length === 0 && <li className="analysis-empty">No expired stock to flag</li>}
+                {expiryAnalysis.expired.map((item) => (
+                  <li key={item.medicineId}>
+                    <span>{item.name}</span>
+                    <span className="num">{formatExpiry(item.expiryDate)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </>
         )}
-      </section>
-
-      <section className="checkout-section analysis-section">
-        <div className="analysis-header">
-          <h2 className="checkout-section-title"><BarChart3 size={16} strokeWidth={2} /> Sales Analysis</h2>
-        </div>
-
-        <div className="analysis-grid">
-          <Link to="/admin/sales-analysis" className="placeholder-card admin-action-card">
-            <BarChart3 size={20} strokeWidth={2} className="placeholder-icon" />
-            <div>
-              <strong>Sales Analysis</strong>
-              <p className="muted-text">Daily, weekly, and monthly trends, revenue, and best/worst sellers.</p>
-            </div>
-          </Link>
-
-          <Link to="/admin/revenue-analysis" className="placeholder-card admin-action-card">
-            <Wallet size={20} strokeWidth={2} className="placeholder-icon" />
-            <div>
-              <strong>Revenue Analysis</strong>
-              <p className="muted-text">Medicine-by-medicine revenue totals across both online and offline sales channels.</p>
-            </div>
-          </Link>
-        </div>
       </section>
 
       <section className="checkout-section analysis-section">
