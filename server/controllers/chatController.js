@@ -27,11 +27,24 @@ const { getLocalFallbackReply } = require('../utils/localChatFallback');
 const CHATBOT_API_URL = process.env.CHATBOT_API_URL || process.env.DJANGO_API_URL || 'http://localhost:8000';
 const FETCH_TIMEOUT_MS = 8000; // Gemini calls can take a moment longer than a plain DB lookup
 
+// Resolves who's actually chatting: a logged-in user's real, server-verified
+// id always wins (never trust a client-supplied id for that — it would let
+// anyone pass someone else's id and read their order history). For a guest,
+// though, there IS no server session to verify, so the per-tab id the
+// widget generates (req.body.userId) is the only thing that distinguishes
+// one guest from another — previously this was dropped entirely and every
+// guest's follow-up context ("is it in stock?") collapsed onto a single
+// shared `undefined` key on the Django side, leaking one guest's
+// conversation into another's.
+const resolveChatUserId = (req) => req.user?._id?.toString() || (req.body.userId || '').trim() || undefined;
+
 const sendChatMessage = catchAsync(async (req, res, next) => {
   const message = (req.body.message || '').trim();
   if (!message) {
     return next(new AppError('message is required', 400));
   }
+
+  const userId = resolveChatUserId(req);
 
   try {
     const controller = new AbortController();
@@ -40,7 +53,7 @@ const sendChatMessage = catchAsync(async (req, res, next) => {
     const upstream = await fetch(`${CHATBOT_API_URL.replace(/\/$/, '')}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, userId: req.user?._id?.toString() }),
+      body: JSON.stringify({ message, userId }),
       signal: controller.signal,
     });
     clearTimeout(timeout);
@@ -70,4 +83,29 @@ const sendChatMessage = catchAsync(async (req, res, next) => {
   }
 });
 
-module.exports = { sendChatMessage };
+// The widget's "restart chat" button posts here to clear the follow-up
+// context (e.g. "last medicine asked about") the Django side keeps for this
+// user/guest. Best-effort: if Django can't be reached, the client still
+// clears its own local view, so this failing quietly is fine.
+const resetChat = catchAsync(async (req, res) => {
+  const userId = resolveChatUserId(req);
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    await fetch(`${CHATBOT_API_URL.replace(/\/$/, '')}/api/chat/reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+  } catch (err) {
+    // Chat service down/unreachable — nothing to clear server-side, but the
+    // client still resets its own view, so this isn't fatal.
+  }
+
+  return res.status(200).json({ success: true });
+});
+
+module.exports = { sendChatMessage, resetChat };

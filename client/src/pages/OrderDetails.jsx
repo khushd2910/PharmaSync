@@ -71,7 +71,14 @@ const OrderDetails = () => {
     setConfirmCancelOpen(false);
     setCancelling(true);
     try {
-      const res = await api.patch(`/orders/${id}/cancel`);
+      // The plain `/orders/:id/cancel` endpoint only looks up orders that
+      // belong to the logged-in user, so it 404s when an admin (a
+      // different user) tries to cancel someone else's order from the
+      // admin order-detail page. Admins go through the admin status
+      // endpoint instead, which isn't scoped to a particular user.
+      const res = isAdmin
+        ? await api.patch(`/admin/orders/${id}/status`, { status: 'Cancelled' })
+        : await api.patch(`/orders/${id}/cancel`);
       setOrder(res.data.order);
       showToast('Order cancelled', 'success');
     } catch (err) {

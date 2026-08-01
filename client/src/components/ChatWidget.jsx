@@ -9,6 +9,36 @@ const DEFAULT_MESSAGES = [
 ];
 const QUICK_REPLIES = ['Track my order', 'I have a headache', 'Do I need a prescription?', 'Delivery time?'];
 
+// A guest (not logged in) has no server-verified identity, so we hand them
+// a random one for this tab and remember it for the session — this is what
+// lets the server keep guest A's "last medicine asked about" separate from
+// guest B's (see server/controllers/chatController.js).
+const createGuestId = () => {
+  const id = `guest-${Math.random().toString(36).slice(2, 10)}`;
+  try {
+    sessionStorage.setItem('pharmacare-chat-guest-id', id);
+  } catch {
+    // ignore — id still works for this render, just won't survive a reload
+  }
+  return id;
+};
+const getOrCreateGuestId = () => {
+  try {
+    return sessionStorage.getItem('pharmacare-chat-guest-id') || createGuestId();
+  } catch {
+    return createGuestId();
+  }
+};
+
+const loadHistoryFor = (identity) => {
+  try {
+    const stored = sessionStorage.getItem(`${STORAGE_KEY}-${identity}`);
+    return stored ? JSON.parse(stored) : DEFAULT_MESSAGES;
+  } catch {
+    return DEFAULT_MESSAGES;
+  }
+};
+
 // Module 9 — AI Chatbot. History persists in sessionStorage so switching
 // pages (or accidentally closing the panel) doesn't wipe the
 // conversation — it clears naturally when the browser tab closes,
@@ -17,46 +47,82 @@ const QUICK_REPLIES = ['Track my order', 'I have a headache', 'Do I need a presc
 const ChatWidget = () => {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
-  const [chatIdentity, setChatIdentity] = useState('guest');
+  // null until the very first identity-resolution effect runs, so the
+  // "save" effect below never writes under a placeholder key before we
+  // know who's actually chatting.
+  const [chatIdentity, setChatIdentity] = useState(null);
   const [messages, setMessages] = useState(DEFAULT_MESSAGES);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const scrollRef = useRef(null);
+  // undefined = not resolved yet (first render); a real id = we were last
+  // chatting as that logged-in user; null = we were last chatting as a guest.
+  const prevLoggedInIdRef = useRef(undefined);
 
+  // Resolve who we're chatting as, and load THAT identity's history in the
+  // very same update as switching identity. Previously this was two
+  // separate effects (one to set chatIdentity, another reacting to it to
+  // load history) — between those two renders, a third "save" effect fired
+  // using the OUTGOING user's still-current messages paired with the NEW
+  // user's storage key, permanently copying user A's transcript into user
+  // B's slot the moment B logged in. Setting both in one go means the save
+  // effect only ever sees a matched (identity, messages) pair.
+  //
+  // On top of that: logging out now deletes the outgoing user's saved chat
+  // outright, and hands the next session (guest or a different login) a
+  // completely clean slate rather than falling back to whatever was last
+  // saved for that identity.
   useEffect(() => {
-    const resolvedIdentity = user?.id || user?._id || user?.email || (() => {
-      let stored = sessionStorage.getItem('pharmacare-chat-guest-id');
-      if (!stored) {
-        stored = `guest-${Math.random().toString(36).slice(2, 10)}`;
-        sessionStorage.setItem('pharmacare-chat-guest-id', stored);
+    const loggedInId = user?.id || user?._id || user?.email || null;
+    const prevLoggedInId = prevLoggedInIdRef.current;
+    const justLoggedOut = prevLoggedInId !== undefined && prevLoggedInId && !loggedInId;
+
+    if (justLoggedOut) {
+      try {
+        sessionStorage.removeItem(`${STORAGE_KEY}-${prevLoggedInId}`);
+      } catch {
+        // ignore — nothing to clean up if storage isn't available
       }
-      return stored;
-    })();
+      // Best-effort — also clear the "last medicine asked about" style
+      // context the server keeps for this user. Not awaited: this is a
+      // cleanup side-effect, not something the UI should wait on.
+      api.post('/chat/reset', { userId: prevLoggedInId }).catch(() => {});
+    }
+    prevLoggedInIdRef.current = loggedInId;
+
+    let resolvedIdentity;
+    if (loggedInId) {
+      resolvedIdentity = loggedInId;
+    } else if (justLoggedOut) {
+      // Don't reuse this tab's old guest id — it may have picked up
+      // messages before this person logged in, and we just promised a
+      // clean slate on logout.
+      resolvedIdentity = createGuestId();
+    } else {
+      resolvedIdentity = getOrCreateGuestId();
+    }
+
     setChatIdentity(resolvedIdentity);
+    setMessages(justLoggedOut ? DEFAULT_MESSAGES : loadHistoryFor(resolvedIdentity));
   }, [user]);
+
+  // Persist messages for the current identity only — guarded so it can
+  // never fire before an identity has actually been resolved.
+  useEffect(() => {
+    if (!chatIdentity) return;
+    try {
+      sessionStorage.setItem(`${STORAGE_KEY}-${chatIdentity}`, JSON.stringify(messages));
+    } catch {
+      // Storage full/unavailable (private browsing, etc.) — chat still
+      // works within the tab, it just won't persist across a reload.
+    }
+  }, [messages, chatIdentity]);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-    try {
-      const storageKey = `${STORAGE_KEY}-${chatIdentity}`;
-      sessionStorage.setItem(storageKey, JSON.stringify(messages));
-    } catch {
-      // Storage full/unavailable (private browsing, etc.) — chat still
-      // works within the tab, it just won't persist across a reload.
-    }
-  }, [messages, open, chatIdentity]);
-
-  useEffect(() => {
-    try {
-      const storageKey = `${STORAGE_KEY}-${chatIdentity}`;
-      const stored = sessionStorage.getItem(storageKey);
-      setMessages(stored ? JSON.parse(stored) : DEFAULT_MESSAGES);
-    } catch {
-      setMessages(DEFAULT_MESSAGES);
-    }
-  }, [chatIdentity]);
+  }, [messages, open]);
 
   const sendText = async (text) => {
     if (!text || sending) return;
