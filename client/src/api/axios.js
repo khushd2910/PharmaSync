@@ -26,6 +26,28 @@ const processQueue = (error) => {
   pendingQueue = [];
 };
 
+// Public auth endpoints where a 401 is an *expected*, meaningful response
+// (wrong password, invalid/expired MFA code, no session yet, etc.) — not a
+// sign that an access token needs silently refreshing. These must be
+// excluded from the auto-refresh-and-retry logic below, otherwise a plain
+// "Invalid email or password" (or "Invalid admin verification code") gets
+// replaced by the unrelated "No refresh token provided, please log in"
+// error, because there's naturally no refresh-token cookie yet at login time.
+const PUBLIC_AUTH_ENDPOINTS = [
+  '/auth/login',
+  '/auth/admin/login',
+  '/auth/register',
+  '/auth/refresh',
+  '/auth/csrf-token',
+  '/auth/admin/csrf-token',
+  '/auth/logout',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+  '/auth/verify-email',
+];
+
+const isPublicAuthEndpoint = (url = '') => PUBLIC_AUTH_ENDPOINTS.some((endpoint) => url.includes(endpoint));
+
 // If a request fails with 401 (expired access token), try silently
 // refreshing it once via the refresh-token cookie, then retry the original
 // request. If refresh also fails, give up and let the caller handle it
@@ -52,7 +74,7 @@ api.interceptors.response.use(
   async (error) => {
     const { config, response } = error;
 
-    if (!response || response.status !== 401 || config._retry || config.url?.includes('/auth/refresh')) {
+    if (!response || response.status !== 401 || config._retry || isPublicAuthEndpoint(config.url)) {
       return Promise.reject(error);
     }
 

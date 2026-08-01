@@ -90,7 +90,15 @@ const sendEmail = async ({ to, subject, html, text, allowFallback = true }) => {
     console.log(`📧 Email sent to ${to}: "${subject}"`);
     return { success: true, info, fallback: false };
   } catch (err) {
-    console.error(`📧 Failed to send email to ${to}:`, err.message);
+    // err.message alone is often just "Invalid login" — the useful part for
+    // diagnosing Gmail/Outlook auth failures is err.code / err.response /
+    // err.responseCode, which nodemailer attaches separately.
+    console.error(`📧 Failed to send email to ${to}:`, {
+      message: err.message,
+      code: err.code,
+      responseCode: err.responseCode,
+      response: err.response,
+    });
     return { success: false, error: err.message };
   }
 };

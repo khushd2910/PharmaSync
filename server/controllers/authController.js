@@ -120,6 +120,14 @@ const loginUser = catchAsync(async (req, res, next) => {
 
   clearFailedLogin(attemptKey);
 
+  // Admin accounts must go through /api/auth/admin/login, which enforces
+  // MFA. Without this check, an admin could log in here and get a full
+  // admin session (ProtectedRoute only checks user.role) while completely
+  // skipping the OTP step — an MFA bypass.
+  if (user.role === 'admin') {
+    return next(new AppError('Admin accounts must sign in from the admin login page', 403));
+  }
+
   if (!user.isActive) {
     return next(new AppError('This account has been deactivated', 403));
   }
@@ -172,9 +180,14 @@ const loginAdmin = catchAsync(async (req, res, next) => {
   }
 
   if (getAdminMfaEnabled()) {
-    if (!user.adminMfaChallengeId) {
-      const challenge = createAdminMfaChallenge(user);
-      await user.save({ validateBeforeSave: false });
+    // Branch on whether *this* request is submitting a code, not on whether
+    // a challenge happens to be sitting in the DB from a previous attempt.
+    // A stale/unverified challenge (e.g. from an earlier attempt where the
+    // email failed to send, or one that simply expired unused) must not
+    // force every future login straight into "verify" with no code and no
+    // way to get a fresh one.
+    if (!mfaCode) {
+      const challenge = createAdminMfaChallenge(user); // mutates user in-memory only, not yet saved
 
       const otpRecipient = getAdminOtpRecipient();
       const emailResult = await sendEmail({
@@ -189,6 +202,11 @@ const loginAdmin = catchAsync(async (req, res, next) => {
         return next(new AppError('Unable to send the admin verification email. Please configure SMTP before continuing.', 502));
       }
 
+      // Only persist the challenge once we know the email actually went
+      // out — otherwise a failed send would leave a stuck, un-deliverable
+      // challenge in the DB that blocks every subsequent login attempt.
+      await user.save({ validateBeforeSave: false });
+
       return res.status(200).json({
         message: 'Admin verification code sent to your configured inbox',
         requiresMfa: true,
@@ -197,7 +215,7 @@ const loginAdmin = catchAsync(async (req, res, next) => {
       });
     }
 
-    if (!mfaCode || !(await verifyAdminMfaCode(user, mfaCode))) {
+    if (!(await verifyAdminMfaCode(user, mfaCode))) {
       return next(new AppError('Invalid admin verification code', 401));
     }
   }

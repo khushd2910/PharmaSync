@@ -21,20 +21,56 @@ CLIENT_URL=http://localhost:5173
 # Keep false for easy local testing without a real mail provider.
 REQUIRE_EMAIL_VERIFICATION=false
 
-# SMTP (optional but recommended for real password-reset emails).
-# EASIEST OPTION — Gmail: set SMTP_SERVICE=gmail, SMTP_USER=you@gmail.com,
-# and SMTP_PASS=an App Password (not your normal password — create one at
-# https://myaccount.google.com/apppasswords, requires 2FA enabled on the account).
-SMTP_SERVICE=
-SMTP_USER=
-SMTP_PASS=
+# ⚠️  NOTE: this file is named ".envv" (two v's). Node's dotenv only ever
+# loads a file literally named ".env" — as long as it's named ".envv",
+# NONE of the values below are actually being read by the server at
+# runtime, including MONGO_URI/JWT secrets. If this was meant to be your
+# real local config, rename it to ".env" (it's already gitignored).
+#
+# SMTP — REQUIRED for the admin login OTP email to actually send (admin
+# login has no Ethereal/console fallback by design, so if none of the
+# blocks below are filled in, admin login will fail at the MFA step with
+# "Unable to send the admin verification email. Please configure SMTP
+# before continuing.").  Use ONE of the two blocks below — not both.
+#
+# ── OPTION A: Gmail ─────────────────────────────────────────────────────
+# 1. Turn on 2-Step Verification: https://myaccount.google.com/security
+# 2. Create an App Password: https://myaccount.google.com/apppasswords
+#    (app "Mail", any device name) — copy the 16-character password.
+# 3. Fill in:
+#      SMTP_SERVICE=gmail
+#      SMTP_USER=youraddress@gmail.com
+#      SMTP_PASS=<the 16-character App Password, no spaces>
+#
+# ── OPTION B: Outlook / Hotmail / Office 365 ────────────────────────────
+# Personal outlook.com / hotmail.com account:
+#      SMTP_SERVICE=hotmail
+#      SMTP_USER=youraddress@outlook.com
+#      SMTP_PASS=<your password, or an App Password if 2FA is on:
+#                 https://account.live.com/proofs/AppPassword>
+# Work/school Microsoft 365 account, use explicit host/port instead
+# (leave SMTP_SERVICE blank):
+#      SMTP_HOST=smtp.office365.com
+#      SMTP_PORT=587
+#      SMTP_USER=youraddress@yourcompany.com
+#      SMTP_PASS=<your password or App Password>
+#
+# Fill in whichever option you used above:
+SMTP_SERVICE=gmail
+SMTP_USER=khushdesai2910@gmail.com
+SMTP_PASS=feuoagdtkauvvhwz
 
 # ALTERNATIVE — any other provider (SendGrid, Mailgun, company SMTP, etc.)
 # Leave SMTP_SERVICE blank and fill these in instead:
 SMTP_HOST=
 SMTP_PORT=587
 
+# Must usually match SMTP_USER exactly (Gmail/Outlook reject a mismatched From).
 EMAIL_FROM=no-reply@pharma-management.local
+ADMIN_MFA_ENABLED=true
+# Inbox that receives the admin login OTP code — defaults to the hardcoded
+# fallback below if unset; set this to your own address once SMTP is live.
+ADMIN_OTP_EMAIL=khushdesai2910@gmail.com
 
 # If none of the above are set, emails are sent through a free Ethereal
 # test inbox instead — the server console will print a preview link so you

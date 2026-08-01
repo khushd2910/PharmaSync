@@ -25,9 +25,9 @@ REQUIRE_EMAIL_VERIFICATION=false
 # EASIEST OPTION — Gmail: set SMTP_SERVICE=gmail, SMTP_USER=you@gmail.com,
 # and SMTP_PASS=an App Password (not your normal password — create one at
 # https://myaccount.google.com/apppasswords, requires 2FA enabled on the account).
-SMTP_SERVICE=
-SMTP_USER=
-SMTP_PASS=
+SMTP_SERVICE=gmail
+SMTP_USER=khushdesai2910@gmail.com
+SMTP_PASS=feuoagdtkauvvhwz
 
 # ALTERNATIVE — any other provider (SendGrid, Mailgun, company SMTP, etc.)
 # Leave SMTP_SERVICE blank and fill these in instead:
