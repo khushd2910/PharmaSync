@@ -57,6 +57,7 @@ def load_sales_df(db, since):
             '_id': 0,
             'date': '$createdAt',
             'medicineId': '$items.medicine',
+            'name': '$items.name',
             'quantity': '$items.quantity',
         }},
     ]))
@@ -67,18 +68,31 @@ def load_sales_df(db, since):
             '_id': 0,
             'date': '$createdAt',
             'medicineId': '$items.medicine',
+            'name': '$items.name',
             'quantity': '$items.quantity',
         }},
     ]))
 
     rows = online_rows + pos_rows
     if not rows:
-        return pd.DataFrame(columns=['date', 'medicineId', 'quantity'])
+        return pd.DataFrame(columns=['date', 'medicineId', 'name', 'quantity'])
 
     df = pd.DataFrame(rows)
     df['medicineId'] = df['medicineId'].astype(str)
+    df['name'] = df['name'].fillna('').astype(str).str.strip()
     df['date'] = pd.to_datetime(df['date'], utc=True).dt.tz_localize(None)
     df['quantity'] = pd.to_numeric(df['quantity'], errors='coerce').fillna(0)
+
+    name_to_id = {}
+    for med in db.medicines.find({}, {'_id': 1, 'name': 1}):
+        name = med.get('name')
+        if name:
+            name_to_id[name.strip().lower()] = str(med['_id'])
+
+    df['name_lower'] = df['name'].str.lower()
+    df['mappedMedicineId'] = df['name_lower'].map(name_to_id)
+    df['medicineId'] = df['mappedMedicineId'].fillna(df['medicineId'])
+    df = df.drop(columns=['name_lower', 'mappedMedicineId'])
     return df
 
 

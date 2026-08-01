@@ -79,27 +79,36 @@ def load_units_sold_df(db, since):
     online_items = db.orders.aggregate([
         {'$match': {'orderStatus': {'$ne': 'Cancelled'}, 'createdAt': {'$gte': since}}},
         {'$unwind': '$items'},
-        {'$project': {'medicine': '$items.medicine', 'quantity': '$items.quantity'}},
+        {'$project': {'medicine': '$items.medicine', 'name': '$items.name', 'quantity': '$items.quantity'}},
     ])
     pos_items = db.possales.aggregate([
         {'$match': {'status': {'$ne': 'Refunded'}, 'createdAt': {'$gte': since}}},
         {'$unwind': '$items'},
-        {'$project': {'medicine': '$items.medicine', 'quantity': '$items.quantity'}},
+        {'$project': {'medicine': '$items.medicine', 'name': '$items.name', 'quantity': '$items.quantity'}},
     ])
 
     rows = list(online_items) + list(pos_items)
     if not rows:
-        return pd.DataFrame(columns=['_id', 'unitsSold'])
+        return pd.DataFrame(columns=['_id', 'name', 'unitsSold'])
 
     df = pd.DataFrame(rows)
-    grouped = df.groupby('medicine', as_index=False)['quantity'].sum()
+    df['name'] = df['name'].fillna('').astype(str).str.strip()
+    grouped = df.groupby(['medicine', 'name'], as_index=False)['quantity'].sum()
     grouped.rename(columns={'medicine': '_id', 'quantity': 'unitsSold'}, inplace=True)
     return grouped
 
 
 def build_analysis(medicines_df, sales_df):
-    merged = medicines_df.merge(sales_df, on='_id', how='left')
+    sales_by_id = sales_df.groupby('_id', as_index=False)['unitsSold'].sum() if not sales_df.empty else pd.DataFrame(columns=['_id', 'unitsSold'])
+    merged = medicines_df.merge(sales_by_id, on='_id', how='left')
     merged['unitsSold'] = merged['unitsSold'].fillna(0)
+
+    if 'name' in sales_df.columns:
+        sales_by_name = sales_df.groupby('name', as_index=False)['unitsSold'].sum()
+        merged = merged.merge(sales_by_name, on='name', how='left', suffixes=('', '_by_name'))
+        merged['unitsSold_by_name'] = merged['unitsSold_by_name'].fillna(0)
+        merged['unitsSold'] = merged['unitsSold'].where(merged['unitsSold'] > 0, merged['unitsSold_by_name'])
+        merged.drop(columns=['unitsSold_by_name'], inplace=True)
 
     active = merged[merged['isDiscontinued'] == False]  # noqa: E712 (pandas boolean mask)
 

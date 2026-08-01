@@ -1,26 +1,26 @@
 {
-  "generatedAt": "2026-08-01T15:33:15.917200+00:00",
+  "generatedAt": "2026-08-01T16:18:56.980016+00:00",
   "results": [
     {
       "model": "Demand Forecasting (RandomForest)",
       "status": "ok",
-      "medicines_evaluated": 3,
+      "medicines_evaluated": 484,
       "holdout_days": 7,
-      "model_mae": 0.0,
-      "model_rmse": 0.0,
-      "baseline_mae": 1.429,
-      "baseline_rmse": 1.75,
-      "improvement_over_baseline_pct": 100.0
+      "model_mae": 0.869,
+      "model_rmse": 1.618,
+      "baseline_mae": 0.685,
+      "baseline_rmse": 1.411,
+      "improvement_over_baseline_pct": -26.8
     },
     {
       "model": "Revenue Forecasting",
       "status": "ok",
       "holdout_days": 30,
-      "holt_winters_mae": 9447.66,
-      "holt_winters_mape_pct": 100.0,
-      "linear_regression_mae": 9447.66,
-      "linear_regression_mape_pct": 100.0,
-      "baseline_mean_mae": 9447.66
+      "holt_winters_mae": 4547.24,
+      "holt_winters_mape_pct": 22.34,
+      "linear_regression_mae": 4514.13,
+      "linear_regression_mape_pct": 22.64,
+      "baseline_mean_mae": 4822.35
     },
     {
       "model": "Chatbot Intent Classifier",
@@ -37,11 +37,11 @@
     {
       "model": "Inventory KMeans + Isolation Forest",
       "status": "ok",
-      "medicines_evaluated": 459,
+      "medicines_evaluated": 815,
       "kmeans_clusters": 4,
-      "kmeans_silhouette_score": 0.722,
-      "isolation_forest_anomaly_rate_pct": 4.14,
-      "isolation_forest_stability_jaccard": 0.81
+      "kmeans_silhouette_score": 0.595,
+      "isolation_forest_anomaly_rate_pct": 3.68,
+      "isolation_forest_stability_jaccard": 0.432
     }
   ]
 }

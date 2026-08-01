@@ -135,7 +135,7 @@ def load_sales_line_items(db, since):
         {'$unwind': '$items'},
         {'$project': {
             '_id': 0, 'date': '$createdAt', 'medicineId': '$items.medicine',
-            'quantity': '$items.quantity', 'price': '$items.price',
+            'name': '$items.name', 'quantity': '$items.quantity', 'price': '$items.price',
         }},
     ]))
     pos_rows = list(db.possales.aggregate([
@@ -143,16 +143,17 @@ def load_sales_line_items(db, since):
         {'$unwind': '$items'},
         {'$project': {
             '_id': 0, 'date': '$createdAt', 'medicineId': '$items.medicine',
-            'quantity': '$items.quantity', 'price': '$items.price',
+            'name': '$items.name', 'quantity': '$items.quantity', 'price': '$items.price',
         }},
     ]))
 
     rows = online_rows + pos_rows
     if not rows:
-        return pd.DataFrame(columns=['date', 'medicineId', 'quantity', 'price'])
+        return pd.DataFrame(columns=['date', 'medicineId', 'name', 'quantity', 'price'])
 
     df = pd.DataFrame(rows)
     df['medicineId'] = df['medicineId'].astype(str)
+    df['name'] = df['name'].fillna('').astype(str).str.strip()
     df['date'] = pd.to_datetime(df['date'], utc=True).dt.tz_localize(None)
     df['quantity'] = pd.to_numeric(df['quantity'], errors='coerce').fillna(0)
     df['price'] = pd.to_numeric(df['price'], errors='coerce').fillna(0.0)
@@ -176,6 +177,18 @@ def _per_medicine_demand_stats(sales_df, medicine_ids, date_index):
             {'medicineId': medicine_ids, 'unitsSold': 0.0, 'revenue': 0.0, 'avgDailyDemand': 0.0, 'demandStdDev': 0.0}
         )
         return empty.set_index('medicineId')
+
+    sales_df = sales_df.copy()
+    if 'medicineId' not in sales_df.columns and 'medicine' in sales_df.columns:
+        sales_df['medicineId'] = sales_df['medicine']
+    if 'quantity' not in sales_df.columns and 'unitsSold' in sales_df.columns:
+        sales_df['quantity'] = sales_df['unitsSold']
+    if 'price' not in sales_df.columns:
+        sales_df['price'] = 0.0
+    if 'revenue' not in sales_df.columns:
+        sales_df['revenue'] = pd.to_numeric(sales_df['quantity'], errors='coerce').fillna(0.0) * pd.to_numeric(sales_df['price'], errors='coerce').fillna(0.0)
+    if 'date' not in sales_df.columns:
+        sales_df['date'] = pd.Timestamp.utcnow()
 
     grouped = sales_df.groupby('medicineId')
     stats = []
@@ -446,11 +459,44 @@ def _anomaly_reason(row, medians):
     return '; '.join(reasons)
 
 
+def _prepare_medicines_df(medicines_df):
+    if medicines_df is None:
+        medicines_df = pd.DataFrame(columns=['_id', 'name', 'price', 'stock', 'category', 'isDiscontinued', 'discountPercent'])
+
+    df = medicines_df.copy()
+
+    if '_id' not in df.columns:
+        if 'medicineId' in df.columns:
+            df['_id'] = df['medicineId']
+        else:
+            df['_id'] = [str(i) for i in range(len(df))]
+
+    for col, default in {
+        'name': '',
+        'price': 0.0,
+        'stock': 0,
+        'category': 'Uncategorized',
+        'isDiscontinued': False,
+        'discountPercent': 0.0,
+    }.items():
+        if col not in df.columns:
+            df[col] = default
+
+    df['price'] = pd.to_numeric(df.get('price'), errors='coerce').fillna(0.0)
+    df['stock'] = pd.to_numeric(df.get('stock'), errors='coerce').fillna(0)
+    df['discountPercent'] = pd.to_numeric(df.get('discountPercent'), errors='coerce').fillna(0.0)
+    df['category'] = df.get('category').fillna('Uncategorized')
+    df['isDiscontinued'] = df.get('isDiscontinued', False).fillna(False)
+    df['_id'] = df['_id'].astype(str)
+    return df
+
+
 def build_analysis(medicines_df, sales_df):
     now = datetime.now(timezone.utc)
     since = now - timedelta(days=LOOKBACK_DAYS)
     date_index = pd.date_range(start=since.date(), end=now.date(), freq='D')
 
+    medicines_df = _prepare_medicines_df(medicines_df)
     active = medicines_df[medicines_df['isDiscontinued'] == False].copy()  # noqa: E712
     active['_id'] = active['_id'].astype(str)
 
@@ -603,6 +649,22 @@ def generate_deep_analysis():
 
     medicines_df = load_medicines_df(db)
     sales_df = load_sales_line_items(db, since)
+
+    medicines_df = medicines_df.copy()
+    medicines_df['_id'] = medicines_df['_id'].astype(str)
+    medicines_df['name_lower'] = medicines_df['name'].astype(str).str.strip().str.lower()
+
+    if not sales_df.empty and 'name' in sales_df.columns:
+        sales_df = sales_df.copy()
+        sales_df['medicineId'] = sales_df['medicineId'].astype(str)
+        sales_df['name'] = sales_df['name'].fillna('').astype(str).str.strip()
+        sales_df['name_lower'] = sales_df['name'].str.lower()
+
+        name_to_id = medicines_df.set_index('name_lower')['_id'].to_dict()
+        sales_df['mappedId'] = sales_df['name_lower'].map(name_to_id)
+        sales_df['medicineId'] = sales_df['mappedId'].fillna(sales_df['medicineId'])
+        sales_df = sales_df.drop(columns=['name_lower', 'mappedId'])
+
     result = build_analysis(medicines_df, sales_df)
 
     db[RESULT_COLLECTION].insert_one(result)
@@ -612,8 +674,9 @@ def generate_deep_analysis():
 if __name__ == '__main__':
     res = generate_deep_analysis()
     s = res['summary']
-    print(f"[inventory_deep_analysis] {res['generatedAt'].isoformat()} — "
-          f"{s['totalMedicines']} medicines, ₹{s['totalInventoryValue']:.2f} inventory value, "
+    print(f"[inventory_deep_analysis] {res['generatedAt'].isoformat()} - "
+          f"{s['totalMedicines']} medicines, Rs.{s['totalInventoryValue']:.2f} inventory value, "
           f"{s['reorderAlertCount']} reorder alerts, {s['deadStockCount']} dead-stock items, "
           f"{s['anomalyCount']} ML-flagged anomalies (clustering={s['clusteringModelUsed']}, "
           f"anomaly model={s['anomalyModelUsed']}).")
+

@@ -1,11 +1,67 @@
 {
-  "generatedAt": "2026-08-01T15:33:11.049888+00:00",
+  "generatedAt": "2026-08-01T16:18:51.286861+00:00",
   "demandForecastingDrift": {
-    "status": "no_forecasts",
-    "message": "No past demand forecasts found in MongoDB."
+    "status": "ok",
+    "forecastRunsEvaluated": 3,
+    "evaluations": [
+      {
+        "forecastGeneratedAt": "2026-07-29T15:01:58.201000+00:00",
+        "modelVersion": "v1.0",
+        "daysEvaluated": 3,
+        "medicinesEvaluated": 1150,
+        "mae": 0.002,
+        "rmse": 0.009,
+        "mapePercent": 0.19,
+        "accuracyPercent": 99.81
+      },
+      {
+        "forecastGeneratedAt": "2026-07-27T09:05:28.810000+00:00",
+        "modelVersion": "v1.0",
+        "daysEvaluated": 5,
+        "medicinesEvaluated": 1150,
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mapePercent": 0.0,
+        "accuracyPercent": 100.0
+      },
+      {
+        "forecastGeneratedAt": "2026-07-27T08:41:25.777000+00:00",
+        "modelVersion": "v1.0",
+        "daysEvaluated": 5,
+        "medicinesEvaluated": 50,
+        "mae": 0.0,
+        "rmse": 0.0,
+        "mapePercent": 0.0,
+        "accuracyPercent": 100.0
+      }
+    ]
   },
   "revenueForecastingDrift": {
-    "status": "no_forecasts",
-    "message": "No past revenue forecasts found in MongoDB."
+    "status": "ok",
+    "forecastRunsEvaluated": 2,
+    "evaluations": [
+      {
+        "forecastGeneratedAt": "2026-07-29T15:01:31.393000+00:00",
+        "modelType": "Holt-Winters Exponential Smoothing",
+        "modelVersion": "v1.0",
+        "daysEvaluated": 3,
+        "predictedRevenueForPeriod": 594.42,
+        "actualRevenueRealized": 35580.8,
+        "absoluteError": 34986.38,
+        "mapePercent": 98.33,
+        "accuracyPercent": 1.67
+      },
+      {
+        "forecastGeneratedAt": "2026-07-27T08:41:49.793000+00:00",
+        "modelType": "Holt-Winters Exponential Smoothing",
+        "modelVersion": "v1.0",
+        "daysEvaluated": 5,
+        "predictedRevenueForPeriod": 369.64,
+        "actualRevenueRealized": 83772.77,
+        "absoluteError": 83403.13,
+        "mapePercent": 99.56,
+        "accuracyPercent": 0.44
+      }
+    ]
   }
 }

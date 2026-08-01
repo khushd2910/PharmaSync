@@ -20,6 +20,7 @@ from datetime import datetime
 from unittest.mock import patch
 
 import mongomock
+import pandas as pd
 from django.test import SimpleTestCase
 
 from . import expiry_analysis, inventory_analysis, sales_analysis, revenue_forecasting, demand_forecasting
@@ -235,6 +236,21 @@ class InventoryDeepMLTests(SimpleTestCase):
         self.assertIn('segments', result)
         self.assertIn('anomalies', result)
         self.assertTrue(result['summary']['totalMedicines'] >= 12)
+
+    def test_inventory_deep_analysis_handles_missing_price_column(self):
+        from . import inventory_deep_analysis
+
+        medicines_df = pd.DataFrame([
+            {'_id': 'med-1', 'name': 'Sample', 'stock': 5, 'category': 'General', 'isDiscontinued': False},
+        ])
+        sales_df = pd.DataFrame([
+            {'medicineId': 'med-1', 'quantity': 3, 'price': 100.0, 'date': datetime.now()},
+        ])
+
+        result = inventory_deep_analysis.build_analysis(medicines_df, sales_df)
+        self.assertEqual(result['summary']['totalMedicines'], 1)
+        self.assertIn('priceSensitivityRecommendations', result)
+        self.assertEqual(result['priceSensitivityRecommendations'][0]['medicineId'], 'med-1')
 
 
 class ChatbotIntentMLTests(SimpleTestCase):

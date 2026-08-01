@@ -24,7 +24,12 @@ from ml_config import (
 
 
 
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
+
+
 def get_db():
+
     mongo_uri = os.getenv('MONGO_URI')
     if not mongo_uri:
         sys.exit('MONGO_URI is not set.')
