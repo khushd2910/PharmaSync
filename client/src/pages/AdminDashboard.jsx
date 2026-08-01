@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   ClipboardList, Pill, Package, Wallet, AlertTriangle, CalendarClock, ScanBarcode, BarChart3, RefreshCw, BellRing,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -13,12 +13,13 @@ const formatExpiry = formatDate;
 
 const AdminDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [stats, setStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [analysis, setAnalysis] = useState(null);
   const [analysisLoading, setAnalysisLoading] = useState(true);
-  const [runningAnalysis, setRunningAnalysis] = useState(false);
+
   const [expiryAnalysis, setExpiryAnalysis] = useState(null);
   const [expiryLoading, setExpiryLoading] = useState(true);
   const [runningExpiry, setRunningExpiry] = useState(false);
@@ -69,17 +70,12 @@ const AdminDashboard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleRunAnalysis = async () => {
-    setRunningAnalysis(true);
-    try {
-      const res = await api.post('/admin/inventory-analysis/run');
-      setAnalysis(res.data.analysis);
-      showToast('Analysis complete', 'success');
-    } catch (err) {
-      showToast(err.response?.data?.message || 'Could not run analysis', 'error');
-    } finally {
-      setRunningAnalysis(false);
-    }
+  // "Run Analysis Now" now hands off to the dedicated Inventory Analysis
+  // page instead of running the quick summary in place — that page runs
+  // the deeper ABC/reorder/ML analysis automatically on arrival (via the
+  // autoRun nav state) so the click lands directly on the fuller result.
+  const handleRunAnalysis = () => {
+    navigate('/admin/inventory-analysis', { state: { autoRun: true } });
   };
 
   const handleRunExpiryAnalysis = async () => {
@@ -155,9 +151,9 @@ const AdminDashboard = () => {
       <section className="checkout-section analysis-section">
         <div className="analysis-header">
           <h2 className="checkout-section-title"><BarChart3 size={16} strokeWidth={2} /> Inventory Analysis</h2>
-          <button className="btn-secondary admin" onClick={handleRunAnalysis} disabled={runningAnalysis}>
-            <RefreshCw size={14} strokeWidth={2} className={runningAnalysis ? 'spin' : ''} />
-            {runningAnalysis ? 'Running…' : 'Run Analysis Now'}
+          <button className="btn-secondary admin" onClick={handleRunAnalysis}>
+            <RefreshCw size={14} strokeWidth={2} />
+            Run Analysis Now
           </button>
         </div>
 
@@ -319,6 +315,14 @@ const AdminDashboard = () => {
         <div>
           <strong>Sales Analysis</strong>
           <p className="muted-text">Daily, weekly, and monthly trends, revenue, and best/worst sellers.</p>
+        </div>
+      </Link>
+
+      <Link to="/admin/inventory-analysis" className="placeholder-card admin-action-card">
+        <BarChart3 size={20} strokeWidth={2} className="placeholder-icon" />
+        <div>
+          <strong>Deep Inventory Analysis</strong>
+          <p className="muted-text">ABC classification, reorder/EOQ recommendations, AI stock segmentation, and anomaly detection.</p>
         </div>
       </Link>
 

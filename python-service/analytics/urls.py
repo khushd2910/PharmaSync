@@ -7,6 +7,8 @@ urlpatterns = [
     path('api/sales-analysis/run', views.run_sales_analysis),
     path('api/inventory-analysis', views.inventory_analysis),
     path('api/inventory-analysis/run', views.run_inventory_analysis),
+    path('api/inventory-analysis/deep', views.inventory_deep_analysis),
+    path('api/inventory-analysis/deep/run', views.run_inventory_deep_analysis),
     path('api/expiry-analysis', views.expiry_analysis),
     path('api/expiry-analysis/run', views.run_expiry_analysis),
     path('api/demand-forecast', views.demand_forecast),

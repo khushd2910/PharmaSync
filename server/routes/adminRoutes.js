@@ -3,7 +3,12 @@ const router = express.Router();
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 const { adminListOrders, adminUpdateOrderStatus } = require('../controllers/orderController');
 const { getDashboardStats } = require('../controllers/adminController');
-const { getInventoryAnalysis, runInventoryAnalysis } = require('../controllers/inventoryAnalysisController');
+const {
+  getInventoryAnalysis,
+  runInventoryAnalysis,
+  getDeepInventoryAnalysis,
+  runDeepInventoryAnalysis,
+} = require('../controllers/inventoryAnalysisController');
 const { getSalesAnalysis, runSalesAnalysis, getDemandForecast, runDemandForecast, getRevenueForecast, runRevenueForecast } = require('../controllers/salesAnalysisController');
 const { getExpiryAnalysis, runExpiryAnalysis } = require('../controllers/expiryAnalysisController');
 const { listReports, generateReports, downloadReport } = require('../controllers/reportController');
@@ -50,6 +55,17 @@ router.get('/inventory-analysis', getInventoryAnalysis);
 //        nightly schedule
 // @route POST /api/admin/inventory-analysis/run
 router.post('/inventory-analysis/run', runInventoryAnalysis);
+
+// @desc  Latest deep inventory analysis snapshot — ABC/Pareto
+//        classification, reorder point/safety stock/EOQ, KMeans
+//        behavioural segments, Isolation Forest anomalies
+// @route GET /api/admin/inventory-analysis/deep
+router.get('/inventory-analysis/deep', getDeepInventoryAnalysis);
+
+// @desc  Train fresh KMeans/Isolation Forest models and run the deep
+//        inventory analysis on demand
+// @route POST /api/admin/inventory-analysis/deep/run
+router.post('/inventory-analysis/deep/run', runDeepInventoryAnalysis);
 
 // @desc  Latest nightly sales analysis snapshot (Daily/Weekly/Monthly
 //        Sales, Revenue, Best/Worst Sellers) — written by the Python service

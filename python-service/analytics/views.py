@@ -38,6 +38,7 @@ from django.views.decorators.http import require_http_methods
 
 from . import expiry_analysis as expiry_engine
 from . import inventory_analysis as inventory_engine
+from . import inventory_deep_analysis as inventory_deep_engine
 from . import sales_analysis as sales_engine
 from . import demand_forecasting as forecast_engine
 from . import revenue_forecasting as revenue_forecast_engine
@@ -127,6 +128,32 @@ def run_inventory_analysis(request):
     db[inventory_engine.RESULT_COLLECTION].insert_one(result)
 
     return JsonResponse({'message': 'Analysis complete', 'analysis': _json_safe(result)})
+
+
+# ---------------------------------------------------------------------------
+# Deep Inventory Analysis — ABC/Pareto classification, reorder point /
+# safety stock / EOQ, KMeans behavioural segmentation, Isolation Forest
+# anomaly detection. See inventory_deep_analysis.py for the full pipeline.
+# ---------------------------------------------------------------------------
+
+@require_http_methods(['GET'])
+def inventory_deep_analysis(request):
+    """GET /api/inventory-analysis/deep — latest deep-analysis snapshot,
+    same contract as inventory_analysis() above."""
+    db = inventory_deep_engine.get_db()
+    return JsonResponse({'analysis': _latest(db, inventory_deep_engine.RESULT_COLLECTION)})
+
+
+@require_http_methods(['POST'])
+def run_inventory_deep_analysis(request):
+    """POST /api/inventory-analysis/deep/run — trains fresh KMeans/Isolation
+    Forest models over the current catalog + sales history and computes a
+    fresh ABC/reorder/segmentation snapshot now."""
+    try:
+        result = inventory_deep_engine.generate_deep_analysis()
+        return JsonResponse({'message': 'Deep analysis complete', 'analysis': _json_safe(result)})
+    except Exception as e:
+        return JsonResponse({'error': f'Failed to run deep inventory analysis: {str(e)}'}, status=500)
 
 
 # ---------------------------------------------------------------------------

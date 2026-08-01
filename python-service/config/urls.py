@@ -23,6 +23,8 @@ urlpatterns = [
     path('api/sales-analysis/run', analytics_views.run_sales_analysis),
     path('api/inventory-analysis', analytics_views.inventory_analysis),
     path('api/inventory-analysis/run', analytics_views.run_inventory_analysis),
+    path('api/inventory-analysis/deep', analytics_views.inventory_deep_analysis),
+    path('api/inventory-analysis/deep/run', analytics_views.run_inventory_deep_analysis),
     path('api/expiry-analysis', analytics_views.expiry_analysis),
     path('api/expiry-analysis/run', analytics_views.run_expiry_analysis),
     path('api/demand-forecast', analytics_views.demand_forecast),

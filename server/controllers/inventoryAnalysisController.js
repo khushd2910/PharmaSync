@@ -17,7 +17,7 @@ const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
 
 const ANALYTICS_API_URL = process.env.ANALYTICS_API_URL || process.env.DJANGO_API_URL || 'http://localhost:8000';
-const FETCH_TIMEOUT_MS = 15000; // pandas over the whole catalog + a lookback window can take a moment longer than a plain DB read
+const FETCH_TIMEOUT_MS = 30000; // pandas over the whole catalog + a lookback window (and, for the deep analysis, training KMeans/Isolation Forest) can take a moment longer than a plain DB read
 
 const forwardToDjango = (path, { method = 'GET' } = {}) => {
   const controller = new AbortController();
@@ -70,4 +70,50 @@ const runInventoryAnalysis = catchAsync(async (req, res, next) => {
   return res.status(200).json(data);
 });
 
-module.exports = { getInventoryAnalysis, runInventoryAnalysis };
+// @desc    Latest deep inventory analysis snapshot — ABC/Pareto
+//          classification, reorder point/safety stock/EOQ, KMeans
+//          behavioural segments, Isolation Forest anomalies. Computed and
+//          stored by the Django analytics service; this just proxies the
+//          read. See python-service/analytics/inventory_deep_analysis.py.
+// @route   GET /api/admin/inventory-analysis/deep
+// @access  Private (admin)
+const getDeepInventoryAnalysis = catchAsync(async (req, res, next) => {
+  let upstream;
+  try {
+    upstream = await forwardToDjango('/api/inventory-analysis/deep');
+  } catch (err) {
+    return next(new AppError('Inventory analysis service is temporarily unavailable', 502));
+  }
+  if (!upstream.ok) {
+    return next(new AppError('Inventory analysis service is temporarily unavailable', 502));
+  }
+
+  const data = await upstream.json();
+  return res.status(200).json(data);
+});
+
+// @desc    Train fresh KMeans/Isolation Forest models and compute a new
+//          deep inventory analysis snapshot right now.
+// @route   POST /api/admin/inventory-analysis/deep/run
+// @access  Private (admin)
+const runDeepInventoryAnalysis = catchAsync(async (req, res, next) => {
+  let upstream;
+  try {
+    upstream = await forwardToDjango('/api/inventory-analysis/deep/run', { method: 'POST' });
+  } catch (err) {
+    return next(new AppError('Inventory analysis service is temporarily unavailable', 502));
+  }
+  if (!upstream.ok) {
+    return next(new AppError('Could not run deep inventory analysis', 502));
+  }
+
+  const data = await upstream.json();
+  return res.status(200).json(data);
+});
+
+module.exports = {
+  getInventoryAnalysis,
+  runInventoryAnalysis,
+  getDeepInventoryAnalysis,
+  runDeepInventoryAnalysis,
+};
