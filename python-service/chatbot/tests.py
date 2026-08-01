@@ -54,6 +54,18 @@ class SymptomIntentTests(SimpleTestCase):
         self.assertNotIn('Paracetamol', data['reply'])
         self.assertNotIn('Ibuprofen', data['reply'])
 
+    def test_severe_allergy_is_routed_as_an_urgent_warning(self):
+        data = self._reply('i have a severe allergy and my throat is closing')
+        self.assertEqual(data['intent'], 'symptom_advice')
+        self.assertTrue(data['data']['urgent'])
+        self.assertIn('emergency', data['reply'].lower())
+
+    def test_ambiguous_symptom_query_requests_clarification(self):
+        data = self._reply('i need something for my fever')
+        self.assertEqual(data['intent'], 'disambiguation')
+        self.assertIn('symptom', data['reply'].lower())
+        self.assertIn('medicine', data['reply'].lower())
+
     def test_dengue_fever_does_not_also_trigger_the_plain_fever_entry(self):
         """"dengue fever" contains "fever" as a literal substring — without
         the nested-match de-dup, this would incorrectly also suggest
@@ -74,6 +86,46 @@ class SymptomIntentTests(SimpleTestCase):
         self.assertEqual(data['intent'], 'symptom_advice')
         self.assertIn('sore throat', data['data']['symptoms'])
         self.assertIn('lozenges', data['reply'].lower())
+
+    def test_typo_tolerant_symptom_matching(self):
+        data = self._reply('i have a sore throt and fevver')
+        self.assertEqual(data['intent'], 'symptom_advice')
+        self.assertIn('sore throat', data['data']['symptoms'])
+        self.assertIn('fever', data['data']['symptoms'])
+
+    def test_broader_condition_coverage(self):
+        data = self._reply('i have food poisoning and rashes')
+        self.assertEqual(data['intent'], 'symptom_advice')
+        self.assertIn('food poisoning', data['data']['symptoms'])
+        self.assertIn('rash', data['data']['symptoms'])
+
+
+class ConversationContextTests(SimpleTestCase):
+    """Regression coverage for keeping context between consecutive turns
+    from the same user, so follow-up messages like "do you have it in
+    stock?" can still resolve to the earlier medicine topic rather than
+    being treated like an empty or unrelated question."""
+
+    def test_follow_up_message_reuses_last_medicine_topic_for_same_user(self):
+        user_id = 'ctx-user-1'
+
+        first = self.client.post(
+            '/api/chat',
+            data={'message': 'what is the price of paracetamol', 'userId': user_id},
+            content_type='application/json',
+        )
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(first.json()['intent'], 'medicine_question')
+
+        follow_up = self.client.post(
+            '/api/chat',
+            data={'message': 'do you have it in stock', 'userId': user_id},
+            content_type='application/json',
+        )
+        self.assertEqual(follow_up.status_code, 200)
+        self.assertEqual(follow_up.json()['intent'], 'medicine_question')
+        self.assertNotIn('I couldn\'t find a medicine matching "it in" in our catalog.', follow_up.json()['reply'])
+        self.assertIn('catalog', follow_up.json()['reply'].lower())
 
 
 class ExpandedResponseVarietyTests(SimpleTestCase):

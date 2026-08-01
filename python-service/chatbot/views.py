@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import json
@@ -22,35 +23,25 @@ from .knowledge_base import (
     match_all_symptoms,
     prescription_faq_response,
 )
-from .intent_classifier import get_classifier
+from .intent_classifier import DEFAULT_CONFIDENCE_THRESHOLD, get_classifier
+
+logger = logging.getLogger(__name__)
 
 # Connect to MongoDB from django settings
 db = settings.MONGO_DB
+USER_CONVERSATION_CONTEXT = {}
 
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-1.5-flash')
 GEMINI_URL = f'https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent'
 
-# ---------------------------------------------------------------------------
-# Intent detection — simple, explainable keyword rules rather than an ML
-# classifier. Checked in priority order; the first match wins.
-# ---------------------------------------------------------------------------
 GREETING_WORDS = ('hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening')
-ORDER_WORDS = ('order', 'track', 'shipment', 'where is my')
-PRESCRIPTION_WORDS = ('prescription', 'rx ', 'upload prescription')
-DELIVERY_WORDS = ('delivery', 'shipping', 'deliver')
-RECOMMEND_WORDS = ('recommend', 'suggest', 'best medicine', 'what should i buy')
-MEDICINE_WORDS = ('price', 'stock', 'available', 'tablet', 'syrup', 'medicine', 'capsule')
 
 # A short greeting word count as a whole message means "just saying hi" —
-# but "hey I have a fever" carries real content after the greeting and
-# should be treated as the symptom/question it actually is, not swallowed
-# by the greeting branch. Previously `message_lower.startswith('hi')`
-# alone decided this, which meant ANY message opening with a greeting word
-# (a very natural way to start a chat, e.g. "hi, i have a fever") never
-# reached symptom/medicine/order matching at all — this was the main
-# reason real questions kept getting a plain "hi there" reply instead of
-# an actual answer.
+# but mixed messages like "hey, I have a fever" should not be swallowed by
+# the greeting branch. The classifier is the primary router now, and this
+# helper only nudges the pure greeting branch when the model still reports
+# a high-confidence greeting.
 _GREETING_MAX_WORDS = 4
 
 
@@ -60,46 +51,50 @@ def is_pure_greeting(message_lower):
         return True
     if not any(stripped.startswith(w) for w in GREETING_WORDS):
         return False
-    # Starts with a greeting word — only treat the WHOLE message as a
-    # greeting if there's little to nothing else in it ("hi there",
-    # "hey!", "good morning :)"). Anything longer almost certainly has a
-    # real question or symptom attached.
     return len(stripped.split()) <= _GREETING_MAX_WORDS
 
 
-def detect_intent(message_lower):
-    # Try the ML intent classifier first
+def classify_message(message_lower):
     classifier = get_classifier()
     ml_intent, confidence = classifier.predict_intent(message_lower)
-    
-    # If the classifier is confident, return its prediction
-    if ml_intent != 'general_question' and confidence >= 0.45:
-        # Avoid treating mixed queries (e.g. "hi, i have a fever") as pure greeting
+
+    if ml_intent != 'general_question' and confidence >= DEFAULT_CONFIDENCE_THRESHOLD:
         if ml_intent == 'greeting' and not is_pure_greeting(message_lower):
-            pass
-        else:
-            return ml_intent
+            return 'general_question', ml_intent, confidence
+        return ml_intent, ml_intent, confidence
 
-    # Fallback to simple rule matching if ML is not confident
     if is_pure_greeting(message_lower):
+        return 'greeting', 'greeting', confidence
 
-        return 'greeting'
-    if any(w in message_lower for w in ORDER_WORDS):
-        return 'order_status'
-    if any(w in message_lower for w in PRESCRIPTION_WORDS):
-        return 'prescription_question'
-    if any(w in message_lower for w in DELIVERY_WORDS):
-        return 'delivery_question'
-    if any(w in message_lower for w in RECOMMEND_WORDS):
-        return 'recommendation'
-    if match_all_symptoms(message_lower):
-        return 'symptom_advice'
-    if any(w in message_lower for w in MEDICINE_WORDS):
-        return 'medicine_question'
-    if is_health_related(message_lower):
-        return 'symptom_clarify'
-    return 'general_question'
+    return 'general_question', ml_intent, confidence
 
+
+def detect_intent(message_lower):
+    return classify_message(message_lower)[0]
+
+
+def resolve_follow_up_message(message, user_id):
+    if not user_id:
+        return message
+
+    context = USER_CONVERSATION_CONTEXT.get(user_id, {})
+    last_medicine = context.get('last_medicine')
+    if not last_medicine:
+        return message
+
+    message_lower = message.lower()
+    is_follow_up_query = any(keyword in message_lower for keyword in (
+        'price', 'stock', 'available', 'availability', 'cost', 'in stock', 'out of stock',
+        'buy', 'have it', 'have that', 'have this', 'get it', 'check it', 'find it'
+    ))
+    has_pronoun = any(token in message_lower for token in (' it ', ' that ', ' this ', ' those ', ' they ', ' them '))
+
+    if has_pronoun and is_follow_up_query:
+        for pronoun in (' it ', ' that ', ' this ', ' those ', ' they ', ' them '):
+            if pronoun in message_lower:
+                return re.sub(re.escape(pronoun), f' {last_medicine} ', message, flags=re.IGNORECASE, count=1)
+
+    return message
 
 
 # ---------------------------------------------------------------------------
@@ -117,19 +112,22 @@ def handle_order_status(user_id):
     if not order:
         return {'reply': "I couldn't find any orders on your account yet.", 'intent': 'order_status'}
 
+    invoice = order.get('invoiceNumber') or 'N/A'
+    order_status = order.get('orderStatus') or 'Pending'
+    shipping_stage = order.get('shippingStage') or order_status
+    prescription_status = order.get('prescriptionStatus') or 'Not required'
     reply = (
-        f"Your most recent order ({order.get('invoiceNumber', 'N/A')}) is currently "
-        f"'{order.get('orderStatus', 'Pending')}'."
+        f"Invoice {invoice} is {order_status}. Shipping stage: {shipping_stage}. "
+        f"Prescription: {prescription_status}."
     )
-    if order.get('prescriptionRequired') and order.get('prescriptionStatus') != 'Approved':
-        reply += f" It's also waiting on prescription review (status: {order.get('prescriptionStatus')})."
     return {
         'reply': reply,
         'intent': 'order_status',
         'data': {
-            'invoiceNumber': order.get('invoiceNumber'),
-            'orderStatus': order.get('orderStatus'),
-            'prescriptionStatus': order.get('prescriptionStatus'),
+            'invoiceNumber': invoice,
+            'orderStatus': order_status,
+            'shippingStage': shipping_stage,
+            'prescriptionStatus': prescription_status,
         },
     }
 
@@ -159,16 +157,21 @@ def handle_medicine_question(message):
         return {
             'reply': f"I couldn't find a medicine matching \"{query}\" in our catalog.",
             'intent': 'medicine_question',
+            'data': {'query': query, 'matches': []},
         }
 
-    lines = [
-        f"{m['name']} — ₹{m.get('price', 'N/A')}, {'in stock' if m.get('stock', 0) > 0 else 'out of stock'}"
-        for m in results
-    ]
+    lines = []
+    for m in results:
+        stock_status = 'in stock' if m.get('stock', 0) > 0 else 'out of stock'
+        lines.append(f"{m['name']} — ₹{m.get('price', 'N/A')} | {stock_status}. You can view it in the catalog.")
+
     return {
-        'reply': "Here's what I found:\n" + "\n".join(lines),
+        'reply': "Here’s the quick update:\n" + "\n".join(lines),
         'intent': 'medicine_question',
-        'data': {'matches': [{'name': m['name'], 'price': m.get('price'), 'stock': m.get('stock')} for m in results]},
+        'data': {
+            'query': query,
+            'matches': [{'name': m['name'], 'price': m.get('price'), 'stock': m.get('stock')} for m in results],
+        },
     }
 
 
@@ -176,7 +179,7 @@ def handle_recommendation():
     results = list(
         db.medicines.find(
             {'isFeatured': True, 'stock': {'$gt': 0}, 'isDiscontinued': {'$ne': True}},
-            {'name': 1, 'price': 1},
+            {'name': 1, 'price': 1, 'stock': 1},
         ).limit(5)
     )
     if not results:
@@ -184,11 +187,14 @@ def handle_recommendation():
             'reply': "I don't have a specific recommendation right now — try browsing the Popular section on the home page.",
             'intent': 'recommendation',
         }
-    lines = [f"{m['name']} — ₹{m.get('price', 'N/A')}" for m in results]
+    lines = [
+        f"{m['name']} — ₹{m.get('price', 'N/A')} | {'in stock' if m.get('stock', 0) > 0 else 'out of stock'}. View it in the catalog."
+        for m in results
+    ]
     return {
         'reply': "A few popular picks right now:\n" + "\n".join(lines),
         'intent': 'recommendation',
-        'data': {'matches': [{'name': m['name'], 'price': m.get('price')} for m in results]},
+        'data': {'matches': [{'name': m['name'], 'price': m.get('price'), 'stock': m.get('stock')} for m in results]},
     }
 
 
@@ -214,19 +220,19 @@ def handle_symptom(message_lower):
             any_urgent = True
         if info['medicines']:
             sections.append(
-                f"For {symptom}: {', '.join(info['medicines'])}. "
-                f"({'; '.join(info['precautions'])}.)"
+                f"For {symptom}: {', '.join(info['medicines'][:2])}. "
+                f"{'; '.join(info['precautions'][:2])}."
             )
         else:
             prefix = '\u26a0\ufe0f ' if info.get('urgent') else ''
-            sections.append(f"{prefix}For {symptom}: {'; '.join(info['precautions'])}.")
+            sections.append(f"{prefix}For {symptom}: {'; '.join(info['precautions'][:2])}.")
 
-    closing = (
-        "Please seek medical attention for the item(s) above marked \u26a0\ufe0f — this assistant can't help further with those."
-        if any_urgent
-        else "Consult a doctor if symptoms persist or worsen."
-    )
-    reply = "\n".join(sections) + f"\n{closing}"
+    if any_urgent:
+        closing = "Please seek urgent medical care right away for any red-flag symptoms above."
+    else:
+        closing = "For everyday symptoms, rest and stay hydrated. Ask a doctor or pharmacist if it persists or worsens."
+
+    reply = "\n".join(sections[:2]) + f"\n{closing}"
     return {
         'reply': reply,
         'intent': 'symptom_advice',
@@ -242,6 +248,40 @@ def handle_symptom_clarify():
     fallback, which had no way to ask "which symptom?" — this asks
     directly instead of dead-ending the conversation."""
     return {'reply': clarify_response(), 'intent': 'symptom_clarify', 'disclaimer': DISCLAIMER}
+
+
+def build_disambiguation_reply(message_lower):
+    if any(term in message_lower for term in ('order', 'parcel', 'shipment', 'delivery', 'tracking')):
+        return "Do you want order tracking help, or a medicine question?"
+    if any(term in message_lower for term in ('fever', 'cough', 'cold', 'pain', 'headache', 'allergy', 'sore throat')):
+        return "Do you want symptom advice or medicine info for that?"
+    return "Do you want symptom advice, medicine info, or an order update?"
+
+
+def should_disambiguate(message_lower, intent):
+    if intent in {'order_status', 'medicine_question', 'prescription_question', 'delivery_question', 'recommendation'}:
+        return False
+    symptom_terms = ('fever', 'cough', 'cold', 'pain', 'headache', 'allergy', 'sore throat', 'symptom')
+    if any(term in message_lower for term in symptom_terms) and any(phrase in message_lower for phrase in ('something for', 'something about', 'need something', 'looking for something')):
+        return True
+    return False
+
+
+def log_chat_analytics(user_id, predicted_intent, confidence, handler_name, fallback_path):
+    logger.warning(
+        "chat_analytics user=%s predicted_intent=%s confidence=%.3f handler=%s fallback_path=%s",
+        user_id or 'anonymous',
+        predicted_intent,
+        confidence,
+        handler_name,
+        fallback_path,
+    )
+
+
+def clear_user_context(user_id):
+    if user_id:
+        USER_CONVERSATION_CONTEXT.pop(user_id, None)
+    return True
 
 
 def handle_gemini_fallback(message):
@@ -292,31 +332,101 @@ def chat(request):
         body = {}
 
     message = (body.get('message') or '').strip()
-    user_id = body.get('userId')
+    user_id = body.get('userId') or body.get('user_id')
 
     if not message:
         return JsonResponse({'error': 'message is required'}, status=400)
 
-    message_lower = message.lower()
-    intent = detect_intent(message_lower)
+    resolved_message = resolve_follow_up_message(message, user_id)
+    message_lower = resolved_message.lower()
+    intent, predicted_intent, confidence = classify_message(message_lower)
 
-    if intent == 'greeting':
+    if should_disambiguate(message_lower, intent):
+        result = {'reply': build_disambiguation_reply(message_lower), 'intent': 'disambiguation'}
+        handler_name = 'disambiguation'
+        fallback_path = 'disambiguation'
+    elif intent == 'greeting':
         result = {'reply': greeting_response(), 'intent': 'greeting'}
+        handler_name = 'greeting'
+        fallback_path = None
     elif intent == 'order_status':
         result = handle_order_status(user_id)
+        handler_name = 'order_status'
+        fallback_path = None
     elif intent == 'prescription_question':
         result = {'reply': prescription_faq_response(), 'intent': 'prescription_question'}
+        handler_name = 'prescription_question'
+        fallback_path = None
     elif intent == 'delivery_question':
         result = {'reply': delivery_faq_response(), 'intent': 'delivery_question'}
+        handler_name = 'delivery_question'
+        fallback_path = None
     elif intent == 'recommendation':
         result = handle_recommendation()
+        handler_name = 'recommendation'
+        fallback_path = None
     elif intent == 'symptom_advice':
         result = handle_symptom(message_lower)
+        handler_name = 'symptom_advice'
+        fallback_path = None
     elif intent == 'medicine_question':
-        result = handle_medicine_question(message)
+        result = handle_medicine_question(resolved_message)
+        handler_name = 'medicine_question'
+        fallback_path = None
     elif intent == 'symptom_clarify':
         result = handle_symptom_clarify()
+        handler_name = 'symptom_clarify'
+        fallback_path = 'symptom_clarify'
+    elif match_all_symptoms(message_lower) or is_health_related(message_lower):
+        if match_all_symptoms(message_lower):
+            result = handle_symptom(message_lower)
+            handler_name = 'symptom_advice'
+            fallback_path = None
+        else:
+            result = handle_symptom_clarify()
+            handler_name = 'symptom_clarify'
+            fallback_path = 'symptom_clarify'
     else:
         result = handle_gemini_fallback(message)
+        handler_name = 'gemini_fallback'
+        fallback_path = 'gemini_fallback'
+
+    if user_id and result.get('intent') == 'medicine_question' and result.get('data'):
+        query = result.get('data', {}).get('query')
+        if query:
+            USER_CONVERSATION_CONTEXT[user_id] = {
+                'last_intent': 'medicine_question',
+                'last_medicine': query,
+            }
+
+    is_failed_turn = (
+        result.get('intent') in {'general_question', 'disambiguation', 'symptom_clarify'}
+        or predicted_intent == 'general_question'
+        or confidence < DEFAULT_CONFIDENCE_THRESHOLD
+    )
+    if is_failed_turn:
+        result.setdefault('data', {})['analytics'] = {
+            'predictedIntent': predicted_intent,
+            'confidence': round(confidence, 3),
+            'handler': handler_name,
+            'fallbackPath': fallback_path,
+        }
+        log_chat_analytics(user_id, predicted_intent, confidence, handler_name, fallback_path)
 
     return JsonResponse(result)
+
+
+@csrf_exempt
+def reset_chat(request):
+    """POST /api/chat/reset"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    try:
+        body = json.loads(request.body.decode('utf-8'))
+    except Exception:
+        body = {}
+
+    user_id = body.get('userId') or body.get('user_id')
+    clear_user_context(user_id)
+    return JsonResponse({'success': True, 'message': 'Chat history cleared'})

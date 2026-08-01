@@ -18,6 +18,7 @@ always redirect to a doctor instead of naming a medicine.
 """
 
 import random
+import re
 
 DISCLAIMER = (
     "This is for informational purposes only and is not a substitute for "
@@ -29,6 +30,38 @@ DISCLAIMER = (
 _ANTACID = ['Antacid tablets/syrup', 'Pantoprazole (OTC strength)']
 _PAIN_RELIEF = ['Paracetamol (Acetaminophen)', 'Ibuprofen']
 _ANTIHISTAMINE = ['Cetirizine', 'Loratadine']
+
+# Common spelling slips and shorthand that people use in chat messages.
+# These are applied before the symptom matcher so casual typos still map
+# to the proper knowledge-base entry instead of being ignored.
+_COMMON_SYMPTOM_TYPO_FIXES = {
+    'fevver': 'fever', 'fevr': 'fever', 'feverr': 'fever',
+    'throt': 'throat', 'throat': 'throat', 'sorethrot': 'sore throat',
+    'sore throt': 'sore throat', 'sorethroat': 'sore throat', 'sore throt': 'sore throat',
+    'sore thro': 'sore throat', 'headach': 'headache', 'head ache': 'headache',
+    'headachee': 'headache', 'caugh': 'cough', 'coughh': 'cough', 'cought': 'cough',
+    'fluu': 'flu', 'allergie': 'allergy', 'allergys': 'allergy', 'alergy': 'allergy',
+    'rashes': 'rash', 'rashs': 'rash', 'migrain': 'migraine', 'migrainee': 'migraine',
+    'stomache': 'stomach ache', 'stomachache': 'stomach ache', 'stomacheache': 'stomach ache',
+    'foodpoisioning': 'food poisoning', 'foodpoisoning': 'food poisoning', 'foood poisoning': 'food poisoning',
+    'diarreah': 'diarrhea', 'diarrhoea': 'diarrhea', 'dirrhea': 'diarrhea', 'dirrhoea': 'diarrhea',
+    'nausia': 'nausea', 'nausea': 'nausea', 'vomitting': 'vomiting', 'dehydratd': 'dehydration',
+    'dehydrationn': 'dehydration', 'sneez': 'sneeze', 'sneezingg': 'sneezing', 'conjest': 'congestion',
+    'congestionn': 'congestion', 'sinusitis': 'sinus infection', 'earachee': 'earache',
+    'tootheache': 'toothache', 'tooh ache': 'toothache', 'itchingg': 'itching',
+    'eczemae': 'eczema', 'hives': 'hives', 'skin rash': 'rash',
+}
+
+
+def normalize_message_for_symptoms(message):
+    """Lowercase and lightly clean up chatty spelling mistakes before matching."""
+    text = (message or '').lower().strip()
+    text = re.sub(r'[^a-z0-9\s]+', ' ', text)
+    text = re.sub(r'\s+', ' ', text).strip()
+    for typo, replacement in _COMMON_SYMPTOM_TYPO_FIXES.items():
+        text = text.replace(typo, replacement)
+    return re.sub(r'\s+', ' ', text).strip()
+
 
 # symptom keyword -> { medicines: [...], precautions: [...] }
 # Keys are matched as substrings of the (lowercased) user message. Where
@@ -126,6 +159,328 @@ SYMPTOM_KB = {
         'precautions': ['A warm compress on the lower abdomen', 'Rest as needed', 'Gentle exercise can help over time'],
     },
 
+    # --- Expanded everyday complaints ---------------------------------
+    'stomach pain': {
+        'medicines': ['Antacid tablets/syrup', 'An antispasmodic'],
+        'precautions': ['Eat bland food', 'Avoid spicy or oily meals', 'Stay hydrated and rest'],
+    },
+    'upset stomach': {
+        'medicines': ['Antacid tablets/syrup', 'ORS (oral rehydration solution)'],
+        'precautions': ['Avoid heavy meals', 'Sip water slowly', 'Eat bland food until it eases'],
+    },
+    'acid reflux': {
+        'medicines': _ANTACID,
+        'precautions': ['Avoid late meals', 'Avoid spicy and acidic foods', 'Don’t lie down right after eating'],
+    },
+    'gastric pain': {
+        'medicines': ['Antacid tablets/syrup', 'A digestive enzyme supplement'],
+        'precautions': ['Avoid oily foods', 'Eat smaller portions', 'Seek care if it’s severe or frequent'],
+    },
+    'food poisoning': {
+        'medicines': ['ORS (oral rehydration solution)'],
+        'precautions': ['Rest and stay hydrated', 'Avoid dairy and greasy foods', 'Seek urgent care if you have severe vomiting, blood, or weakness'],
+    },
+    'stomach flu': {
+        'medicines': ['ORS (oral rehydration solution)', 'Paracetamol for fever'],
+        'precautions': ['Stay hydrated', 'Rest and avoid work/school until symptoms improve', 'Seek advice if symptoms persist'],
+    },
+    'bloated': {
+        'medicines': ['An anti-gas/simethicone tablet'],
+        'precautions': ['Avoid carbonated drinks', 'Eat slowly', 'A short walk after meals can help'],
+    },
+    'stomach bloating': {
+        'medicines': ['An anti-gas/simethicone tablet'],
+        'precautions': ['Avoid fizzy drinks and beans', 'Eat smaller meals', 'Gentle walking may help'],
+    },
+    'stomach cramps': {
+        'medicines': ['An antispasmodic', 'Paracetamol'],
+        'precautions': ['Apply warmth to the abdomen', 'Sip water slowly', 'Rest until it settles'],
+    },
+    'loose stools': {
+        'medicines': ['ORS (oral rehydration solution)', 'A short course of loperamide if needed'],
+        'precautions': ['Stay hydrated', 'Eat bland food', 'Seek medical advice if it lasts more than two days'],
+    },
+    'loose motions': {
+        'medicines': ['ORS (oral rehydration solution)'],
+        'precautions': ['Stay hydrated', 'Avoid greasy food', 'Seek help if there is blood or severe weakness'],
+    },
+    'constipation': {
+        'medicines': ['A mild laxative (short-term use)', 'A fiber supplement'],
+        'precautions': ['Increase fiber and water', 'Gentle movement helps', 'Avoid overusing laxatives'],
+    },
+    'piles': {
+        'medicines': ['A soothing hemorrhoid cream or ointment'],
+        'precautions': ['Avoid straining', 'Increase fiber and water', 'Seek care if bleeding is severe or persistent'],
+    },
+    'hemorrhoids': {
+        'medicines': ['A soothing hemorrhoid cream or ointment'],
+        'precautions': ['Avoid straining', 'Keep the area clean and dry', 'Seek care if symptoms worsen'],
+    },
+    'burning urine': {
+        'medicines': [],
+        'precautions': ['Drink plenty of water', 'Avoid holding urine', 'Seek a doctor if it persists or is severe'],
+    },
+    'urinary infection': {
+        'medicines': [],
+        'precautions': ['Drink plenty of water', 'Avoid delaying urination', 'See a doctor—this often needs proper treatment'],
+    },
+    'urine infection': {
+        'medicines': [],
+        'precautions': ['Drink plenty of water', 'Avoid delaying urination', 'See a doctor—this often needs proper treatment'],
+    },
+    'itching': {
+        'medicines': ['Cetirizine', 'A topical anti-itch cream'],
+        'precautions': ['Avoid scratching', 'Keep the skin cool and moisturized', 'See a clinician if it spreads or blisters'],
+    },
+    'eczema': {
+        'medicines': ['A fragrance-free moisturizer', 'A mild topical steroid if advised'],
+        'precautions': ['Avoid harsh soaps and allergens', 'Keep skin moisturized', 'Seek care if it becomes infected'],
+    },
+    'psoriasis': {
+        'medicines': ['A mild topical steroid if advised'],
+        'precautions': ['Keep skin moisturized', 'Avoid skin trauma', 'See a dermatologist for ongoing flares'],
+    },
+    'hives': {
+        'medicines': ['Cetirizine'],
+        'precautions': ['Avoid the trigger if you can identify it', 'Keep the skin cool', 'Seek urgent care if breathing or swallowing is affected'],
+    },
+    'ringworm': {
+        'medicines': ['A topical antifungal cream'],
+        'precautions': ['Keep the area clean and dry', 'Avoid sharing towels or clothing', 'Continue treatment as directed'],
+    },
+    'skin allergy': {
+        'medicines': ['Cetirizine', 'A mild topical anti-itch cream'],
+        'precautions': ['Avoid the trigger if known', 'Keep the area cool', 'See a doctor if it worsens'],
+    },
+    'skin irritation': {
+        'medicines': ['A fragrance-free moisturizer', 'A mild anti-itch cream'],
+        'precautions': ['Avoid harsh soaps and fragrances', 'Keep the skin clean and dry', 'Seek help if it becomes infected'],
+    },
+    'dry skin': {
+        'medicines': ['A fragrance-free moisturizer'],
+        'precautions': ['Use lukewarm water', 'Apply moisturizer after bathing', 'Avoid very hot showers'],
+    },
+    'chapped lips': {
+        'medicines': ['A lip balm with petrolatum'],
+        'precautions': ['Avoid licking your lips', 'Use a humidifier if the air is dry'],
+    },
+    'cracked lips': {
+        'medicines': ['A lip balm with petrolatum'],
+        'precautions': ['Avoid licking your lips', 'Use a humidifier if the air is dry'],
+    },
+    'mouth pain': {
+        'medicines': ['Paracetamol', 'A topical oral gel'],
+        'precautions': ['Avoid spicy food', 'Rinse with warm salt water', 'See a dentist if it persists'],
+    },
+    'sore gums': {
+        'medicines': ['Paracetamol', 'A salt-water rinse'],
+        'precautions': ['Use a soft toothbrush', 'Avoid hard or spicy food', 'See a dentist if swelling or bleeding continues'],
+    },
+    'tooth sensitivity': {
+        'medicines': ['A desensitizing toothpaste'],
+        'precautions': ['Avoid very hot, cold, or acidic foods', 'See a dentist for persistent sensitivity'],
+    },
+    'bad breath': {
+        'medicines': [],
+        'precautions': ['Brush and floss regularly', 'Drink water', 'See a dentist if it persists'],
+    },
+    'mouth smell': {
+        'medicines': [],
+        'precautions': ['Brush and floss regularly', 'Drink water', 'See a dentist if it persists'],
+    },
+    'blocked nose': {
+        'medicines': ['A decongestant (short-term use only)', 'Saline nasal spray'],
+        'precautions': ['Steam inhalation', 'Stay hydrated', 'Avoid lying flat'],
+    },
+    'nasal drip': {
+        'medicines': ['Cetirizine', 'Saline nasal spray'],
+        'precautions': ['Stay hydrated', 'Avoid known allergens/irritants', 'Steam can help'],
+    },
+    'post nasal drip': {
+        'medicines': ['Cetirizine', 'Saline nasal spray'],
+        'precautions': ['Stay hydrated', 'Use a humidifier', 'Avoid smoke and dust'],
+    },
+    'ear blockage': {
+        'medicines': ['Paracetamol if painful'],
+        'precautions': ['Avoid inserting anything into the ear', 'Try a warm compress', 'Seek care if hearing changes or pain persists'],
+    },
+    'ringing in ears': {
+        'medicines': [],
+        'precautions': ['Avoid loud noise', 'Rest in a quiet space', 'See a doctor if it is persistent or severe'],
+    },
+    'tinnitus': {
+        'medicines': [],
+        'precautions': ['Avoid loud noise and stress', 'Try a quiet environment', 'Seek care if it suddenly begins or bothers you a lot'],
+    },
+    'lightheadedness': {
+        'medicines': [],
+        'precautions': ['Sit or lie down until it passes', 'Stay hydrated', 'Seek care if it keeps happening'],
+    },
+    'faintness': {
+        'medicines': [],
+        'precautions': ['Sit or lie down', 'Avoid standing too quickly', 'Seek medical advice if it recurs'],
+    },
+    'low energy': {
+        'medicines': [],
+        'precautions': ['Try a balanced meal and rest', 'Stay hydrated', 'See a doctor if it is sudden or unexplained'],
+    },
+    'exhaustion': {
+        'medicines': [],
+        'precautions': ['Prioritize sleep and hydration', 'Reduce stress where possible', 'Seek care if it is severe or unexplained'],
+    },
+    'tiredness': {
+        'medicines': [],
+        'precautions': ['Rest and hydrate', 'Eat regular meals', 'See a doctor if it persists'],
+    },
+    'sleepy': {
+        'medicines': [],
+        'precautions': ['Try to rest in a dark quiet room', 'Avoid caffeine late in the day'],
+    },
+    'restless': {
+        'medicines': [],
+        'precautions': ['Try calming music or breathing', 'Avoid caffeine late in the day', 'Seek help if it keeps you from sleeping'],
+    },
+    'stress': {
+        'medicines': [],
+        'precautions': ['Try slow breathing or a short walk', 'Keep a regular sleep schedule', 'Talk to a professional if it feels overwhelming'],
+    },
+    'anxiety': {
+        'medicines': [],
+        'precautions': ['Limit caffeine', 'Try slow breathing', 'Consider professional support if it feels persistent'],
+    },
+    'panic': {
+        'medicines': [],
+        'precautions': ['Sit down and breathe slowly', 'Avoid caffeine', 'Seek urgent help if you feel you may pass out or hurt yourself'],
+    },
+    'insomnia': {
+        'medicines': [],
+        'precautions': ['Avoid screens and caffeine before bed', 'Keep a regular sleep routine', 'See a doctor if it persists'],
+    },
+    'backache': {
+        'medicines': ['Paracetamol', 'Ibuprofen', 'A topical pain-relief gel'],
+        'precautions': ['Avoid heavy lifting', 'Gentle stretching helps', 'Seek care if there is weakness or numbness'],
+    },
+    'waist pain': {
+        'medicines': ['Paracetamol', 'Ibuprofen'],
+        'precautions': ['Avoid twisting or lifting', 'Gentle movement and rest', 'Seek care if pain is severe or radiates down a leg'],
+    },
+    'leg pain': {
+        'medicines': ['Paracetamol', 'Ibuprofen'],
+        'precautions': ['Rest the leg', 'Apply ice if there is swelling', 'Seek care for sudden or severe pain'],
+    },
+    'foot pain': {
+        'medicines': ['Paracetamol', 'Ibuprofen'],
+        'precautions': ['Rest and elevate the foot', 'Avoid standing for long periods', 'Seek care if there’s swelling or bruising'],
+    },
+    'swollen ankle': {
+        'medicines': ['Paracetamol', 'Ibuprofen'],
+        'precautions': ['Rest and elevate the ankle', 'Apply ice', 'Seek care if it’s severe or after an injury'],
+    },
+    'swollen feet': {
+        'medicines': ['Paracetamol', 'Ibuprofen'],
+        'precautions': ['Elevate the feet', 'Avoid standing for long periods', 'Seek care if it is sudden or severe'],
+    },
+    'wrist pain': {
+        'medicines': ['Paracetamol', 'Ibuprofen'],
+        'precautions': ['Rest the wrist', 'Ice it if there was an injury', 'Seek care if you cannot move it normally'],
+    },
+    'sore eyes': {
+        'medicines': ['Lubricating eye drops'],
+        'precautions': ['Avoid rubbing the eyes', 'Remove contact lenses if worn', 'Seek help if vision changes'],
+    },
+    'burning eyes': {
+        'medicines': ['Lubricating eye drops'],
+        'precautions': ['Avoid rubbing the eyes', 'Take breaks from screens', 'Seek care if it’s severe or persistent'],
+    },
+    'swollen eyelid': {
+        'medicines': ['Lubricating eye drops'],
+        'precautions': ['Avoid rubbing the eye', 'Apply a cool compress', 'See a doctor if the swelling is severe'],
+    },
+    'itchy eyes': {
+        'medicines': ['Lubricating eye drops', 'Cetirizine if allergy-related'],
+        'precautions': ['Avoid rubbing', 'Avoid allergens/irritants', 'Seek help if it is severe or persistent'],
+    },
+    'sore nose': {
+        'medicines': ['A saline nasal spray'],
+        'precautions': ['Avoid rubbing', 'Use a humidifier', 'Seek care if it bleeds or is severe'],
+    },
+    'nosebleed': {
+        'medicines': [],
+        'precautions': ['Pinch the nose and lean forward', 'Keep the head elevated', 'Seek urgent care if it does not stop or is heavy'],
+    },
+    'wheezing': {
+        'medicines': [],
+        'precautions': ['Avoid smoke and triggers', 'Seek urgent care if it is severe or breathing is affected'],
+    },
+    'shortness of breath': {
+        'medicines': [],
+        'precautions': ['Seek emergency care right away if breathing is difficult', 'Do not wait to see whether it improves'],
+    },
+    'trouble breathing': {
+        'medicines': [],
+        'precautions': ['Seek emergency care right away', 'Do not wait to see whether it improves'],
+    },
+    'nose congestion': {
+        'medicines': ['A decongestant (short-term use only)', 'Saline nasal spray'],
+        'precautions': ['Steam inhalation', 'Stay hydrated', 'Use a humidifier'],
+    },
+    'sinus pain': {
+        'medicines': ['Paracetamol', 'A decongestant (short-term use only)'],
+        'precautions': ['Use steam inhalation', 'A warm compress over the face can help', 'See a clinician if it persists'],
+    },
+    'sinus infection': {
+        'medicines': ['Paracetamol', 'A decongestant (short-term use only)'],
+        'precautions': ['Rest and stay hydrated', 'Steam inhalation can help', 'See a doctor if it lasts more than a week or gets worse'],
+    },
+    'cold sore': {
+        'medicines': ['A topical antiviral cream'],
+        'precautions': ['Avoid touching or picking it', 'Keep the area clean', 'See a clinician if it is severe or recurrent'],
+    },
+    'canker sore': {
+        'medicines': ['A topical oral gel'],
+        'precautions': ['Avoid spicy foods', 'Rinse with warm salt water', 'See a dentist if it recurs often'],
+    },
+    'sore lip': {
+        'medicines': ['A lip balm with petrolatum', 'Paracetamol if painful'],
+        'precautions': ['Avoid licking', 'Use a protectant balm', 'Seek care if it bleeds or swells'],
+    },
+    'sore eyelid': {
+        'medicines': ['Lubricating eye drops'],
+        'precautions': ['Avoid rubbing', 'Use a cool compress', 'See a doctor if swelling persists'],
+    },
+    'joint swelling': {
+        'medicines': ['Ibuprofen', 'A topical anti-inflammatory gel'],
+        'precautions': ['Rest the joint', 'Apply ice', 'Seek care if the swelling is severe or sudden'],
+    },
+    'redness': {
+        'medicines': ['A mild topical anti-itch cream'],
+        'precautions': ['Avoid rubbing or scratching', 'Keep the area clean', 'Seek care if it spreads or becomes painful'],
+    },
+    'blister': {
+        'medicines': ['A topical antiseptic or wound ointment'],
+        'precautions': ['Keep it clean and covered', 'Avoid popping it', 'Seek care if it becomes infected'],
+    },
+    'blisters': {
+        'medicines': ['A topical antiseptic or wound ointment'],
+        'precautions': ['Keep them clean and covered', 'Avoid popping them', 'Seek care if they become infected'],
+    },
+    'swelling': {
+        'medicines': ['Paracetamol', 'Ibuprofen'],
+        'precautions': ['Elevate the area if possible', 'Apply ice for injury-related swelling', 'Seek care if it is severe or sudden'],
+    },
+    'feeling low': {
+        'medicines': [],
+        'precautions': ['Talk to someone you trust', 'Try a walk or a little rest', 'Seek professional support if it persists'],
+    },
+    'depression': {
+        'medicines': [],
+        'precautions': ['Please consider speaking with a mental-health professional', 'Keep regular sleep and meals', 'Seek urgent help if you feel unsafe'],
+    },
+    'mood swings': {
+        'medicines': [],
+        'precautions': ['Try resting and eating regularly', 'Avoid alcohol and excessive caffeine', 'Seek support if they’re intense or persistent'],
+    },
+
     # --- Cold, flu & respiratory -------------------------------------
     'cold': {
         'medicines': ['Cetirizine', 'Paracetamol'],
@@ -188,6 +543,18 @@ SYMPTOM_KB = {
             'Monitor your temperature every few hours',
             'Wear light clothing and keep the room cool',
         ],
+    },
+    'high temperature': {
+        'medicines': ['Paracetamol (Acetaminophen)'],
+        'precautions': ['Rest and stay hydrated', 'Seek medical care if it is very high or persistent', 'Keep the room cool and use light bedding'],
+    },
+    'temperature': {
+        'medicines': ['Paracetamol (Acetaminophen)'],
+        'precautions': ['Rest and stay hydrated', 'Monitor the temperature', 'Seek help if it rises quickly or comes with confusion'],
+    },
+    'feverish': {
+        'medicines': ['Paracetamol (Acetaminophen)'],
+        'precautions': ['Rest and keep fluids up', 'Watch for worsening symptoms', 'Seek care if it lasts beyond a day or two'],
     },
 
     # --- Digestive -----------------------------------------------------
@@ -378,6 +745,22 @@ SYMPTOM_KB = {
         'medicines': ['Sugar-free lozenges', 'A saliva substitute spray if persistent'],
         'precautions': ['Sip water regularly', 'Avoid excess caffeine and alcohol'],
     },
+    'bad breath': {
+        'medicines': [],
+        'precautions': ['Brush and floss regularly', 'Drink water', 'See a dentist if it persists'],
+    },
+    'mouth smell': {
+        'medicines': [],
+        'precautions': ['Brush and floss regularly', 'Drink water', 'See a dentist if it persists'],
+    },
+    'mouth ulcer': {
+        'medicines': ['A topical oral gel for mouth ulcers'],
+        'precautions': ['Avoid spicy/acidic food', 'Rinse with warm salt water', 'Usually heals within a week or two'],
+    },
+    'burning sensation': {
+        'medicines': [],
+        'precautions': ['Stop any irritant if you can identify one', 'Seek medical advice if it is severe or persistent'],
+    },
     'hair fall': {
         'medicines': ['A biotin/multivitamin supplement', 'A mild anti-hair-fall shampoo'],
         'precautions': ['Avoid tight hairstyles and excessive heat styling', 'Eat a balanced, protein-rich diet', "See a doctor if it's sudden or excessive"],
@@ -389,6 +772,22 @@ SYMPTOM_KB = {
     'minor cuts': {
         'medicines': ['An antiseptic solution/cream'],
         'precautions': ['Clean the wound and apply antiseptic', 'Cover with a clean bandage', 'Watch for signs of infection'],
+    },
+    'cuts': {
+        'medicines': ['An antiseptic solution/cream'],
+        'precautions': ['Clean the wound and apply antiseptic', 'Cover with a clean bandage', 'Watch for signs of infection'],
+    },
+    'scratches': {
+        'medicines': ['An antiseptic solution/cream'],
+        'precautions': ['Clean the wound', 'Cover with a clean bandage', 'Watch for signs of infection'],
+    },
+    'rash': {
+        'medicines': ['Cetirizine', 'A mild topical anti-itch cream'],
+        'precautions': ['Avoid scratching', 'Wear loose breathable clothing', 'See a doctor if it spreads or blisters'],
+    },
+    'itchy skin': {
+        'medicines': ['Cetirizine', 'A topical antihistamine cream'],
+        'precautions': ['Avoid scratching', 'Use a fragrance-free moisturizer', 'Keep the area cool'],
     },
     'bruise': {
         'medicines': ['Paracetamol if tender', 'A cold compress'],
@@ -457,6 +856,30 @@ SYMPTOM_KB = {
     'severe allergic reaction': {
         'medicines': [], 'urgent': True,
         'precautions': ['Use an epinephrine auto-injector if prescribed and available', 'Call emergency services immediately'],
+    },
+    'severe allergy': {
+        'medicines': [], 'urgent': True,
+        'precautions': ['Seek emergency care right away if breathing or swallowing is affected', 'Use an epinephrine auto-injector if prescribed and available'],
+    },
+    'breathing trouble': {
+        'medicines': [], 'urgent': True,
+        'precautions': ['Seek emergency medical care right away', 'Do not wait to see whether it improves on its own'],
+    },
+    'trouble breathing': {
+        'medicines': [], 'urgent': True,
+        'precautions': ['Seek emergency medical care right away', 'Do not wait to see whether it improves on its own'],
+    },
+    'wheezing': {
+        'medicines': [], 'urgent': True,
+        'precautions': ['Seek urgent care if it is severe or you have trouble speaking or breathing', 'Avoid any known trigger if possible'],
+    },
+    'high fever': {
+        'medicines': [], 'urgent': True,
+        'precautions': ['Seek urgent care if it is very high, persistent, or comes with confusion', 'Rest and stay hydrated while getting help'],
+    },
+    'confusion': {
+        'medicines': [], 'urgent': True,
+        'precautions': ['Seek urgent medical care right away', 'Do not drive yourself and avoid being alone until you are evaluated'],
     },
     'anaphylaxis': {
         'medicines': [], 'urgent': True,
@@ -562,6 +985,19 @@ HEALTH_HINT_WORDS = (
     'not doing great', 'not doing so great', 'having a rough day',
     'having a bad day health wise', "health isn't great",
     'health is not great', 'poor health', 'not in good health',
+    'stomach upset', 'upset stomach', 'stomach ache', 'stomach pain',
+    'gastric pain', 'acid reflux', 'food poisoning', 'stomach flu',
+    'indigestion', 'bloating', 'bloated', 'constipated', 'loose stools',
+    'loose motions', 'diarrhoea', 'diarrhea', 'vomiting', 'throwing up',
+    'nauseated', 'itchy skin', 'skin irritation', 'dry skin', 'eczema',
+    'hives', 'rash', 'rashes', 'redness', 'blister', 'blisters',
+    'sore throat', 'throat pain', 'tickly throat', 'scratchy throat',
+    'blocked nose', 'stuffy nose', 'runny nose', 'nasal drip', 'sinus pain',
+    'backache', 'body aches', 'leg pain', 'foot pain', 'ankle swelling',
+    'earache', 'ear blockage', 'ringing in ears', 'tinnitus', 'sore eyes',
+    'itchy eyes', 'burning eyes', 'swollen eyelid', 'lightheaded', 'faint',
+    'low energy', 'no energy', 'exhausted', 'sleepy', 'restless',
+    'anxious', 'panic', 'stressed', 'depressed', 'feeling low', 'mood swings',
 
     # -- "something's wrong" phrasings --
     "something's wrong", 'something is wrong', "something's off",
@@ -571,6 +1007,16 @@ HEALTH_HINT_WORDS = (
 
     # -- pain / discomfort phrasings --
     'body hurts', 'my body hurts', 'everything hurts', 'whole body hurts',
+    'sore', 'very sore', 'painful', 'hurting badly', 'tender', 'swollen',
+    'runny nose', 'blocked nose', 'stuffy nose', 'congested', 'sniffly',
+    'coughing', 'cough', 'sneezing', 'sneezy', 'scratchy throat', 'throat feels sore',
+    'feverish', 'high fever', 'temperature', 'hot and sweaty',
+    'itchy', 'itching', 'rashes', 'redness', 'swelling', 'blister', 'blisters',
+    'diarrhoea', 'diarrhea', 'loose stools', 'constipated', 'stomach cramps',
+    'nauseated', 'throwing up', 'vomiting', 'queasy', 'upset stomach',
+    'dizzy', 'lightheaded', 'woozy', 'head spinning', 'tired', 'exhausted',
+    'sleepy', 'trouble sleeping', 'cant sleep', 'insomnia', 'restless',
+    'anxious', 'panic', 'stressed', 'overwhelmed', 'worried', 'nervous',
     'in pain', 'in a lot of pain', 'having pain', 'having discomfort',
     'feel discomfort', 'feeling discomfort', 'in discomfort',
     'uncomfortable', 'something hurts', "something's hurting",
@@ -600,6 +1046,10 @@ HEALTH_HINT_WORDS = (
     'worried about my health', 'need medical help', 'need medical advice',
     'need a doctor', 'need to see a doctor', 'should i see a doctor',
     'should i go to the doctor', "i'm worried", 'i am worried',
+    'need advice', 'looking for advice', 'need help with this', 'what should i do',
+    'what can i take', 'can you advise me', 'what medicine can i use',
+    'is this serious', 'should i be worried', 'what does this mean',
+    'is this normal', 'is this urgent', 'does it need a doctor',
 )
 
 # Predefined canned responses — the diagram's "Predefined responses" and
@@ -797,11 +1247,24 @@ def match_all_symptoms(message_lower):
     collapsed to just the most specific one (see _drop_nested_matches).
     Urgent entries are sorted first so a red-flag symptom is never buried
     below routine ones in the same message."""
-    raw_matches = [symptom for symptom in SYMPTOM_KB if symptom in message_lower]
+    normalized_message = normalize_message_for_symptoms(message_lower)
+    raw_matches = [symptom for symptom in SYMPTOM_KB if symptom in normalized_message]
+    if not raw_matches:
+        raw_matches = [symptom for symptom in SYMPTOM_KB if symptom in message_lower]
+
     kept_set = set(_drop_nested_matches(raw_matches))
     ordered = [symptom for symptom in SYMPTOM_KB if symptom in kept_set]
     ordered.sort(key=lambda symptom: not SYMPTOM_KB[symptom].get('urgent', False))
     return [(symptom, SYMPTOM_KB[symptom]) for symptom in ordered]
+
+
+def get_symptom_summary(message_lower):
+    """A light-weight helper returning the matched symptoms and urgency state."""
+    matches = match_all_symptoms(message_lower)
+    return {
+        'symptoms': [symptom for symptom, _ in matches],
+        'urgent': any(info.get('urgent', False) for _, info in matches),
+    }
 
 
 def match_symptom(message_lower):
@@ -816,4 +1279,5 @@ def is_health_related(message_lower):
     """True if the message sounds like a health complaint even though it
     didn't name a symptom SYMPTOM_KB recognizes — the signal for asking a
     clarifying question rather than giving up entirely."""
-    return any(w in message_lower for w in HEALTH_HINT_WORDS)
+    normalized = normalize_message_for_symptoms(message_lower)
+    return any(w in normalized for w in HEALTH_HINT_WORDS)

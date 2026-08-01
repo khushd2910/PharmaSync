@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send } from 'lucide-react';
+import { MessageCircle, X, Send, RotateCcw } from 'lucide-react';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 
 const STORAGE_KEY = 'pharmacare-chat-history';
 const DEFAULT_MESSAGES = [
@@ -14,30 +15,48 @@ const QUICK_REPLIES = ['Track my order', 'I have a headache', 'Do I need a presc
 // same as the rest of the app's session-scoped state. Works for guests
 // and logged-in users alike; the server attaches the user id when there is one.
 const ChatWidget = () => {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState(() => {
-    try {
-      const stored = sessionStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : DEFAULT_MESSAGES;
-    } catch {
-      return DEFAULT_MESSAGES;
-    }
-  });
+  const [chatIdentity, setChatIdentity] = useState('guest');
+  const [messages, setMessages] = useState(DEFAULT_MESSAGES);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const scrollRef = useRef(null);
+
+  useEffect(() => {
+    const resolvedIdentity = user?.id || user?._id || user?.email || (() => {
+      let stored = sessionStorage.getItem('pharmacare-chat-guest-id');
+      if (!stored) {
+        stored = `guest-${Math.random().toString(36).slice(2, 10)}`;
+        sessionStorage.setItem('pharmacare-chat-guest-id', stored);
+      }
+      return stored;
+    })();
+    setChatIdentity(resolvedIdentity);
+  }, [user]);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
     try {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+      const storageKey = `${STORAGE_KEY}-${chatIdentity}`;
+      sessionStorage.setItem(storageKey, JSON.stringify(messages));
     } catch {
       // Storage full/unavailable (private browsing, etc.) — chat still
       // works within the tab, it just won't persist across a reload.
     }
-  }, [messages, open]);
+  }, [messages, open, chatIdentity]);
+
+  useEffect(() => {
+    try {
+      const storageKey = `${STORAGE_KEY}-${chatIdentity}`;
+      const stored = sessionStorage.getItem(storageKey);
+      setMessages(stored ? JSON.parse(stored) : DEFAULT_MESSAGES);
+    } catch {
+      setMessages(DEFAULT_MESSAGES);
+    }
+  }, [chatIdentity]);
 
   const sendText = async (text) => {
     if (!text || sending) return;
@@ -47,7 +66,7 @@ const ChatWidget = () => {
     setSending(true);
 
     try {
-      const res = await api.post('/chat', { message: text });
+      const res = await api.post('/chat', { message: text, userId: chatIdentity });
       const { reply, disclaimer } = res.data;
       setMessages((prev) => [
         ...prev,
@@ -64,6 +83,16 @@ const ChatWidget = () => {
   };
 
   const handleSend = () => sendText(input.trim());
+
+  const handleReset = async () => {
+    try {
+      await api.post('/chat/reset', { userId: chatIdentity });
+    } catch {
+      // ignore reset errors and still clear the local view
+    }
+    setMessages(DEFAULT_MESSAGES);
+    setInput('');
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -83,9 +112,14 @@ const ChatWidget = () => {
         <div className="chat-panel">
           <div className="chat-panel-header">
             <span>PharmaSync Assistant</span>
-            <button type="button" className="icon-btn" onClick={() => setOpen(false)} aria-label="Close chat">
-              <X size={16} strokeWidth={2} />
-            </button>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <button type="button" className="icon-btn" onClick={handleReset} aria-label="Restart chat">
+                <RotateCcw size={16} strokeWidth={2} />
+              </button>
+              <button type="button" className="icon-btn" onClick={() => setOpen(false)} aria-label="Close chat">
+                <X size={16} strokeWidth={2} />
+              </button>
+            </div>
           </div>
 
           <div className="chat-panel-body" ref={scrollRef}>

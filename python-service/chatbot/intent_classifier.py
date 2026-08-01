@@ -19,7 +19,15 @@ TRAINING_DATA = [
     ("hey chatbot", "greeting"),
     ("is anyone there", "greeting"),
     ("greetings", "greeting"),
-    
+    ("good to see you", "greeting"),
+    ("nice to meet you", "greeting"),
+    ("hello there", "greeting"),
+    ("hey there", "greeting"),
+
+    # disambiguation
+    ("i need something for my fever", "disambiguation"),
+    ("i need something for my cough", "disambiguation"),
+
     # order_status
     ("where is my order", "order_status"),
     ("track my shipment", "order_status"),
@@ -33,7 +41,15 @@ TRAINING_DATA = [
     ("can i track my order", "order_status"),
     ("where is my delivery", "order_status"),
     ("track invoice status", "order_status"),
-    
+    ("please tell me where my parcel is", "order_status"),
+    ("has my package been dispatched", "order_status"),
+    ("help me check my order progress", "order_status"),
+    ("i need to know if my delivery is out", "order_status"),
+    ("can you check shipment status", "order_status"),
+    ("find my last order", "order_status"),
+    ("why hasn't my parcel arrived", "order_status"),
+    ("why has my parcel not arrived", "order_status"),
+
     # prescription_question
     ("how do i upload my prescription", "prescription_question"),
     ("do i need a prescription", "prescription_question"),
@@ -43,10 +59,14 @@ TRAINING_DATA = [
     ("why was my prescription rejected", "prescription_question"),
     ("prescription approval time", "prescription_question"),
     ("can i buy this without prescription", "prescription_question"),
+    ("can i order this without a doctor's note", "prescription_question"),
     ("does this require rx", "prescription_question"),
     ("prescription status info", "prescription_question"),
     ("who approves my prescription", "prescription_question"),
-    
+    ("can i upload a doctor prescription", "prescription_question"),
+    ("how long does prescription review take", "prescription_question"),
+    ("what happens after i upload rx", "prescription_question"),
+
     # delivery_question
     ("how long does delivery take", "delivery_question"),
     ("shipping cost", "delivery_question"),
@@ -61,7 +81,10 @@ TRAINING_DATA = [
     ("what is the delivery process", "delivery_question"),
     ("how does delivery work", "delivery_question"),
     ("delivery process details", "delivery_question"),
-    
+    ("what is the shipping fee", "delivery_question"),
+    ("how quickly will my order arrive", "delivery_question"),
+    ("can you ship to my city", "delivery_question"),
+
     # recommendation
     ("what should i buy", "recommendation"),
     ("recommend some products", "recommendation"),
@@ -72,7 +95,11 @@ TRAINING_DATA = [
     ("what is recommended for health", "recommendation"),
     ("any good medicine suggestions", "recommendation"),
     ("suggest featured items", "recommendation"),
-    
+    ("what would you suggest for everyday wellness", "recommendation"),
+    ("show me popular items", "recommendation"),
+    ("can you recommend a trusted supplement", "recommendation"),
+    ("what's the best painkiller i can buy", "recommendation"),
+
     # medicine_question
     ("what is the price of paracetamol", "medicine_question"),
     ("is aspirin in stock", "medicine_question"),
@@ -84,7 +111,11 @@ TRAINING_DATA = [
     ("is cetirizine available", "medicine_question"),
     ("price of capsule", "medicine_question"),
     ("is this drug in stock", "medicine_question"),
-    
+    ("do you stock vitamin c", "medicine_question"),
+    ("tell me the current price of amoxicillin", "medicine_question"),
+    ("is paracetamol available today", "medicine_question"),
+    ("i'm asking about a cough syrup", "medicine_question"),
+
     # symptom_advice
     ("i have a fever and headache", "symptom_advice"),
     ("my head hurts and i have a cold", "symptom_advice"),
@@ -99,7 +130,13 @@ TRAINING_DATA = [
     ("what to take for back pain", "symptom_advice"),
     ("remedy for chest pain", "symptom_advice"),
     ("remedy for difficulty breathing", "symptom_advice"),
-    
+    ("hi i have a fever", "symptom_advice"),
+    ("hello i feel sick with a cold", "symptom_advice"),
+    ("hey can you help with my sore throat", "symptom_advice"),
+    ("good morning i have headache and nausea", "symptom_advice"),
+    ("i need advice for stomach pain", "symptom_advice"),
+    ("which medicine helps with vomiting", "symptom_advice"),
+
     # symptom_clarify
     ("i feel sick", "symptom_clarify"),
     ("i am feeling unwell", "symptom_clarify"),
@@ -111,12 +148,17 @@ TRAINING_DATA = [
     ("not feeling myself today", "symptom_clarify"),
     ("i feel terrible", "symptom_clarify"),
     ("feeling bad", "symptom_clarify"),
+    ("i am not feeling well", "symptom_clarify"),
+    ("i feel a little off", "symptom_clarify"),
+    ("something is wrong with me", "symptom_clarify"),
 ]
+
+DEFAULT_CONFIDENCE_THRESHOLD = 0.42
 
 class IntentClassifier:
     def __init__(self):
         self.vectorizer = TfidfVectorizer(ngram_range=(1, 2), stop_words='english', lowercase=True)
-        self.classifier = LogisticRegression(C=10.0, max_iter=200)
+        self.classifier = LogisticRegression(C=10.0, max_iter=200, class_weight='balanced')
         self.is_trained = False
         self._train()
         
@@ -135,21 +177,23 @@ class IntentClassifier:
     def predict_intent(self, message):
         """
         Predict the intent of the message and return (intent_name, confidence_score).
-        Falls back to a default value if classifier is not trained.
+        Returns a low-confidence fallback when the classifier is not trained or its
+        confidence fails the guard threshold.
         """
         if not self.is_trained:
             return "general_question", 0.0
-            
+
         try:
-            # Vectorize input query
             X_msg = self.vectorizer.transform([message])
-            # Predict intent probabilities
             probs = self.classifier.predict_proba(X_msg)[0]
             max_idx = probs.argmax()
             intent = self.classifier.classes_[max_idx]
-            confidence = probs[max_idx]
-            
-            return intent, float(confidence)
+            confidence = float(probs[max_idx])
+
+            if confidence < DEFAULT_CONFIDENCE_THRESHOLD:
+                return "general_question", confidence
+
+            return intent, confidence
         except Exception as e:
             logger.error("Error predicting intent: %s", str(e))
             return "general_question", 0.0
