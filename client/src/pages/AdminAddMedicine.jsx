@@ -14,7 +14,6 @@ const EMPTY_FORM = {
   manufacturer: '',
   description: '',
   requiresPrescription: false,
-  barcode: '',
 };
 
 const AdminAddMedicine = () => {
@@ -107,16 +106,6 @@ const AdminAddMedicine = () => {
             <div>
               <label className="field-label">Manufacturer</label>
               <input name="manufacturer" value={form.manufacturer} onChange={handleChange} placeholder="e.g. GSK" />
-            </div>
-
-            <div>
-              <label className="field-label">Barcode</label>
-              <input
-                name="barcode"
-                value={form.barcode}
-                onChange={handleChange}
-                placeholder="Scan or type — used by POS lookup"
-              />
             </div>
           </div>
 

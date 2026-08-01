@@ -14,7 +14,6 @@ const EMPTY_FORM = {
   manufacturer: '',
   description: '',
   requiresPrescription: false,
-  barcode: '',
 };
 
 const AdminEditMedicine = () => {
@@ -152,14 +151,6 @@ const AdminEditMedicine = () => {
               <input name="manufacturer" value={form.manufacturer} onChange={handleChange} />
             </div>
 
-            <div>
-              <label className="field-label">Barcode</label>
-              <input name="barcode" value={form.barcode} onChange={handleChange} placeholder="Scan or type — used by POS lookup" />
-            </div>
-          </div>
-
-          <div>
-            <label className="field-label">Primary image</label>
             <input type="file" accept="image/*" onChange={handleImageChange} />
             {imagePreview && <img src={imagePreview} alt="Preview" style={{ width: 140, height: 140, objectFit: 'cover', marginTop: 10, borderRadius: 8 }} />}
           </div>

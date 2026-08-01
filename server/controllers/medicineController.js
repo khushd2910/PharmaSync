@@ -388,7 +388,6 @@ const createMedicine = catchAsync(async (req, res, next) => {
     manufacturer,
     description,
     requiresPrescription,
-    barcode,
   } = req.body;
 
   const payload = {
@@ -401,7 +400,7 @@ const createMedicine = catchAsync(async (req, res, next) => {
     manufacturer,
     description,
     requiresPrescription: normalizeBoolean(requiresPrescription),
-    barcode: barcode?.trim() || generateBarcode(),
+    barcode: generateBarcode(),
   };
 
   if (req.file) {
@@ -471,7 +470,6 @@ const updateMedicine = catchAsync(async (req, res, next) => {
     'description',
     'requiresPrescription',
     'isDiscontinued',
-    'barcode',
     'discountPercent',
   ];
 
@@ -510,11 +508,8 @@ const updateMedicine = catchAsync(async (req, res, next) => {
     updates.imageUrl = buildImageUrl(req.file.filename);
   }
 
-  // Preserve the barcode once it exists; only generate one when the record
-  // was created without one. A blank edit field should not erase it.
-  if (updates.barcode === '') {
-    delete updates.barcode;
-  }
+  // Admin updates may not change the barcode. If the existing record lacks
+  // one for some reason, generate it here when applying the update.
   if (updates.barcode === undefined && !existingMedicine.barcode) {
     updates.barcode = generateBarcode();
   }
