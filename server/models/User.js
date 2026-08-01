@@ -100,6 +100,18 @@ const userSchema = new mongoose.Schema(
     previousLoginAt: {
       type: Date,
     },
+    adminMfaChallengeId: {
+      type: String,
+      select: false,
+    },
+    adminMfaCodeHash: {
+      type: String,
+      select: false,
+    },
+    adminMfaCodeExpiresAt: {
+      type: Date,
+      select: false,
+    },
   },
   { timestamps: true }
 );

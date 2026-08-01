@@ -33,9 +33,8 @@ const processQueue = (error) => {
 api.interceptors.request.use(async (config) => {
   const method = (config.method || 'get').toLowerCase();
   const isSafeMethod = ['get', 'head', 'options'].includes(method);
-  const isAuthRequest = config.url?.includes('/auth/');
 
-  if (!isSafeMethod && !isAuthRequest) {
+  if (!isSafeMethod) {
     const token = await getCsrfToken();
     if (token) {
       config.headers = {

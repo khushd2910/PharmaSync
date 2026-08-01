@@ -9,9 +9,10 @@ import PasswordInput from '../components/PasswordInput';
 import IconInput from '../components/IconInput';
 
 const AdminLogin = () => {
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ email: '', password: '', mfaCode: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [requiresMfa, setRequiresMfa] = useState(false);
   const { login } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -23,7 +24,20 @@ const AdminLogin = () => {
     setError('');
     setLoading(true);
     try {
-      const res = await api.post('/auth/admin/login', form);
+      const csrfRes = await api.get('/auth/admin/csrf-token');
+      const res = await api.post('/auth/admin/login', {
+        ...form,
+        csrfToken: csrfRes.data?.csrfToken,
+      });
+
+      if (res.data?.requiresMfa) {
+        setRequiresMfa(true);
+        const recipient = res.data?.recipient || 'the configured admin inbox';
+        showToast(`A one-time verification code was sent to ${recipient}. Enter it to continue.`, 'info');
+        setLoading(false);
+        return;
+      }
+
       login(res.data.user);
       showToast('Welcome back, admin', 'success');
       navigate('/');
@@ -53,8 +67,15 @@ const AdminLogin = () => {
           autoComplete="current-password"
         />
 
+        {requiresMfa && (
+          <>
+            <label className="field-label" htmlFor="mfaCode">Admin MFA code</label>
+            <IconInput icon={Mail} id="mfaCode" name="mfaCode" type="text" placeholder="123456" value={form.mfaCode} onChange={handleChange} required autoComplete="one-time-code" />
+          </>
+        )}
+
         <button type="submit" className="btn-primary" disabled={loading}>
-          {loading ? 'Logging in…' : 'Login as admin'}
+          {loading ? 'Logging in…' : requiresMfa ? 'Verify MFA' : 'Login as admin'}
         </button>
         <p className="auth-footnote">
           <Link to="/login" className="link-muted">← Back to patient login</Link>

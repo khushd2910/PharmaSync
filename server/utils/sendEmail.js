@@ -53,14 +53,30 @@ const buildTransporter = () => {
  * Never throws — a broken mail provider should not break registration,
  * login, or password-reset requests. Failures are logged and swallowed.
  */
-const sendEmail = async ({ to, subject, html, text }) => {
+const sendEmail = async ({ to, subject, html, text, allowFallback = true }) => {
   try {
-    let transporter = buildTransporter();
-    let usingFallback = false;
+    const transporter = buildTransporter();
 
     if (!transporter) {
-      usingFallback = true;
-      transporter = await getTestTransporter();
+      if (!allowFallback) {
+        return {
+          success: false,
+          error: 'No SMTP configuration is available for real email delivery.',
+        };
+      }
+
+      const fallbackTransporter = await getTestTransporter();
+      const info = await fallbackTransporter.sendMail({
+        from: process.env.EMAIL_FROM || process.env.SMTP_USER || 'no-reply@pharma-management.local',
+        to,
+        subject,
+        html,
+        text,
+      });
+
+      console.log('\n⚠️  No SMTP configured — sent via Ethereal test inbox (NOT a real mailbox).');
+      console.log(`📧 Open this link to view the email: ${nodemailer.getTestMessageUrl(info)}\n`);
+      return { success: true, info, fallback: true };
     }
 
     const info = await transporter.sendMail({
@@ -71,17 +87,11 @@ const sendEmail = async ({ to, subject, html, text }) => {
       text,
     });
 
-    if (usingFallback) {
-      console.log('\n⚠️  No SMTP configured — sent via Ethereal test inbox (NOT a real mailbox).');
-      console.log(`📧 Open this link to view the email: ${nodemailer.getTestMessageUrl(info)}\n`);
-    } else {
-      console.log(`📧 Email sent to ${to}: "${subject}"`);
-    }
-
-    return info;
+    console.log(`📧 Email sent to ${to}: "${subject}"`);
+    return { success: true, info, fallback: false };
   } catch (err) {
     console.error(`📧 Failed to send email to ${to}:`, err.message);
-    return null;
+    return { success: false, error: err.message };
   }
 };
 

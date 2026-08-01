@@ -6,6 +6,7 @@ const {
   loginAdmin,
   refreshAccessToken,
   getCsrfToken,
+  getAdminCsrfToken,
   getMe,
   logoutUser,
   verifyEmail,
@@ -28,6 +29,7 @@ router.post('/login', loginLimiter, loginRules, validate, loginUser);
 router.post('/admin/login', loginLimiter, loginRules, validate, loginAdmin);
 router.post('/refresh', authLimiter, refreshAccessToken);
 router.get('/csrf-token', getCsrfToken);
+router.get('/admin/csrf-token', getAdminCsrfToken);
 router.get('/verify-email/:token', authLimiter, verifyEmail);
 router.post('/forgot-password', passwordResetLimiter, forgotPasswordRules, validate, forgotPassword);
 router.post('/reset-password/:token', passwordResetLimiter, resetPasswordRules, validate, resetPassword);

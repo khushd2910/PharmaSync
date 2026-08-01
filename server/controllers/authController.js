@@ -8,6 +8,7 @@ const { generateAccessToken, generateRefreshToken } = require('../utils/generate
 const { accessTokenCookieOptions, refreshTokenCookieOptions } = require('../utils/cookieOptions');
 const { checkPasswordExposure } = require('../utils/passwordHardening');
 const { getLoginAttemptKey, getLoginFailureState, recordFailedLogin, clearFailedLogin } = require('../utils/loginLockout');
+const { getAdminMfaEnabled, createAdminMfaChallenge, verifyAdminMfaCode, getAdminOtpRecipient } = require('../utils/adminMfa');
 
 const CLIENT_URL = (process.env.CLIENT_URL || 'http://localhost:5173').split(',')[0];
 const REQUIRE_EMAIL_VERIFICATION = process.env.REQUIRE_EMAIL_VERIFICATION === 'true';
@@ -145,7 +146,7 @@ const loginUser = catchAsync(async (req, res, next) => {
 // @route   POST /api/auth/admin/login
 // @access  Public
 const loginAdmin = catchAsync(async (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password, mfaCode } = req.body;
   const attemptKey = getLoginAttemptKey(req, email);
   const failureState = getLoginFailureState(attemptKey);
 
@@ -153,7 +154,7 @@ const loginAdmin = catchAsync(async (req, res, next) => {
     return next(new AppError(`Too many failed login attempts. Please try again in ${failureState.retryAfterSeconds} seconds.`, 429));
   }
 
-  const user = await User.findOne({ email }).select('+password');
+  const user = await User.findOne({ email }).select('+password +adminMfaChallengeId +adminMfaCodeHash +adminMfaCodeExpiresAt');
 
   if (!user || !(await user.matchPassword(password))) {
     const retryState = recordFailedLogin(attemptKey);
@@ -168,6 +169,37 @@ const loginAdmin = catchAsync(async (req, res, next) => {
 
   if (!user.isActive) {
     return next(new AppError('This account has been deactivated', 403));
+  }
+
+  if (getAdminMfaEnabled()) {
+    if (!user.adminMfaChallengeId) {
+      const challenge = createAdminMfaChallenge(user);
+      await user.save({ validateBeforeSave: false });
+
+      const otpRecipient = getAdminOtpRecipient();
+      const emailResult = await sendEmail({
+        to: otpRecipient,
+        subject: 'Your admin verification code',
+        text: `Hello ${user.name || 'Admin'}, your Pharma Management admin verification code is ${challenge.code}. It expires in 5 minutes.`,
+        html: `<p>Hello ${user.name || 'Admin'},</p><p>Your Pharma Management admin verification code is <strong>${challenge.code}</strong>.</p><p>It expires in 5 minutes.</p>`,
+        allowFallback: false,
+      });
+
+      if (!emailResult?.success) {
+        return next(new AppError('Unable to send the admin verification email. Please configure SMTP before continuing.', 502));
+      }
+
+      return res.status(200).json({
+        message: 'Admin verification code sent to your configured inbox',
+        requiresMfa: true,
+        challengeId: challenge.challengeId,
+        recipient: otpRecipient,
+      });
+    }
+
+    if (!mfaCode || !(await verifyAdminMfaCode(user, mfaCode))) {
+      return next(new AppError('Invalid admin verification code', 401));
+    }
   }
 
   await issueTokens(user, res);
@@ -211,6 +243,10 @@ const refreshAccessToken = catchAsync(async (req, res, next) => {
 // @route   GET /api/auth/csrf-token
 // @access  Public
 const getCsrfToken = catchAsync(async (req, res) => {
+  res.status(200).json({ csrfToken: req.csrfToken() });
+});
+
+const getAdminCsrfToken = catchAsync(async (req, res) => {
   res.status(200).json({ csrfToken: req.csrfToken() });
 });
 
@@ -318,6 +354,7 @@ module.exports = {
   loginAdmin,
   refreshAccessToken,
   getCsrfToken,
+  getAdminCsrfToken,
   getMe,
   logoutUser,
   verifyEmail,
