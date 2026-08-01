@@ -19,11 +19,12 @@ const FREE_DELIVERY_THRESHOLD = 500;
 const PLATFORM_FEE = 12;
 const COD_MIN_MRP = 500;
 
-const UPI_ID_REGEX = /^[a-zA-Z0-9.\-_]{2,49}@[a-zA-Z][a-zA-Z0-9]{1,49}$/;
+const UPI_ID_REGEX = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z][a-zA-Z0-9.]{1,63}$/;
 const MOBILE_REGEX = /^[6-9]\d{9}$/;
+// Indian PIN codes are always 6 digits and never start with 0.
+const PINCODE_REGEX = /^[1-9][0-9]{5}$/;
 const CHECKOUT_STORAGE_KEY = 'pharmasync.checkout.state';
 const PAYMENT_PREFERENCE_KEY = 'pharmasync.savedPaymentMethod';
-const COD_OTP = '123456';
 
 const luhnValid = (digits) => {
   let sum = 0;
@@ -39,6 +40,20 @@ const luhnValid = (digits) => {
   }
   return sum % 10 === 0;
 };
+
+// IIN (Issuer Identification Number) prefix ranges actually in use by cards
+// issued in India, so the CVV length rule and "we don't accept this network"
+// check are both grounded in the real numbers rather than guessed.
+const getCardNetwork = (digits) => {
+  if (/^4/.test(digits)) return 'Visa';
+  if (/^(5[1-5]|2(2[2-9][1-9]|2[3-9]\d|[3-6]\d{2}|7[01]\d|720))/.test(digits)) return 'Mastercard';
+  if (/^3[47]/.test(digits)) return 'Amex';
+  if (/^(60|65|81|82|508|353|356)/.test(digits)) return 'RuPay';
+  if (/^3(0[0-5]|[68])/.test(digits)) return 'Diners Club';
+  return 'Unknown';
+};
+
+const getCvvLength = (network) => (network === 'Amex' ? 4 : 3);
 
 const formatCardNumber = (raw) => raw.replace(/(.{4})/g, '$1 ').trim();
 
@@ -165,6 +180,10 @@ const Checkout = () => {
       showToast('Please enter at least an address line and city', 'error');
       return;
     }
+    if (!PINCODE_REGEX.test(address.pincode.trim())) {
+      showToast('Enter a valid 6-digit pincode', 'error');
+      return;
+    }
     goNext();
   };
 
@@ -192,46 +211,41 @@ const Checkout = () => {
   const [savedMethodPreference, setSavedMethodPreference] = useState(getStoredPaymentPreference);
 
   const [upiId, setUpiId] = useState('');
-  const [upiVerified, setUpiVerified] = useState(false);
+  const [upiChecked, setUpiChecked] = useState(false);
   const [upiError, setUpiError] = useState('');
 
   const [card, setCard] = useState({ number: '', name: '', expiry: '', cvv: '' });
   const [cardErrors, setCardErrors] = useState({});
 
   const [walletProvider, setWalletProvider] = useState('PhonePe');
-  const [wallet, setWallet] = useState({ mobile: '', pin: '' });
-  const [walletErrors, setWalletErrors] = useState({});
+  const [walletMobile, setWalletMobile] = useState('');
+  const [walletError, setWalletError] = useState('');
+  const [walletRequestSent, setWalletRequestSent] = useState(false);
 
   const [placedOrder, setPlacedOrder] = useState(null);
   const [billSnapshot, setBillSnapshot] = useState(null);
   const [placing, setPlacing] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
-  const [codOtp, setCodOtp] = useState('');
-  const [codOtpVerified, setCodOtpVerified] = useState(false);
-  const [codOtpError, setCodOtpError] = useState('');
   const [shareLinks, setShareLinks] = useState(null);
 
   const selectMethod = (m) => {
     setMethod(m);
-    setUpiVerified(false);
+    setUpiChecked(false);
     setUpiError('');
     setCardErrors({});
-    setWalletErrors({});
-    setCodOtp('');
-    setCodOtpVerified(false);
-    setCodOtpError('');
+    setWalletError('');
+    setWalletRequestSent(false);
   };
 
-  const handleVerifyUpi = () => {
+  const handleCheckUpiFormat = () => {
     const trimmed = upiId.trim();
     if (!UPI_ID_REGEX.test(trimmed)) {
       setUpiError('Enter a valid UPI ID, e.g. name@bank');
-      setUpiVerified(false);
+      setUpiChecked(false);
       return;
     }
     setUpiError('');
-    setUpiVerified(true);
-    showToast('UPI ID verified', 'success');
+    setUpiChecked(true);
   };
 
   const handleCardChange = (field, value) => {
@@ -247,12 +261,20 @@ const Checkout = () => {
   const validateCard = () => {
     const errors = {};
     const digits = card.number.replace(/\s/g, '');
+    const network = getCardNetwork(digits);
+
     if (digits.length < 13 || digits.length > 16 || !luhnValid(digits)) {
       errors.number = 'Enter a valid card number';
+    } else if (network === 'Unknown') {
+      errors.number = 'This card network is not supported';
     }
+
     if (!card.name.trim()) {
       errors.name = 'Enter the name on the card';
+    } else if (!/^[a-zA-Z\s.'-]{2,50}$/.test(card.name.trim())) {
+      errors.name = 'Name should only contain letters';
     }
+
     const match = /^(\d{2})\/(\d{2})$/.exec(card.expiry);
     if (!match) {
       errors.expiry = 'Use MM/YY';
@@ -261,27 +283,42 @@ const Checkout = () => {
       const year = 2000 + Number(match[2]);
       const now = new Date();
       const expiryDate = new Date(year, month, 0);
-      if (month < 1 || month > 12 || expiryDate < new Date(now.getFullYear(), now.getMonth(), 1)) {
+      if (month < 1 || month > 12) {
+        errors.expiry = 'Enter a valid month';
+      } else if (expiryDate < new Date(now.getFullYear(), now.getMonth(), 1)) {
         errors.expiry = 'Card has expired';
+      } else if (year > now.getFullYear() + 10) {
+        errors.expiry = 'Enter a valid expiry date';
       }
     }
-    if (!/^\d{3,4}$/.test(card.cvv)) {
-      errors.cvv = 'Enter a valid CVV';
+
+    const requiredCvvLength = getCvvLength(network);
+    if (!new RegExp(`^\\d{${requiredCvvLength}}$`).test(card.cvv)) {
+      errors.cvv = `Enter a valid ${requiredCvvLength}-digit CVV`;
     }
+
     setCardErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const validateWallet = () => {
-    const errors = {};
-    if (!MOBILE_REGEX.test(wallet.mobile.trim())) {
-      errors.mobile = 'Enter a valid 10-digit mobile number';
+  const validateWalletMobile = () => {
+    if (!MOBILE_REGEX.test(walletMobile.trim())) {
+      setWalletError('Enter a valid 10-digit mobile number');
+      return false;
     }
-    if (!/^\d{4,6}$/.test(wallet.pin)) {
-      errors.pin = 'Enter your 4–6 digit wallet PIN';
-    }
-    setWalletErrors(errors);
-    return Object.keys(errors).length === 0;
+    setWalletError('');
+    return true;
+  };
+
+  // Real wallet/UPI apps never ask the merchant's checkout page for your
+  // PIN — the PIN is entered only inside the wallet app when you approve
+  // the payment request. This simulates that request-and-approve step
+  // instead of collecting a PIN here.
+  const handleSendWalletRequest = () => {
+    if (!validateWalletMobile()) return;
+    setWalletRequestSent(true);
+    const providerLabel = walletProvider === 'AmazonPay' ? 'Amazon Pay' : 'PhonePe';
+    showToast(`Payment request sent to your ${providerLabel} app — approve it there to continue.`, 'info');
   };
 
   useEffect(() => {
@@ -295,15 +332,15 @@ const Checkout = () => {
     const maskedPreference = (() => {
       if (method === 'UPI') return { method, detail: maskUpiId(upiId) };
       if (method === 'Card') return { method, detail: maskCard(card.number) };
-      if (method === 'Wallet') return { method, detail: maskMobile(wallet.mobile) };
-      if (method === 'COD') return { method, detail: 'OTP verified' };
+      if (method === 'Wallet') return { method, detail: maskMobile(walletMobile) };
+      if (method === 'COD') return { method, detail: 'Cash on Delivery' };
       return { method, detail: 'saved' };
     })();
 
     const payload = { enabled: true, method, detail: maskedPreference.detail };
     localStorage.setItem(PAYMENT_PREFERENCE_KEY, JSON.stringify(payload));
     setSavedMethodPreference(payload);
-  }, [saveMethod, method, upiId, card.number, wallet.mobile]);
+  }, [saveMethod, method, upiId, card.number, walletMobile]);
 
   useEffect(() => {
     if (!method && savedMethodPreference) {
@@ -342,31 +379,6 @@ const Checkout = () => {
     }
   };
 
-  const sendCodOtp = () => {
-    if (!MOBILE_REGEX.test(wallet.mobile.trim())) {
-      setCodOtpError('Enter a valid 10-digit mobile number to receive the OTP');
-      return;
-    }
-    setCodOtpError('');
-    setCodOtpVerified(false);
-    showToast(`OTP sent to ${wallet.mobile.slice(-2).padStart(10, '•')}`, 'success');
-  };
-
-  const verifyCodOtp = () => {
-    if (!codOtp.trim()) {
-      setCodOtpError('Enter the 6-digit OTP');
-      return;
-    }
-    if (codOtp.trim() !== COD_OTP) {
-      setCodOtpError('That OTP is incorrect. Try 123456 for the demo.');
-      setCodOtpVerified(false);
-      return;
-    }
-    setCodOtpVerified(true);
-    setCodOtpError('');
-    showToast('OTP verified', 'success');
-  };
-
   const handlePay = async () => {
     if (submittingRef.current) return;
     if (!agreeTerms) {
@@ -384,8 +396,8 @@ const Checkout = () => {
 
     let paymentDetails = '';
     if (method === 'UPI') {
-      if (!upiVerified) {
-        handleVerifyUpi();
+      if (!upiChecked) {
+        handleCheckUpiFormat();
         return;
       }
       paymentDetails = `UPI · ${upiId.trim()}`;
@@ -394,19 +406,18 @@ const Checkout = () => {
       const digits = card.number.replace(/\s/g, '');
       paymentDetails = `Card ending ${digits.slice(-4)}`;
     } else if (method === 'Wallet') {
-      if (!validateWallet()) return;
+      if (!walletRequestSent) {
+        handleSendWalletRequest();
+        return;
+      }
       const providerLabel = walletProvider === 'AmazonPay' ? 'Amazon Pay' : 'PhonePe';
-      paymentDetails = `${providerLabel} Wallet · ${wallet.mobile.trim()}`;
+      paymentDetails = `${providerLabel} Wallet · ${walletMobile.trim()}`;
     } else if (method === 'COD') {
       if (!codEligible) {
         showToast(`Cash on Delivery is only available for orders above ${formatCurrency(COD_MIN_MRP)}`, 'error');
         return;
       }
-      if (!codOtpVerified) {
-        showToast('Verify the COD OTP before placing the order', 'error');
-        return;
-      }
-      paymentDetails = 'Cash on Delivery · OTP verified';
+      paymentDetails = 'Cash on Delivery';
     }
 
     submittingRef.current = true;
@@ -538,7 +549,13 @@ const Checkout = () => {
           <label className="field-label">State</label>
           <input name="state" value={address.state} onChange={handleAddressChange} placeholder="State" />
           <label className="field-label">Pincode</label>
-          <input name="pincode" value={address.pincode} onChange={handleAddressChange} placeholder="Pincode" />
+          <input
+            name="pincode"
+            inputMode="numeric"
+            value={address.pincode}
+            onChange={(e) => setAddress((prev) => ({ ...prev, pincode: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
+            placeholder="6-digit pincode"
+          />
 
           <button type="button" className="btn-secondary location-btn" onClick={handleUseCurrentLocation} disabled={locating}>
             <Truck size={14} strokeWidth={2} /> {locating ? 'Locating…' : 'Use current location for delivery'}
@@ -637,14 +654,14 @@ const Checkout = () => {
                       icon={Smartphone}
                       placeholder="yourname@bank"
                       value={upiId}
-                      onChange={(e) => { setUpiId(e.target.value); setUpiVerified(false); setUpiError(''); }}
+                      onChange={(e) => { setUpiId(e.target.value); setUpiChecked(false); setUpiError(''); }}
                     />
-                    <button type="button" className="btn-secondary" onClick={handleVerifyUpi} disabled={!upiId.trim() || submitting}>
-                      Verify
+                    <button type="button" className="btn-secondary" onClick={handleCheckUpiFormat} disabled={!upiId.trim() || submitting}>
+                      Check ID
                     </button>
                   </div>
                   {upiError && <p className="error-text small">{upiError}</p>}
-                  {upiVerified && <p className="success-text small"><CheckCircle2 size={14} strokeWidth={2} /> UPI ID verified</p>}
+                  {upiChecked && <p className="success-text small"><CheckCircle2 size={14} strokeWidth={2} /> Looks good — you'll get a payment request on your UPI app</p>}
                 </div>
               )}
 
@@ -656,7 +673,15 @@ const Checkout = () => {
                     placeholder="1234 5678 9012 3456"
                     value={formatCardNumber(card.number)}
                     onChange={(e) => handleCardChange('number', e.target.value)}
+                    disabled={submitting}
                   />
+                  {(() => {
+                    const digits = card.number.replace(/\s/g, '');
+                    const network = digits.length >= 4 ? getCardNetwork(digits) : null;
+                    return network && network !== 'Unknown' && !cardErrors.number ? (
+                      <p className="muted-text small">{network} card detected</p>
+                    ) : null;
+                  })()}
                   {cardErrors.number && <p className="error-text small">{cardErrors.number}</p>}
 
                   <label className="field-label">Name on card</label>
@@ -690,7 +715,7 @@ const Checkout = () => {
                     <button
                       type="button"
                       className={`wallet-provider-tile ${walletProvider === 'PhonePe' ? 'active' : ''}`}
-                      onClick={() => setWalletProvider('PhonePe')}
+                      onClick={() => { setWalletProvider('PhonePe'); setWalletRequestSent(false); }}
                       disabled={submitting}
                     >
                       PhonePe Wallet
@@ -698,7 +723,7 @@ const Checkout = () => {
                     <button
                       type="button"
                       className={`wallet-provider-tile ${walletProvider === 'AmazonPay' ? 'active' : ''}`}
-                      onClick={() => setWalletProvider('AmazonPay')}
+                      onClick={() => { setWalletProvider('AmazonPay'); setWalletRequestSent(false); }}
                       disabled={submitting}
                     >
                       Amazon Pay Wallet
@@ -706,25 +731,27 @@ const Checkout = () => {
                   </div>
 
                   <label className="field-label">Registered mobile number</label>
-                  <input
-                    inputMode="numeric"
-                    placeholder="10-digit mobile number"
-                    value={wallet.mobile}
-                    onChange={(e) => setWallet((prev) => ({ ...prev, mobile: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
-                    disabled={submitting}
-                  />
-                  {walletErrors.mobile && <p className="error-text small">{walletErrors.mobile}</p>}
-
-                  <label className="field-label">Wallet PIN</label>
-                  <input
-                    type="password"
-                    inputMode="numeric"
-                    placeholder="4–6 digit PIN"
-                    value={wallet.pin}
-                    onChange={(e) => setWallet((prev) => ({ ...prev, pin: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
-                    disabled={submitting}
-                  />
-                  {walletErrors.pin && <p className="error-text small">{walletErrors.pin}</p>}
+                  <div className="upi-verify-row">
+                    <input
+                      inputMode="numeric"
+                      placeholder="10-digit mobile number"
+                      value={walletMobile}
+                      onChange={(e) => { setWalletMobile(e.target.value.replace(/\D/g, '').slice(0, 10)); setWalletRequestSent(false); }}
+                      disabled={submitting}
+                    />
+                    <button type="button" className="btn-secondary" onClick={handleSendWalletRequest} disabled={!walletMobile.trim() || submitting}>
+                      Send request
+                    </button>
+                  </div>
+                  {walletError && <p className="error-text small">{walletError}</p>}
+                  {walletRequestSent && !walletError && (
+                    <p className="success-text small">
+                      <CheckCircle2 size={14} strokeWidth={2} /> Request sent — approve it in your {walletProvider === 'AmazonPay' ? 'Amazon Pay' : 'PhonePe'} app, then click Pay below.
+                    </p>
+                  )}
+                  <p className="muted-text small" style={{ marginTop: 6 }}>
+                    We'll never ask for your wallet PIN here — you only enter it inside your own wallet app.
+                  </p>
                 </div>
               )}
 
@@ -732,32 +759,9 @@ const Checkout = () => {
                 <div className="payment-method-form">
                   <p className="muted-text">
                     Pay in cash when your order arrives. Please keep the exact amount handy where possible.
+                    A delivery OTP (sent closer to the delivery date) will be shared with the delivery agent
+                    to confirm receipt — no code is needed to place this order.
                   </p>
-                  <label className="field-label">Mobile number for OTP</label>
-                  <input
-                    inputMode="numeric"
-                    placeholder="10-digit mobile number"
-                    value={wallet.mobile}
-                    onChange={(e) => setWallet((prev) => ({ ...prev, mobile: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
-                    disabled={submitting}
-                  />
-                  <div className="upi-verify-row" style={{ marginTop: 10 }}>
-                    <button type="button" className="btn-secondary" onClick={sendCodOtp} disabled={submitting || !wallet.mobile.trim()}>
-                      Send OTP
-                    </button>
-                    <input
-                      inputMode="numeric"
-                      placeholder="Enter 6-digit OTP"
-                      value={codOtp}
-                      onChange={(e) => setCodOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      disabled={submitting}
-                    />
-                    <button type="button" className="btn-secondary" onClick={verifyCodOtp} disabled={submitting || !codOtp.trim()}>
-                      Verify OTP
-                    </button>
-                  </div>
-                  {codOtpError && <p className="error-text small">{codOtpError}</p>}
-                  {codOtpVerified && <p className="success-text small"><CheckCircle2 size={14} strokeWidth={2} /> OTP verified for COD</p>}
                 </div>
               )}
 
@@ -780,7 +784,9 @@ const Checkout = () => {
                 </label>
                 <button className="btn-primary" onClick={handlePay} disabled={!method || paying || placing || submitting || !agreeTerms}>
                   {paying || placing ? <><Loader2 size={16} className="spin" /> Processing…</> : (
-                    method === 'COD' ? 'Place Order' : `Pay ${formatCurrency(amountToPay)}`
+                    method === 'COD' ? 'Place Order' :
+                    method === 'Wallet' && !walletRequestSent ? 'Send Payment Request' :
+                    `Pay ${formatCurrency(amountToPay)}`
                   )}
                 </button>
               </div>

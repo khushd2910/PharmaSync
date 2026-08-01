@@ -74,6 +74,9 @@ const PLATFORM_FEE = 12;
 const DEFAULT_ETA_MIN_MINUTES = 15;
 const DEFAULT_ETA_MAX_MINUTES = 25;
 
+// Indian PIN codes are always 6 digits and never start with 0.
+const INDIAN_PINCODE_REGEX = /^[1-9][0-9]{5}$/;
+
 // @desc    Place an order from the current cart
 // @route   POST /api/orders
 // @access  Private
@@ -82,6 +85,9 @@ const createOrder = catchAsync(async (req, res, next) => {
 
   if (!address || !address.line1 || !address.city) {
     return next(new AppError('A delivery address (line1, city) is required', 400));
+  }
+  if (!address.pincode || !INDIAN_PINCODE_REGEX.test(String(address.pincode).trim())) {
+    return next(new AppError('Enter a valid 6-digit pincode', 400));
   }
   if (!PAYMENT_METHODS.includes(paymentMethod)) {
     return next(new AppError(`paymentMethod must be one of ${PAYMENT_METHODS.join(', ')}`, 400));
