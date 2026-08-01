@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ClipboardList, Download, Search, SearchX, XCircle, RotateCcw,
-  ChevronLeft, ChevronRight, ShieldAlert, Copy, Clock, LifeBuoy, Star,
+  ChevronLeft, ChevronRight, ShieldAlert, Copy, LifeBuoy, Star,
 } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
 import { formatCurrency, formatDate } from '../utils/format';
@@ -311,7 +311,6 @@ const Orders = () => {
               const status = computeDisplayStatus(order);
               const isDelivered = status === 'Delivered';
               const isCancelled = status === 'Cancelled';
-              const isActive = !isDelivered && !isCancelled;
               const cancellable = isCancellable(order);
               const stageIndex = ORDER_STAGES.indexOf(status);
               const monthLabel = monthLabelFor(order.createdAt);
@@ -346,13 +345,6 @@ const Orders = () => {
                             {isDelivered
                               ? `Delivered ${formatDate(order.updatedAt)}`
                               : `Placed ${formatDate(order.createdAt)}`}
-                            {isActive && order.estimatedDeliveryMinutes && (
-                              <>
-                                {' · '}
-                                <Clock size={11} strokeWidth={2} className="inline-icon" />
-                                {' '}Arriving in ~{order.estimatedDeliveryMinutes} mins
-                              </>
-                            )}
                           </p>
                         </div>
                         <span className={`badge ${badgeClassFor(status)}`}>{status}</span>

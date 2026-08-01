@@ -220,7 +220,7 @@ const getMyOrders = catchAsync(async (req, res) => {
 // @route   GET /api/orders/:id
 // @access  Private
 const getOrderById = catchAsync(async (req, res, next) => {
-  const order = await Order.findOne({ _id: req.params.id, user: req.user._id });
+  const order = await Order.findOne({ _id: req.params.id, user: req.user._id }).populate('prescription');
   if (!order) {
     return next(new AppError('Order not found', 404));
   }
@@ -231,7 +231,9 @@ const getOrderById = catchAsync(async (req, res, next) => {
 // @route   GET /api/admin/orders/:id
 // @access  Private (admin)
 const adminGetOrderById = catchAsync(async (req, res, next) => {
-  const order = await Order.findById(req.params.id).populate('user', 'name email');
+  const order = await Order.findById(req.params.id)
+    .populate('user', 'name email')
+    .populate('prescription');
   if (!order) {
     return next(new AppError('Order not found', 404));
   }
@@ -263,6 +265,7 @@ const cancelOrder = catchAsync(async (req, res, next) => {
     order.paymentStatus = 'Refunded';
   }
   await order.save();
+  await order.populate('prescription');
 
   return res.status(200).json({ message: 'Order cancelled and refund/restock processed', order });
 });
@@ -291,6 +294,7 @@ const rateOrder = catchAsync(async (req, res, next) => {
 
   order.rating = rating;
   await order.save();
+  await order.populate('prescription');
 
   return res.status(200).json({ message: 'Thanks for your feedback!', order });
 });
@@ -369,6 +373,29 @@ const adminUpdateOrderStatus = catchAsync(async (req, res, next) => {
     return next(new AppError('This order has already been delivered and can no longer be modified', 400));
   }
 
+  // Module 10 — Prescription Medicine Alert gate. An order that needs a
+  // prescription can't be advanced out of Pending until that prescription
+  // has actually been approved — the only status change allowed here is
+  // Cancelled. A rejected prescription auto-cancels the order already (see
+  // prescriptionController.adminReviewPrescription), but this is enforced
+  // again here as a safeguard in case the admin tries to set anything else
+  // directly on a still-pending or already-rejected prescription.
+  if (
+    order.prescriptionRequired &&
+    order.prescriptionStatus !== 'Approved' &&
+    status !== 'Cancelled' &&
+    status !== order.orderStatus
+  ) {
+    return next(
+      new AppError(
+        order.prescriptionStatus === 'Rejected'
+          ? 'This prescription was rejected — the order can only be cancelled.'
+          : 'This order is waiting on prescription approval — review the prescription before changing its status, or cancel the order.',
+        400
+      )
+    );
+  }
+
   if (status === 'Cancelled' && order.orderStatus !== 'Cancelled') {
     await restockItems(order.items);
     if (order.paymentStatus === 'Paid') {
@@ -394,6 +421,8 @@ const adminUpdateOrderStatus = catchAsync(async (req, res, next) => {
   }
 
   await order.save();
+  await order.populate('user', 'name email');
+  await order.populate('prescription');
 
   return res.status(200).json({ message: 'Order status updated', order });
 });

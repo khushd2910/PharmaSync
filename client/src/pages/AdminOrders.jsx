@@ -58,36 +58,13 @@ const AdminOrders = () => {
     }
   };
 
-  // Lets an admin correct the quick-commerce ETA (in minutes) directly,
-  // independent of a status change — e.g. traffic pushed the delivery back
-  // but the order is still "Out for Delivery". Sends the order's current
-  // status back unchanged so only the ETA moves. The input is uncontrolled
-  // (see the `key` on it below) so this reads straight off the DOM value
-  // on blur — no local draft state to fall out of sync.
-  const handleDeliveryMinutesSave = async (order, rawValue) => {
-    const trimmed = String(rawValue).trim();
-    const currentValue = order.estimatedDeliveryMinutes == null ? '' : String(order.estimatedDeliveryMinutes);
-    if (trimmed === currentValue) return; // unchanged, nothing to save
-
-    if (trimmed !== '' && (!Number.isFinite(Number(trimmed)) || Number(trimmed) < 1)) {
-      showToast('Delivery time must be a number of 1 or more minutes', 'error');
-      return;
-    }
-
-    setUpdatingId(order._id);
-    try {
-      const res = await api.patch(`/admin/orders/${order._id}/status`, {
-        status: order.orderStatus,
-        estimatedDeliveryMinutes: trimmed === '' ? null : Number(trimmed),
-      });
-      setOrders((prev) => prev.map((o) => (o._id === order._id ? res.data.order : o)));
-      showToast('Estimated delivery time updated', 'success');
-    } catch (err) {
-      showToast(err.response?.data?.message || 'Could not update delivery time', 'error');
-    } finally {
-      setUpdatingId(null);
-    }
-  };
+  // Module 10 — Prescription Medicine Alert gate. Mirrors the server-side
+  // check in orderController.adminUpdateOrderStatus: an order that needs a
+  // prescription can't be moved out of Pending until that prescription is
+  // Approved. The only status change allowed while it's still awaiting (or
+  // was refused) review is Cancelled — everything else is disabled here so
+  // the admin can't even attempt a blocked transition.
+  const isStatusLocked = (order) => order.prescriptionRequired && order.prescriptionStatus !== 'Approved';
 
   return (
     <div className="admin-orders-page admin-theme">
@@ -162,34 +139,25 @@ const AdminOrders = () => {
                   className="sort-select"
                   value={order.orderStatus}
                   disabled={updatingId === order._id}
+                  title={
+                    isStatusLocked(order)
+                      ? order.prescriptionStatus === 'Rejected'
+                        ? 'Prescription was rejected — this order can only be cancelled'
+                        : 'Waiting on prescription approval — only cancellation is allowed until then'
+                      : undefined
+                  }
                   onChange={(e) => handleStatusChange(order._id, e.target.value)}
                 >
                   {ALL_STATUSES.map((s) => (
-                    <option key={s} value={s}>{s}</option>
+                    <option
+                      key={s}
+                      value={s}
+                      disabled={isStatusLocked(order) && s !== 'Cancelled' && s !== order.orderStatus}
+                    >
+                      {s}
+                    </option>
                   ))}
                 </select>
-              )}
-
-              {order.orderStatus !== 'Cancelled' && order.orderStatus !== 'Delivered' && (
-                <label className="admin-eta-field">
-                  <span className="muted-text" style={{ fontSize: 11 }}>Delivery in (mins)</span>
-                  <input
-                    type="number"
-                    min={1}
-                    className="sort-select"
-                    // Keying on the saved value forces React to remount this
-                    // input (fresh defaultValue) whenever the server-side
-                    // value actually changes, so it can never get stuck
-                    // showing a stale number after a save.
-                    key={`${order._id}-${order.estimatedDeliveryMinutes ?? 'none'}`}
-                    defaultValue={order.estimatedDeliveryMinutes ?? ''}
-                    disabled={updatingId === order._id}
-                    onBlur={(e) => handleDeliveryMinutesSave(order, e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') e.target.blur();
-                    }}
-                  />
-                </label>
               )}
 
               {computeDisplayStatus(order) === 'Delivered' && (

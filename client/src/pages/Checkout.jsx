@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import {
   MapPin, CreditCard, Truck, ShieldAlert, UploadCloud, FileCheck2,
   Smartphone, Wallet, Banknote, Check, ChevronLeft, ChevronRight, Loader2,
-  PartyPopper, Clock, ShieldCheck, CheckCircle2, MessageCircle,
+  PartyPopper, ShieldCheck, CheckCircle2, MessageCircle,
 } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -816,11 +816,6 @@ const Checkout = () => {
               <div className="confirm-hero-icon"><PartyPopper size={28} strokeWidth={2} /></div>
               <h2>Order placed!</h2>
               <p className="muted-text">Invoice {placedOrder.invoiceNumber}</p>
-
-              <div className="confirm-eta">
-                <Clock size={16} strokeWidth={2} />
-                Arriving in an estimated <strong>{placedOrder.estimatedDeliveryMinutes} minutes</strong>
-              </div>
 
               <div className="confirm-savings-banner">
                 You saved <strong>{formatCurrency(billSnapshot.mrpDiscount + billSnapshot.couponDiscount)}</strong> across MRP and coupon savings.
