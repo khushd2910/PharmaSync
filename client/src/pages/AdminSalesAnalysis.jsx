@@ -48,21 +48,36 @@ const AdminSalesAnalysis = () => {
   const [forecastPage, setForecastPage] = useState(1);
   const FORECAST_PAGE_SIZE = 20;
 
-  const load = () => {
+  const loadSalesAnalysis = () => {
     setLoading(true);
-    Promise.all([
-      api.get('/admin/sales-analysis'),
-      api.get('/admin/demand-forecast'),
-      api.get('/admin/revenue-forecast')
-    ])
-      .then(([salesRes, forecastRes, revenueRes]) => {
-        setAnalysis(salesRes.data.analysis);
-        setForecast(forecastRes.data.analysis);
-        setRevenueForecast(revenueRes.data.analysis);
+    api
+      .get('/admin/sales-analysis')
+      .then((res) => setAnalysis(res.data.analysis))
+      .catch((err) => showToast(err.response?.data?.message || 'Could not load sales analysis', 'error'))
+      .finally(() => setLoading(false));
+  };
+
+  const loadForecast = () => {
+    api
+      .get('/admin/demand-forecast')
+      .then((res) => {
+        setForecast(res.data.analysis);
         setForecastPage(1);
       })
-      .catch((err) => showToast(err.response?.data?.message || 'Could not load analysis data', 'error'))
-      .finally(() => setLoading(false));
+      .catch((err) => showToast(err.response?.data?.message || 'Could not load demand forecast', 'error'));
+  };
+
+  const loadRevenueForecast = () => {
+    api
+      .get('/admin/revenue-forecast')
+      .then((res) => setRevenueForecast(res.data.analysis))
+      .catch((err) => showToast(err.response?.data?.message || 'Could not load revenue forecast', 'error'));
+  };
+
+  const load = () => {
+    loadSalesAnalysis();
+    loadForecast();
+    loadRevenueForecast();
   };
 
   useEffect(load, []); // eslint-disable-line react-hooks/exhaustive-deps

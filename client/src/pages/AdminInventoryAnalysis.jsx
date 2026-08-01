@@ -240,8 +240,19 @@ const AdminInventoryAnalysis = () => {
               <ul className="analysis-list">
                 {analysis.deadStock.map((d) => (
                   <li key={d.medicineId}>
-                    <span>{d.name}</span>
-                    <span className="num">{d.stock} units · ₹{d.inventoryValue.toFixed(0)} tied up</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
+                      <span>{d.name}</span>
+                      <span className="num">{d.stock} units · ₹{d.inventoryValue.toFixed(0)} tied up</span>
+                    </div>
+                    {d.discountRecommendationReason && (
+                      <p className="muted-text" style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem' }}>
+                        {d.discountRecommendationPct > 0 ? (
+                          <><strong>Suggested markdown:</strong> {d.discountRecommendationPct}% off · {d.discountRecommendationReason}</>
+                        ) : (
+                          <><strong>Recommendation:</strong> {d.discountRecommendationReason}</>
+                        )}
+                      </p>
+                    )}
                   </li>
                 ))}
               </ul>

@@ -85,16 +85,25 @@ def get_db():
 def load_medicines_df(db):
     cursor = db.medicines.find(
         {},
-        {'name': 1, 'price': 1, 'stock': 1, 'category': 1, 'isDiscontinued': 1, 'expiryDate': 1},
+        {
+            'name': 1,
+            'price': 1,
+            'stock': 1,
+            'category': 1,
+            'isDiscontinued': 1,
+            'expiryDate': 1,
+            'discountPercent': 1,
+        },
     )
     rows = list(cursor)
     if not rows:
-        return pd.DataFrame(columns=['_id', 'name', 'price', 'stock', 'category', 'isDiscontinued', 'expiryDate'])
+        return pd.DataFrame(columns=['_id', 'name', 'price', 'stock', 'category', 'isDiscontinued', 'expiryDate', 'discountPercent'])
 
     df = pd.DataFrame(rows)
     df['isDiscontinued'] = df.get('isDiscontinued', False).fillna(False)
     df['price'] = pd.to_numeric(df.get('price'), errors='coerce').fillna(0.0)
     df['stock'] = pd.to_numeric(df['stock'], errors='coerce').fillna(0)
+    df['discountPercent'] = pd.to_numeric(df.get('discountPercent'), errors='coerce').fillna(0.0)
     df['category'] = df.get('category').fillna('Uncategorized') if 'category' in df else 'Uncategorized'
     return df
 
@@ -269,6 +278,76 @@ def _rule_based_segment(row):
     return 'Steady Movers'
 
 
+def _estimate_discount_recommendation(df, sales_df):
+    """Estimate markdown recommendations for dead-stock medicines.
+
+    Uses a simple linear fit of units sold vs discount% at the category level.
+    If a category has enough history for regression, it returns a recommendation
+    for slow or dead stock items in that category. Otherwise it leaves the
+    recommendation null.
+    """
+    df = df.copy()
+    df['discountModelSlope'] = 0.0
+    df['discountRecommendationPct'] = None
+    df['discountRecommendationReason'] = ''
+
+    if sales_df.empty:
+        return df
+
+    discount_lookup = df.set_index('_id')['discountPercent'].to_dict()
+    category_lookup = df.set_index('_id')['category'].to_dict()
+
+    sales_df = sales_df.copy()
+    sales_df['discountPercent'] = sales_df['medicineId'].map(lambda mid: discount_lookup.get(mid, 0.0))
+    sales_df['category'] = sales_df['medicineId'].map(lambda mid: category_lookup.get(mid, 'Uncategorized'))
+    sales_df['discountPercent'] = pd.to_numeric(sales_df['discountPercent'], errors='coerce').fillna(0.0)
+    sales_df['quantity'] = pd.to_numeric(sales_df['quantity'], errors='coerce').fillna(0.0)
+
+    def fit_category(group):
+        group = group.dropna(subset=['discountPercent', 'quantity'])
+        x = pd.to_numeric(group['discountPercent'], errors='coerce')
+        y = pd.to_numeric(group['quantity'], errors='coerce')
+        if len(group) < 6 or x.nunique() < 2:
+            return np.nan
+        slope = np.polyfit(x, y, 1)[0]
+        return float(slope)
+
+    slopes = sales_df.groupby('category').apply(lambda g: fit_category(g)).dropna()
+    if slopes.empty:
+        return df
+
+    for category, slope_value in slopes.items():
+        slope = float(slope_value)
+        threshold = -0.05
+        if slope <= threshold:
+            df.loc[df['category'] == category, 'discountModelSlope'] = slope
+            df.loc[df['category'] == category, 'discountRecommendationReason'] = (
+                'Category historically responds to price markdowns'
+            )
+        else:
+            df.loc[df['category'] == category, 'discountModelSlope'] = slope
+            df.loc[df['category'] == category, 'discountRecommendationReason'] = (
+                'Category shows weak response to markdowns'
+            )
+
+    dead_mask = (df['stock'] > 0) & (df['unitsSold'] == 0)
+    for idx, row in df[dead_mask].iterrows():
+        slope = float(row['discountModelSlope'])
+        if slope < 0:
+            rec = min(max(int(round(abs(slope) * 50)), 10), 40)
+            df.at[idx, 'discountRecommendationPct'] = rec
+            df.at[idx, 'discountRecommendationReason'] = (
+                f'Suggest {rec}% markdown for {row["category"]} slow movers.'
+            )
+        else:
+            df.at[idx, 'discountRecommendationPct'] = 0
+            df.at[idx, 'discountRecommendationReason'] = (
+                'Discounts are unlikely to clear this category quickly.'
+            )
+
+    return df
+
+
 def _detect_anomalies(df):
     """
     Isolation Forest: an unsupervised ML model that isolates outliers by
@@ -349,6 +428,9 @@ def build_analysis(medicines_df, sales_df):
     df['demandVariability'] = np.where(df['avgDailyDemand'] > 0, df['demandStdDev'] / df['avgDailyDemand'], df['demandStdDev'])
     df['inventoryValue'] = df['stock'] * df['price']
 
+    # --- Price sensitivity / discount elasticity ---
+    df = _estimate_discount_recommendation(df, sales_df)
+
     # --- ABC / Pareto classification ---
     df = _classify_abc(df)
 
@@ -370,6 +452,7 @@ def build_analysis(medicines_df, sales_df):
             'category': row.get('category') or 'Uncategorized',
             'stock': int(row['stock']),
             'price': round(float(row['price']), 2),
+            'discountPercent': round(float(row['discountPercent']), 1),
             'unitsSold': int(row['unitsSold']),
             'revenue': round(float(row['revenue']), 2),
             'avgDailyDemand': round(float(row['avgDailyDemand']), 2),
@@ -386,6 +469,8 @@ def build_analysis(medicines_df, sales_df):
             'isAnomaly': bool(row['isAnomaly']),
             'anomalyReason': row['anomalyReason'],
             'isDeadStock': bool(row['isDeadStock']),
+            'discountRecommendationPct': None if pd.isna(row.get('discountRecommendationPct')) else int(row['discountRecommendationPct']),
+            'discountRecommendationReason': row.get('discountRecommendationReason', ''),
         }
 
     records = [to_record(row) for _, row in df.iterrows()]

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  ClipboardList, Pill, Package, Wallet, AlertTriangle, CalendarClock, ScanBarcode, BarChart3, RefreshCw, BellRing, ShoppingBasket,
+  ClipboardList, Pill, Package, Wallet, AlertTriangle, CalendarClock, ScanBarcode, BarChart3, RefreshCw, BellRing, Sparkles,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
@@ -17,23 +17,11 @@ const AdminDashboard = () => {
   const [data, setData] = useState(null);
   const [stats, setStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
-  const [analysis, setAnalysis] = useState(null);
-  const [analysisLoading, setAnalysisLoading] = useState(true);
-
   const [expiryAnalysis, setExpiryAnalysis] = useState(null);
   const [expiryLoading, setExpiryLoading] = useState(true);
   const [runningExpiry, setRunningExpiry] = useState(false);
   const { showToast } = useToast();
   const expiryAlertShown = useRef(false);
-
-  const loadAnalysis = () => {
-    setAnalysisLoading(true);
-    api
-      .get('/admin/inventory-analysis')
-      .then((res) => setAnalysis(res.data.analysis))
-      .catch((err) => showToast(err.response?.data?.message || 'Could not load inventory analysis', 'error'))
-      .finally(() => setAnalysisLoading(false));
-  };
 
   const loadExpiryAnalysis = ({ notify = false } = {}) => {
     setExpiryLoading(true);
@@ -65,17 +53,20 @@ const AdminDashboard = () => {
       .then((res) => setStats(res.data.stats))
       .catch((err) => showToast(err.response?.data?.message || 'Could not load dashboard overview', 'error'))
       .finally(() => setStatsLoading(false));
-    loadAnalysis();
     loadExpiryAnalysis({ notify: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // "Run Analysis Now" now hands off to the dedicated Inventory Analysis
-  // page instead of running the quick summary in place — that page runs
-  // the deeper ABC/reorder/ML analysis automatically on arrival (via the
-  // autoRun nav state) so the click lands directly on the fuller result.
-  const handleRunAnalysis = () => {
-    navigate('/admin/inventory-analysis', { state: { autoRun: true } });
+  const handleOpenQuickInventory = () => {
+    navigate('/admin/quick-inventory-analysis', { state: { autoRun: true } });
+  };
+
+  const handleOpenDiscountOptimization = () => {
+    navigate('/admin/price-sensitivity-analysis', { state: { autoRun: true } });
+  };
+
+  const handleOpenDeepInventory = () => {
+    navigate('/admin/deep-inventory-analysis', { state: { autoRun: true } });
   };
 
   const handleRunExpiryAnalysis = async () => {
@@ -150,69 +141,34 @@ const AdminDashboard = () => {
 
       <section className="checkout-section analysis-section">
         <div className="analysis-header">
-          <h2 className="checkout-section-title"><BarChart3 size={16} strokeWidth={2} /> Inventory Analysis</h2>
-          <button className="btn-secondary admin" onClick={handleRunAnalysis}>
-            <RefreshCw size={14} strokeWidth={2} />
-            Run Analysis Now
-          </button>
+          <h2 className="checkout-section-title"><BarChart3 size={16} strokeWidth={2} /> Analysis Modules</h2>
         </div>
 
-        {analysisLoading ? (
-          <p className="info-text center-text">Loading…</p>
-        ) : !analysis ? (
-          <p className="info-text center-text">
-            No analysis has run yet. It runs automatically every night — or click "Run Analysis Now" above.
-          </p>
-        ) : (
-          <>
-            <p className="muted-text analysis-meta">
-              Last run {formatDateTime(analysis.generatedAt)} · sales window: last{' '}
-              {analysis.lookbackDays} days · {analysis.totalStockUnits} total units across {analysis.totalMedicines}{' '}
-              medicines
-            </p>
-
-            <div className="analysis-grid">
-              <div className="analysis-col">
-                <h3>Low Stock <span className="muted-text">(≤ {analysis.lowStockThreshold})</span></h3>
-                <ul className="analysis-list">
-                  {analysis.lowStock.length === 0 && <li className="analysis-empty">Nothing low on stock</li>}
-                  {analysis.lowStock.map((item) => (
-                    <li key={item.medicineId}>
-                      <span>{item.name}</span>
-                      <span className="num">{item.stock} left</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="analysis-col">
-                <h3>Fast Selling</h3>
-                <ul className="analysis-list">
-                  {analysis.fastSelling.length === 0 && <li className="analysis-empty">No sales in this window yet</li>}
-                  {analysis.fastSelling.map((item) => (
-                    <li key={item.medicineId}>
-                      <span>{item.name}</span>
-                      <span className="num">{item.unitsSold} sold</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="analysis-col">
-                <h3>Slow Selling</h3>
-                <ul className="analysis-list">
-                  {analysis.slowSelling.length === 0 && <li className="analysis-empty">Nothing sitting unsold</li>}
-                  {analysis.slowSelling.map((item) => (
-                    <li key={item.medicineId}>
-                      <span>{item.name}</span>
-                      <span className="num">{item.stock} in stock, {item.unitsSold} sold</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+        <div className="analysis-grid">
+          <button className="placeholder-card admin-action-card" onClick={handleOpenQuickInventory}>
+            <BarChart3 size={20} strokeWidth={2} className="placeholder-icon" />
+            <div>
+              <strong>Quick Inventory Analysis</strong>
+              <p className="muted-text">Low Stock, Fast Selling, and Slow Selling snapshots that auto-run on arrival.</p>
             </div>
-          </>
-        )}
+          </button>
+
+          <button className="placeholder-card admin-action-card" onClick={handleOpenDiscountOptimization}>
+            <Wallet size={20} strokeWidth={2} className="placeholder-icon" />
+            <div>
+              <strong>Price Sensitivity / Discount Optimization</strong>
+              <p className="muted-text">Dead-stock markdown recommendations based on category elasticity.</p>
+            </div>
+          </button>
+
+          <button className="placeholder-card admin-action-card" onClick={handleOpenDeepInventory}>
+            <Sparkles size={20} strokeWidth={2} className="placeholder-icon" />
+            <div>
+              <strong>Deep Inventory Analysis</strong>
+              <p className="muted-text">ABC, reorder/EOQ, cluster segmentation, and anomaly detection.</p>
+            </div>
+          </button>
+        </div>
       </section>
 
       <section className="checkout-section analysis-section">
@@ -315,14 +271,6 @@ const AdminDashboard = () => {
         <div>
           <strong>Sales Analysis</strong>
           <p className="muted-text">Daily, weekly, and monthly trends, revenue, and best/worst sellers.</p>
-        </div>
-      </Link>
-
-      <Link to="/admin/market-basket-analysis" className="placeholder-card admin-action-card">
-        <ShoppingBasket size={20} strokeWidth={2} className="placeholder-icon" />
-        <div>
-          <strong>Market Basket Analysis</strong>
-          <p className="muted-text">Association rules — which medicines get bought together, and how strongly.</p>
         </div>
       </Link>
 

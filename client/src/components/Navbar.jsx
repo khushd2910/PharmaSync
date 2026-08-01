@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LogOut, ShoppingCart, User as UserIcon, ClipboardList, LayoutDashboard, ScanBarcode,
-  BarChart3, FileSpreadsheet, ShieldAlert, Pill, Menu, X, ShoppingBasket,
+  BarChart3, FileSpreadsheet, ShieldAlert, Pill, Menu, X,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -121,9 +121,6 @@ const Navbar = () => {
             </Link>
             <Link to="/admin/sales-analysis" className="navbar-link icon-link" onClick={closeMenu}>
               <BarChart3 size={16} strokeWidth={2} /> Sales
-            </Link>
-            <Link to="/admin/market-basket-analysis" className="navbar-link icon-link" onClick={closeMenu}>
-              <ShoppingBasket size={16} strokeWidth={2} /> Basket
             </Link>
             <Link to="/admin/reports" className="navbar-link icon-link" onClick={closeMenu}>
               <FileSpreadsheet size={16} strokeWidth={2} /> Reports

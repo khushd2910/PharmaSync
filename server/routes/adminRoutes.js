@@ -10,7 +10,6 @@ const {
   runDeepInventoryAnalysis,
 } = require('../controllers/inventoryAnalysisController');
 const { getSalesAnalysis, runSalesAnalysis, getDemandForecast, runDemandForecast, getRevenueForecast, runRevenueForecast } = require('../controllers/salesAnalysisController');
-const { getMarketBasketAnalysis, runMarketBasketAnalysis } = require('../controllers/marketBasketAnalysisController');
 const { getExpiryAnalysis, runExpiryAnalysis } = require('../controllers/expiryAnalysisController');
 const { listReports, generateReports, downloadReport } = require('../controllers/reportController');
 const {
@@ -92,16 +91,6 @@ router.get('/revenue-forecast', getRevenueForecast);
 // @desc  Run the ML-based revenue forecast job on demand
 // @route POST /api/admin/revenue-forecast/run
 router.post('/revenue-forecast/run', runRevenueForecast);
-
-// @desc  Latest market basket analysis snapshot — Apriori/association
-//        rules ("customers who buy X also buy Y") and top item pairs by
-//        support, mined from order + POS basket history
-// @route GET /api/admin/market-basket-analysis
-router.get('/market-basket-analysis', getMarketBasketAnalysis);
-
-// @desc  Run the market basket analysis job on demand
-// @route POST /api/admin/market-basket-analysis/run
-router.post('/market-basket-analysis/run', runMarketBasketAnalysis);
 
 
 // @desc  Latest nightly expiry analysis snapshot (Expired, Expiring in

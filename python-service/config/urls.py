@@ -31,8 +31,6 @@ urlpatterns = [
     path('api/demand-forecast/run', analytics_views.run_demand_forecast),
     path('api/revenue-forecast', analytics_views.revenue_forecast),
     path('api/revenue-forecast/run', analytics_views.run_revenue_forecast),
-    path('api/market-basket-analysis', analytics_views.market_basket_analysis),
-    path('api/market-basket-analysis/run', analytics_views.run_market_basket_analysis),
     path('api/medicines/<str:medicine_id>/reviews', reviews_views.medicine_reviews),
     path('api/reviews/<str:review_id>', reviews_views.review_detail),
 ]

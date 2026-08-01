@@ -5,7 +5,6 @@ django>=5.0,<7.0
 requests>=2.31
 scikit-learn>=1.4.0
 statsmodels>=0.14.0
-mlxtend>=0.23.0
 
 # Test-only — stands in for MongoDB in analytics/tests.py so the
 # sales/inventory/expiry route tests run without needing a live database.

@@ -24,9 +24,8 @@ same result.
 | `inventory_analysis.py` | 4 | `inventory_analysis` | Total Stock, Low Stock, Fast Selling, Slow Selling |
 | `sales_analysis.py` | 5 | `sales_analysis` | Daily/Weekly/Monthly Sales, Revenue, Best/Worst Sellers |
 | `expiry_analysis.py` | 6 | `expiry_analysis` | Already Expired, Expiring in 30/60/90 Days, alert count |
-| `market_basket_analysis.py` | — | `market_basket_analysis` | Apriori/association rules — "customers who buy X also buy Y" (support/confidence/lift), plus a simpler top-pairs-by-support list |
 
-All four are served at `GET/POST /api/<name>-analysis[/run]` by the same
+All three are served at `GET/POST /api/<name>-analysis[/run]` by the same
 Django process (`python3 manage.py runserver 8000`) — see "Run once" below.
 
 ## Setup (shared by all three scripts)
@@ -45,7 +44,6 @@ cp .env.example .env            # then fill in MONGO_URI
 python3 analytics/inventory_analysis.py
 python3 analytics/sales_analysis.py
 python3 analytics/expiry_analysis.py
-python3 analytics/market_basket_analysis.py
 ```
 
 That's the standalone path, same as always — mainly useful for the
@@ -77,7 +75,6 @@ crontab -e
 0 2 * * * cd /absolute/path/to/pharma-management/python-service && venv/bin/python analytics/inventory_analysis.py >> ../logs/inventory_analysis.log 2>&1
 15 2 * * * cd /absolute/path/to/pharma-management/python-service && venv/bin/python analytics/sales_analysis.py >> ../logs/sales_analysis.log 2>&1
 30 2 * * * cd /absolute/path/to/pharma-management/python-service && venv/bin/python analytics/expiry_analysis.py >> ../logs/expiry_analysis.log 2>&1
-45 2 * * * cd /absolute/path/to/pharma-management/python-service && venv/bin/python analytics/market_basket_analysis.py >> ../logs/market_basket_analysis.log 2>&1
 ```
 
 **Windows (Task Scheduler)** — create three daily triggers:
@@ -86,7 +83,6 @@ crontab -e
 C:\path\to\python-service\venv\Scripts\python.exe C:\path\to\python-service\analytics\inventory_analysis.py
 C:\path\to\python-service\venv\Scripts\python.exe C:\path\to\python-service\analytics\sales_analysis.py
 C:\path\to\python-service\venv\Scripts\python.exe C:\path\to\python-service\analytics\expiry_analysis.py
-C:\path\to\python-service\venv\Scripts\python.exe C:\path\to\python-service\analytics\market_basket_analysis.py
 ```
 
 with "Start in" set to the `python-service` folder for each.

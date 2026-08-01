@@ -16,13 +16,13 @@ via a GET (which 405s before ever reaching the view body), so they don't
 need the same mocking — see test_run_route_requires_post below.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime
 from unittest.mock import patch
 
 import mongomock
 from django.test import SimpleTestCase
 
-from . import expiry_analysis, inventory_analysis, sales_analysis, revenue_forecasting, demand_forecasting, market_basket_analysis
+from . import expiry_analysis, inventory_analysis, sales_analysis, revenue_forecasting, demand_forecasting
 
 
 class SalesAnalysisRouteTests(SimpleTestCase):
@@ -145,56 +145,3 @@ class DemandForecastRouteTests(SimpleTestCase):
         self.assertEqual(response.status_code, 405)
 
 
-class MarketBasketAnalysisRouteTests(SimpleTestCase):
-    def setUp(self):
-        self.db = mongomock.MongoClient().get_database('pharmasync_test')
-        self.patcher = patch.object(market_basket_analysis, 'get_db', return_value=self.db)
-        self.patcher.start()
-        self.addCleanup(self.patcher.stop)
-
-    def test_get_route_returns_analysis_key_when_nothing_has_run_yet(self):
-        response = self.client.get('/api/market-basket-analysis')
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('analysis', response.json())
-        self.assertIsNone(response.json()['analysis'])
-
-    def test_get_route_returns_the_latest_snapshot(self):
-        self.db[market_basket_analysis.RESULT_COLLECTION].insert_one({'generatedAt': datetime(2026, 1, 1), 'totalBaskets': 42})
-        response = self.client.get('/api/market-basket-analysis')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['analysis']['totalBaskets'], 42)
-
-    def test_run_route_requires_post(self):
-        response = self.client.get('/api/market-basket-analysis/run')
-        self.assertEqual(response.status_code, 405)
-
-    def test_run_route_mines_rules_from_orders_and_pos_sales(self):
-        self.db.orders.insert_many([
-            {
-                'orderStatus': 'Delivered',
-                'createdAt': datetime.now(timezone.utc),
-                'items': [
-                    {'medicine': 'a1', 'name': 'Paracetamol', 'quantity': 1, 'price': 20},
-                    {'medicine': 'b1', 'name': 'Vitamin C', 'quantity': 1, 'price': 50},
-                ],
-            }
-            for _ in range(10)
-        ])
-        self.db.possales.insert_many([
-            {
-                'status': 'Completed',
-                'createdAt': datetime.now(timezone.utc),
-                'items': [
-                    {'medicine': 'a1', 'name': 'Paracetamol', 'quantity': 1, 'price': 20},
-                    {'medicine': 'b1', 'name': 'Vitamin C', 'quantity': 1, 'price': 50},
-                ],
-            }
-            for _ in range(5)
-        ])
-        response = self.client.post('/api/market-basket-analysis/run')
-        self.assertEqual(response.status_code, 200)
-        analysis = response.json()['analysis']
-        self.assertEqual(analysis['totalBaskets'], 15)
-        self.assertTrue(len(analysis['rules']) > 0)
-        self.assertEqual(analysis['rules'][0]['antecedents'][0]['name'], 'Paracetamol')
-        self.assertEqual(analysis['rules'][0]['consequents'][0]['name'], 'Vitamin C')

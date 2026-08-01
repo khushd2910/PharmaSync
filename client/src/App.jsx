@@ -45,8 +45,9 @@ const AdminMedicines = lazy(() => import('./pages/AdminMedicines'));
 const AdminEditMedicine = lazy(() => import('./pages/AdminEditMedicine'));
 const AdminPOS = lazy(() => import('./pages/AdminPOS'));
 const AdminSalesAnalysis = lazy(() => import('./pages/AdminSalesAnalysis'));
-const AdminInventoryAnalysis = lazy(() => import('./pages/AdminInventoryAnalysis'));
-const AdminMarketBasketAnalysis = lazy(() => import('./pages/AdminMarketBasketAnalysis'));
+const AdminQuickInventoryAnalysis = lazy(() => import('./pages/AdminQuickInventoryAnalysis'));
+const AdminPriceSensitivityAnalysis = lazy(() => import('./pages/AdminPriceSensitivityAnalysis'));
+const AdminDeepInventoryAnalysis = lazy(() => import('./pages/AdminInventoryAnalysis'));
 const AdminReports = lazy(() => import('./pages/AdminReports'));
 const AdminPrescriptions = lazy(() => import('./pages/AdminPrescriptions'));
 
@@ -212,18 +213,26 @@ function App() {
                   }
                 />
                 <Route
-                  path="/admin/inventory-analysis"
+                  path="/admin/quick-inventory-analysis"
                   element={
                     <ProtectedRoute role="admin">
-                      <AdminInventoryAnalysis />
+                      <AdminQuickInventoryAnalysis />
                     </ProtectedRoute>
                   }
                 />
                 <Route
-                  path="/admin/market-basket-analysis"
+                  path="/admin/price-sensitivity-analysis"
                   element={
                     <ProtectedRoute role="admin">
-                      <AdminMarketBasketAnalysis />
+                      <AdminPriceSensitivityAnalysis />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/deep-inventory-analysis"
+                  element={
+                    <ProtectedRoute role="admin">
+                      <AdminDeepInventoryAnalysis />
                     </ProtectedRoute>
                   }
                 />
