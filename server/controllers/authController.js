@@ -32,6 +32,8 @@ const publicUser = (user) => ({
   wishlist: user.wishlist,
   role: user.role,
   isVerified: user.isVerified,
+  lastLoginAt: user.lastLoginAt,
+  previousLoginAt: user.previousLoginAt,
 });
 
 // @desc    Register a new user (role: user) and email a verification link
@@ -108,6 +110,12 @@ const loginUser = catchAsync(async (req, res, next) => {
   if (REQUIRE_EMAIL_VERIFICATION && !user.isVerified) {
     return next(new AppError('Please verify your email before logging in', 403));
   }
+
+  // Shift the outgoing lastLoginAt into previousLoginAt before overwriting
+  // it, so the profile page's "Last login" reflects the sign-in *before*
+  // this one rather than the session that's just starting.
+  user.previousLoginAt = user.lastLoginAt;
+  user.lastLoginAt = new Date();
 
   await issueTokens(user, res);
 

@@ -1363,6 +1363,19 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
   background: var(--surface);
   box-shadow: var(--shadow-sm);
 }
+.profile-summary-header { display: flex; align-items: center; gap: 16px; }
+.profile-summary-header .checkout-section-title { margin-bottom: 4px; }
+.avatar-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: 700;
+  flex-shrink: 0;
+  user-select: none;
+  letter-spacing: 0.02em;
+}
 .profile-summary-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1389,6 +1402,47 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 .address-card-actions .btn-secondary { padding: 6px 11px; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; }
 .address-edit-form { display: flex; flex-direction: column; gap: 8px; }
 .address-edit-form input { margin-bottom: 0; }
+.use-location-btn {
+  align-self: flex-start;
+  padding: 6px 11px;
+  font-size: 12.5px;
+}
+
+.danger-zone { border-color: var(--red) !important; }
+.danger-zone .checkout-section-title { color: var(--red); display: flex; align-items: center; gap: 8px; }
+.danger-zone-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+.danger-zone-row:first-of-type { border-top: none; padding-top: 4px; }
+.danger-zone-row-delete { flex-direction: column; align-items: stretch; }
+.danger-zone-row-delete .icon-input { margin-bottom: 10px; max-width: 320px; }
+.danger-zone-row-delete .btn-secondary.danger { align-self: flex-start; }
+
+.profile-summary-card-block strong svg { flex-shrink: 0; }
+
+.password-strength { display: flex; align-items: center; gap: 10px; margin: 6px 0 4px; }
+.password-strength-bar { display: flex; gap: 4px; flex: 1; max-width: 160px; }
+.password-strength-bar span {
+  height: 4px;
+  flex: 1;
+  border-radius: 2px;
+  background: var(--line);
+}
+.password-strength-bar span.filled.weak { background: var(--red); }
+.password-strength-bar span.filled.fair { background: var(--amber); }
+.password-strength-bar span.filled.good { background: var(--teal); }
+.password-strength-bar span.filled.strong { background: var(--green); }
+.password-strength-label { font-size: 12px; font-weight: 600; }
+.password-strength-label.weak { color: var(--red); }
+.password-strength-label.fair { color: var(--amber); }
+.password-strength-label.good { color: var(--teal); }
+.password-strength-label.strong { color: var(--green); }
+
 .order-card-tags { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .order-card-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
 .order-card-actions .btn-secondary {

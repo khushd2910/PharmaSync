@@ -22,6 +22,7 @@ import Checkout from './pages/Checkout';
 import Orders from './pages/Orders';
 import OrderDetails from './pages/OrderDetails';
 import Profile from './pages/Profile';
+import MyPrescriptions from './pages/MyPrescriptions';
 import Support from './pages/Support';
 import FAQs from './pages/FAQs';
 import ShippingPolicy from './pages/ShippingPolicy';
@@ -112,6 +113,14 @@ function App() {
                   element={
                     <ProtectedRoute role="user">
                       <SavedForLater />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/prescriptions"
+                  element={
+                    <ProtectedRoute role="user">
+                      <MyPrescriptions />
                     </ProtectedRoute>
                   }
                 />

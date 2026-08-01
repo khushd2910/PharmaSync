@@ -82,10 +82,23 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
     // hashed copy of the current valid refresh token, so a stolen/expired
-    // token can be invalidated server-side (e.g. on logout)
+    // token can be invalidated server-side (e.g. on logout, or "log out of
+    // all devices" — since only one refresh token is tracked at a time,
+    // clearing this hash invalidates whatever session(s) currently rely on
+    // it, the same mechanism logout already uses)
     refreshTokenHash: {
       type: String,
       select: false,
+    },
+    // Login-activity tracking for the profile page's security section.
+    // previousLoginAt is set from the outgoing lastLoginAt right before
+    // lastLoginAt is refreshed, so "Last login" can show the *previous*
+    // sign-in rather than the one happening right now.
+    lastLoginAt: {
+      type: Date,
+    },
+    previousLoginAt: {
+      type: Date,
     },
   },
   { timestamps: true }

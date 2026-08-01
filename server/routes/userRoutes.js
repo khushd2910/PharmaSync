@@ -10,6 +10,10 @@ const {
   setDefaultAddress,
   getWishlist,
   toggleWishlist,
+  exportUserData,
+  deleteAccount,
+  getProfileStats,
+  logoutAllDevices,
 } = require('../controllers/userController');
 
 // @desc  Update the logged-in user's own profile (name, phone)
@@ -32,5 +36,14 @@ router.patch('/addresses/:addressId/default', protect, setDefaultAddress);
 // Wishlist — bookmark medicines from the storefront to come back to later.
 router.get('/wishlist', protect, getWishlist);
 router.post('/wishlist/:medicineId/toggle', protect, toggleWishlist);
+
+// Account data export & deletion — profile page "danger zone".
+router.get('/export', protect, exportUserData);
+router.delete('/account', protect, deleteAccount);
+
+// Profile summary stats (lifetime orders/spend, prescription counts) and
+// the security section's "log out of all devices".
+router.get('/stats', protect, getProfileStats);
+router.post('/logout-all-devices', protect, logoutAllDevices);
 
 module.exports = router;

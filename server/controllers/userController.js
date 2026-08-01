@@ -1,5 +1,8 @@
 const User = require('../models/User');
 const Medicine = require('../models/Medicine');
+const Order = require('../models/Order');
+const Prescription = require('../models/Prescription');
+const Cart = require('../models/Cart');
 const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
 
@@ -15,6 +18,8 @@ const publicUser = (user) => ({
   wishlist: user.wishlist,
   role: user.role,
   isVerified: user.isVerified,
+  lastLoginAt: user.lastLoginAt,
+  previousLoginAt: user.previousLoginAt,
 });
 
 // @desc    Update the logged-in user's own profile (name, phone only —
@@ -204,6 +209,117 @@ const changePassword = catchAsync(async (req, res, next) => {
   return res.status(200).json({ message: 'Password changed successfully' });
 });
 
+// @desc    Export all of the logged-in user's personal data as a downloadable
+//          JSON file — profile, saved addresses, wishlist, order history and
+//          prescription uploads. Kept as one flat file (rather than a zip of
+//          per-resource files) since the volume per user is small and a
+//          single JSON is easiest for a person to actually read or archive.
+// @route   GET /api/user/export
+// @access  Private
+const exportUserData = catchAsync(async (req, res) => {
+  const [orders, prescriptions] = await Promise.all([
+    Order.find({ user: req.user._id }).lean(),
+    Prescription.find({ user: req.user._id }).select('-reviewedBy').lean(),
+  ]);
+
+  const exportData = {
+    exportedAt: new Date().toISOString(),
+    profile: {
+      name: req.user.name,
+      email: req.user.email,
+      phone: req.user.phone,
+      role: req.user.role,
+      isVerified: req.user.isVerified,
+      createdAt: req.user.createdAt,
+    },
+    addresses: req.user.addresses,
+    wishlist: req.user.wishlist,
+    orders,
+    prescriptions,
+  };
+
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Content-Disposition', `attachment; filename="pharmasync-data-${req.user._id}.json"`);
+  return res.status(200).send(JSON.stringify(exportData, null, 2));
+});
+
+// @desc    Permanently delete the logged-in user's own account. Requires the
+//          current password as a confirmation step (same trust bar as
+//          changePassword) since this is irreversible. Saved cart and any
+//          not-yet-used prescription uploads are removed with the account;
+//          past orders are kept as-is for billing/records the way most
+//          storefronts retain transaction history after account closure.
+// @route   DELETE /api/user/account
+// @access  Private
+const deleteAccount = catchAsync(async (req, res, next) => {
+  const { password } = req.body;
+
+  if (!password) {
+    return next(new AppError('Please enter your password to confirm account deletion', 400));
+  }
+
+  const user = await User.findById(req.user._id).select('+password');
+  if (!(await user.matchPassword(password))) {
+    return next(new AppError('Incorrect password', 401));
+  }
+
+  await Promise.all([
+    Cart.deleteOne({ user: user._id }),
+    Prescription.deleteMany({ user: user._id, order: null }),
+  ]);
+  await user.deleteOne();
+
+  res.clearCookie('accessToken', { path: '/' });
+  res.clearCookie('refreshToken', { path: '/' });
+
+  return res.status(200).json({ message: 'Account deleted successfully' });
+});
+
+// @desc    Lightweight profile stats for the summary card — lifetime order
+//          count/spend and prescription counts. Cancelled orders are
+//          excluded from the spend total since nothing was actually kept.
+// @route   GET /api/user/stats
+// @access  Private
+const getProfileStats = catchAsync(async (req, res) => {
+  const [orderAgg, prescriptionAgg] = await Promise.all([
+    Order.aggregate([
+      { $match: { user: req.user._id, orderStatus: { $ne: 'Cancelled' } } },
+      { $group: { _id: null, orderCount: { $sum: 1 }, totalSpent: { $sum: '$totalAmount' } } },
+    ]),
+    Prescription.aggregate([
+      { $match: { user: req.user._id } },
+      { $group: { _id: '$status', count: { $sum: 1 } } },
+    ]),
+  ]);
+
+  const { orderCount = 0, totalSpent = 0 } = orderAgg[0] || {};
+
+  let prescriptionCount = 0;
+  let pendingPrescriptionCount = 0;
+  prescriptionAgg.forEach((row) => {
+    prescriptionCount += row.count;
+    if (row._id === 'Pending') pendingPrescriptionCount = row.count;
+  });
+
+  return res.status(200).json({ orderCount, totalSpent, prescriptionCount, pendingPrescriptionCount });
+});
+
+// @desc    Invalidate the logged-in user's stored refresh token — since only
+//          one is tracked at a time, this is the same effect as "sign out
+//          everywhere": any browser/device relying on it will be asked to
+//          log in again the next time its access token expires.
+// @route   POST /api/user/logout-all-devices
+// @access  Private
+const logoutAllDevices = catchAsync(async (req, res) => {
+  req.user.refreshTokenHash = undefined;
+  await req.user.save({ validateBeforeSave: false });
+
+  res.clearCookie('accessToken', { path: '/' });
+  res.clearCookie('refreshToken', { path: '/' });
+
+  return res.status(200).json({ message: 'Logged out of all devices' });
+});
+
 module.exports = {
   updateProfile,
   changePassword,
@@ -213,4 +329,8 @@ module.exports = {
   setDefaultAddress,
   getWishlist,
   toggleWishlist,
+  exportUserData,
+  deleteAccount,
+  getProfileStats,
+  logoutAllDevices,
 };

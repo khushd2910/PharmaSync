@@ -1,20 +1,59 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { User, Phone, MapPin, ClipboardList, Lock, Sun, Moon, Plus, Pencil, Trash2, Check, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  User, Phone, MapPin, ClipboardList, Lock, Sun, Moon, Plus, Pencil, Trash2, Check, X,
+  LocateFixed, Download, ShieldAlert, UserX, FileText, Receipt, LogOut, ShieldCheck,
+} from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useTheme } from '../context/ThemeContext';
 import IconInput from '../components/IconInput';
+import Avatar from '../components/Avatar';
+import ConfirmModal from '../components/ConfirmModal';
 
 const emptyAddress = { label: 'Home', line1: '', city: '', state: '', pincode: '' };
 
+// Indian PIN codes are 6 digits and never start with 0.
+const PINCODE_REGEX = /^[1-9][0-9]{5}$/;
+
+const formatDateTime = (value) => {
+  if (!value) return null;
+  return new Date(value).toLocaleString(undefined, {
+    day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit',
+  });
+};
+
+// Small heuristic strength score (0-4) — length plus how many character
+// classes are mixed in. Good enough to nudge people away from weak
+// passwords without pulling in a whole zxcvbn-style dependency.
+const PASSWORD_STRENGTH_LEVELS = [
+  { label: 'Very weak', className: 'weak' },
+  { label: 'Weak', className: 'weak' },
+  { label: 'Fair', className: 'fair' },
+  { label: 'Good', className: 'good' },
+  { label: 'Strong', className: 'strong' },
+];
+
+const scorePasswordStrength = (password) => {
+  if (!password) return null;
+  let score = 0;
+  if (password.length >= 8) score += 1;
+  if (password.length >= 12) score += 1;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score += 1;
+  if (/[0-9]/.test(password)) score += 1;
+  if (/[^A-Za-z0-9]/.test(password)) score += 1;
+  const level = Math.min(score, 4);
+  return { score: level, ...PASSWORD_STRENGTH_LEVELS[level] };
+};
+
 const Profile = () => {
-  const { user, login } = useAuth();
+  const { user, login, logout } = useAuth();
   const { cart } = useCart();
   const { showToast } = useToast();
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     name: user?.name || '',
@@ -33,6 +72,30 @@ const Profile = () => {
   const [editingId, setEditingId] = useState(null);
   const [editAddress, setEditAddress] = useState(emptyAddress);
   const [addressBusyId, setAddressBusyId] = useState(null);
+  // 'new' while locating for the add-address form, or an address _id while
+  // locating for that address's edit form — only one lookup runs at a time.
+  const [locatingFor, setLocatingFor] = useState(null);
+
+  // ---------------- Danger zone: export / delete account ----------------
+  const [exporting, setExporting] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
+  // ---------------- Summary stats (orders, spend, prescriptions) ----------------
+  const [stats, setStats] = useState(null);
+  useEffect(() => {
+    api
+      .get('/user/stats')
+      .then((res) => setStats(res.data))
+      .catch(() => setStats(null));
+  }, []);
+
+  // ---------------- Security: last login / log out of all devices ----------------
+  const [confirmingLogoutAll, setConfirmingLogoutAll] = useState(false);
+  const [loggingOutAll, setLoggingOutAll] = useState(false);
+
+  const passwordStrength = useMemo(() => scorePasswordStrength(pwForm.newPassword), [pwForm.newPassword]);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -54,6 +117,10 @@ const Profile = () => {
     e.preventDefault();
     if (!newAddress.line1.trim() || !newAddress.city.trim()) {
       showToast('Please enter at least an address line and city', 'error');
+      return;
+    }
+    if (newAddress.pincode.trim() && !PINCODE_REGEX.test(newAddress.pincode.trim())) {
+      showToast('Enter a valid 6-digit pincode', 'error');
       return;
     }
     setSavingAddress(true);
@@ -84,6 +151,10 @@ const Profile = () => {
   const handleSaveEditAddress = async (addressId) => {
     if (!editAddress.line1.trim() || !editAddress.city.trim()) {
       showToast('Please enter at least an address line and city', 'error');
+      return;
+    }
+    if (editAddress.pincode.trim() && !PINCODE_REGEX.test(editAddress.pincode.trim())) {
+      showToast('Enter a valid 6-digit pincode', 'error');
       return;
     }
     setAddressBusyId(addressId);
@@ -125,6 +196,48 @@ const Profile = () => {
     }
   };
 
+  // Reuses the OpenStreetMap (Nominatim) reverse-geocoding that already
+  // backs the map embed on Checkout — here it autofills the address form
+  // fields instead of just dropping a pin, so saving an address doesn't
+  // require typing it all out by hand.
+  const handleUseCurrentLocation = (formId, setter) => {
+    if (!navigator.geolocation) {
+      showToast('Location access is not supported in this browser', 'error');
+      return;
+    }
+    setLocatingFor(formId);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await res.json();
+          const addr = data.address || {};
+          setter((prev) => ({
+            ...prev,
+            line1: [addr.house_number, addr.road || addr.suburb || addr.neighbourhood]
+              .filter(Boolean)
+              .join(' ') || prev.line1,
+            city: addr.city || addr.town || addr.village || addr.county || prev.city,
+            state: addr.state || prev.state,
+            pincode: addr.postcode || prev.pincode,
+          }));
+          showToast('Address auto-filled from your location', 'success');
+        } catch (err) {
+          showToast('Could not fetch address for your location', 'error');
+        } finally {
+          setLocatingFor(null);
+        }
+      },
+      () => {
+        showToast('Could not access your location. Please allow location permission.', 'error');
+        setLocatingFor(null);
+      }
+    );
+  };
+
   const handlePwChange = (e) => setPwForm({ ...pwForm, [e.target.name]: e.target.value });
 
   const handlePwSubmit = async (e) => {
@@ -155,13 +268,78 @@ const Profile = () => {
     }
   };
 
+  // ---------------- Danger zone: export / delete account ----------------
+  const handleExportData = async () => {
+    setExporting(true);
+    try {
+      const res = await api.get('/user/export', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/json' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `pharmasync-data-${Date.now()}.json`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      showToast('Your data export has started downloading', 'success');
+    } catch (err) {
+      showToast('Could not export your data', 'error');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleRequestDeleteAccount = () => {
+    if (!deletePassword) {
+      showToast('Enter your password to confirm account deletion', 'error');
+      return;
+    }
+    setConfirmingDelete(true);
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeletingAccount(true);
+    try {
+      await api.delete('/user/account', { data: { password: deletePassword } });
+      showToast('Your account has been deleted', 'success');
+      await logout();
+      navigate('/');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Could not delete account', 'error');
+    } finally {
+      setDeletingAccount(false);
+      setConfirmingDelete(false);
+      setDeletePassword('');
+    }
+  };
+
+  const handleLogoutAllDevices = async () => {
+    setLoggingOutAll(true);
+    try {
+      await api.post('/user/logout-all-devices');
+      showToast('Logged out of all devices', 'success');
+      await logout();
+      navigate('/login');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Could not log out of all devices', 'error');
+    } finally {
+      setLoggingOutAll(false);
+      setConfirmingLogoutAll(false);
+    }
+  };
+
   return (
     <div className="profile-page">
       <h1 className="page-title">Your Profile</h1>
 
       <section className="checkout-section profile-summary-card">
-        <h2 className="checkout-section-title">Welcome back, {user?.name || 'PharmaSync user'}</h2>
-        <p className="muted-text">Your personal care center for orders, prescriptions and pharmacy support.</p>
+        <div className="profile-summary-header">
+          <Avatar name={user?.name} size={56} />
+          <div>
+            <h2 className="checkout-section-title">Welcome back, {user?.name || 'PharmaSync user'}</h2>
+            <p className="muted-text">Your personal care center for orders, prescriptions and pharmacy support.</p>
+          </div>
+        </div>
         <div className="profile-summary-grid">
           <div className="profile-summary-card-block">
             <strong>Quick actions</strong>
@@ -174,8 +352,21 @@ const Profile = () => {
             <Link to="/saved-items" className="link-btn">View saved items</Link>
           </div>
           <div className="profile-summary-card-block">
-            <strong>Health reminders</strong>
-            <p>Save your delivery preferences and keep a record of prescription notes for faster refills.</p>
+            <strong><FileText size={14} strokeWidth={2} style={{ verticalAlign: -2, marginRight: 4 }} />My Prescriptions</strong>
+            <p>
+              {stats
+                ? `${stats.prescriptionCount} uploaded${stats.pendingPrescriptionCount > 0 ? ` · ${stats.pendingPrescriptionCount} awaiting review` : ''}.`
+                : 'View and track your uploaded prescriptions.'}
+            </p>
+            <Link to="/prescriptions" className="link-btn">View prescriptions</Link>
+          </div>
+          <div className="profile-summary-card-block">
+            <strong><Receipt size={14} strokeWidth={2} style={{ verticalAlign: -2, marginRight: 4 }} />Lifetime stats</strong>
+            <p>
+              {stats
+                ? `${stats.orderCount} order${stats.orderCount === 1 ? '' : 's'} placed · ₹${stats.totalSpent.toLocaleString('en-IN')} spent lifetime.`
+                : 'Your order history and spend will show up here.'}
+            </p>
           </div>
           <div className="profile-summary-card-block">
             <strong>Support hub</strong>
@@ -240,8 +431,19 @@ const Profile = () => {
                       <input
                         value={editAddress.pincode}
                         onChange={(e) => setEditAddress({ ...editAddress, pincode: e.target.value })}
-                        placeholder="Pincode"
+                        placeholder="Pincode (6 digits)"
+                        maxLength={6}
+                        inputMode="numeric"
                       />
+                      <button
+                        type="button"
+                        className="btn-secondary ghost use-location-btn"
+                        disabled={locatingFor === address._id}
+                        onClick={() => handleUseCurrentLocation(address._id, setEditAddress)}
+                      >
+                        <LocateFixed size={14} strokeWidth={2} />
+                        {locatingFor === address._id ? 'Locating…' : 'Use current location'}
+                      </button>
                       <div className="address-card-actions">
                         <button
                           type="button"
@@ -321,8 +523,19 @@ const Profile = () => {
                 <input
                   value={newAddress.pincode}
                   onChange={(e) => setNewAddress({ ...newAddress, pincode: e.target.value })}
-                  placeholder="Pincode"
+                  placeholder="Pincode (6 digits)"
+                  maxLength={6}
+                  inputMode="numeric"
                 />
+                <button
+                  type="button"
+                  className="btn-secondary ghost use-location-btn"
+                  disabled={locatingFor === 'new'}
+                  onClick={() => handleUseCurrentLocation('new', setNewAddress)}
+                >
+                  <LocateFixed size={14} strokeWidth={2} />
+                  {locatingFor === 'new' ? 'Locating…' : 'Use current location'}
+                </button>
                 <div className="address-card-actions">
                   <button type="submit" className="btn-primary" disabled={savingAddress}>
                     {savingAddress ? 'Saving…' : 'Save address'}
@@ -376,6 +589,21 @@ const Profile = () => {
                 placeholder="At least 8 characters"
                 required
               />
+              {passwordStrength && (
+                <div className="password-strength">
+                  <div className="password-strength-bar">
+                    {[0, 1, 2, 3].map((i) => (
+                      <span
+                        key={i}
+                        className={i <= passwordStrength.score - 1 ? `filled ${passwordStrength.className}` : ''}
+                      />
+                    ))}
+                  </div>
+                  <span className={`password-strength-label ${passwordStrength.className}`}>
+                    {passwordStrength.label}
+                  </span>
+                </div>
+              )}
 
               <label className="field-label">Confirm new password</label>
               <IconInput
@@ -406,6 +634,27 @@ const Profile = () => {
           </section>
 
           <section className="checkout-section">
+            <h2 className="checkout-section-title"><ShieldCheck size={16} strokeWidth={2} /> Security</h2>
+            <p className="muted-text" style={{ marginTop: 0 }}>
+              {user?.previousLoginAt
+                ? `Last login: ${formatDateTime(user.previousLoginAt)}`
+                : 'This is your first recorded login.'}
+            </p>
+            <p className="muted-text" style={{ marginBottom: 14 }}>
+              Two-factor authentication isn't available yet — in the meantime, you can end every other
+              signed-in session below.
+            </p>
+            <button
+              type="button"
+              className="btn-secondary"
+              disabled={loggingOutAll}
+              onClick={() => setConfirmingLogoutAll(true)}
+            >
+              <LogOut size={14} strokeWidth={2} /> {loggingOutAll ? 'Logging out…' : 'Log out of all devices'}
+            </button>
+          </section>
+
+          <section className="checkout-section">
             <h2 className="checkout-section-title">Appearance</h2>
             <p className="muted-text" style={{ marginTop: 0 }}>Choose how PharmaSync looks on this device.</p>
             <div className="appearance-toggle">
@@ -425,8 +674,65 @@ const Profile = () => {
               </button>
             </div>
           </section>
+
+          <section className="checkout-section danger-zone">
+            <h2 className="checkout-section-title"><ShieldAlert size={16} strokeWidth={2} /> Danger zone</h2>
+
+            <div className="danger-zone-row">
+              <div>
+                <strong>Export your data</strong>
+                <p className="muted-text" style={{ margin: '4px 0 0' }}>
+                  Download a copy of your profile, addresses, orders and prescriptions as a JSON file.
+                </p>
+              </div>
+              <button type="button" className="btn-secondary" disabled={exporting} onClick={handleExportData}>
+                <Download size={14} strokeWidth={2} /> {exporting ? 'Preparing…' : 'Export data'}
+              </button>
+            </div>
+
+            <div className="danger-zone-row danger-zone-row-delete">
+              <div>
+                <strong>Delete account</strong>
+                <p className="muted-text" style={{ margin: '4px 0 8px' }}>
+                  Permanently removes your profile, saved addresses and wishlist. Order history is kept for
+                  billing records. This cannot be undone.
+                </p>
+                <IconInput
+                  icon={Lock}
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  placeholder="Enter your password to confirm"
+                  autoComplete="current-password"
+                />
+              </div>
+              <button type="button" className="btn-secondary danger" onClick={handleRequestDeleteAccount}>
+                <UserX size={14} strokeWidth={2} /> Delete account
+              </button>
+            </div>
+          </section>
         </div>
       </div>
+
+      <ConfirmModal
+        open={confirmingDelete}
+        title="Delete your account?"
+        message="This permanently deletes your profile, saved addresses and wishlist. Your order history is kept for billing records. This cannot be undone."
+        confirmLabel={deletingAccount ? 'Deleting…' : 'Delete account'}
+        danger
+        onConfirm={handleDeleteAccount}
+        onCancel={() => setConfirmingDelete(false)}
+      />
+
+      <ConfirmModal
+        open={confirmingLogoutAll}
+        title="Log out of all devices?"
+        message="You'll be signed out here and on any other device using this account. You'll need to log in again."
+        confirmLabel={loggingOutAll ? 'Logging out…' : 'Log out everywhere'}
+        danger={false}
+        onConfirm={handleLogoutAllDevices}
+        onCancel={() => setConfirmingLogoutAll(false)}
+      />
     </div>
   );
 };
