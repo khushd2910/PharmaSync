@@ -1,0 +1,80 @@
+name: MLOps Model Evaluation & Quality Monitoring
+
+on:
+  schedule:
+    # Run every Sunday at 00:00 UTC
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+    # Allow manual execution via GitHub Actions UI
+
+jobs:
+  evaluate-ml-models:
+    name: Evaluate ML Models & Monitor Performance Drift
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: python-service
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Analytics Unit Tests
+        run: |
+          python manage.py test analytics
+
+      - name: Execute Model Evaluation Suite
+        run: |
+          python analytics/evaluate_models.py
+
+      - name: Execute Model Drift Analysis
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+        run: |
+          python analytics/track_model_drift.py || true
+
+      - name: Verify Quality Thresholds & Alert on Performance Degradation
+        run: |
+          python -c "
+          import json, sys
+          with open('evaluation_report.json') as f:
+              report = json.load(f)
+
+          print('=== MLOps Quality Threshold Verification ===')
+          failed = False
+          for r in report.get('results', []):
+              model_name = r.get('model')
+              if r.get('status') != 'ok':
+                  print(f'Skipped model: {model_name}')
+                  continue
+
+              if 'Demand' in model_name:
+                  mae = r.get('model_mae', 0.0)
+                  print(f'Demand MAE: {mae}')
+                  if mae > 5.0:
+                      print(f'ALERT: Demand MAE ({mae}) exceeded quality limit (5.0)!')
+                      failed = True
+
+              elif 'Intent' in model_name:
+                  acc = r.get('accuracy', 0.0)
+                  print(f'Intent Accuracy: {acc}')
+                  if acc < 0.60:
+                      print(f'ALERT: Intent Accuracy ({acc}) fell below threshold (0.60)!')
+                      failed = True
+
+          if failed:
+              sys.exit(1)
+          print('All ML models passed quality checks!')
+          "

@@ -61,10 +61,25 @@ import pandas as pd
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
+sys.path.insert(0, os.path.dirname(__file__))
+from model_registry import save_model, load_model, is_stale
+from ml_config import (
+    KMEANS_N_CLUSTERS,
+    KMEANS_RANDOM_STATE,
+    KMEANS_N_INIT,
+    KMEANS_MODEL_NAME,
+    ISOLATION_FOREST_CONTAMINATION,
+    ISOLATION_FOREST_N_ESTIMATORS,
+    ISOLATION_FOREST_RANDOM_STATE,
+    ISOLATION_FOREST_MODEL_NAME,
+)
+
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
 
+MAX_MODEL_AGE_HOURS = 24
 LOOKBACK_DAYS = int(os.getenv('INVENTORY_DEEP_LOOKBACK_DAYS', '90'))
+
 LEAD_TIME_DAYS = int(os.getenv('INVENTORY_LEAD_TIME_DAYS', '5'))
 SERVICE_LEVEL_Z = float(os.getenv('INVENTORY_SERVICE_LEVEL_Z', '1.65'))
 ORDERING_COST = float(os.getenv('INVENTORY_ORDERING_COST', '50'))
@@ -237,16 +252,37 @@ def _segment_with_kmeans(df):
         return df, False
 
     n_samples = len(df)
-    n_clusters = min(4, n_samples)
+    n_clusters = min(KMEANS_N_CLUSTERS, n_samples)
     if n_clusters < 2:
         df['segment'] = df.apply(_rule_based_segment, axis=1)
         return df, False
 
     features = df[['avgDailyDemand', 'demandVariability', 'turnoverRatio']].fillna(0.0)
-    scaled = StandardScaler().fit_transform(features)
 
-    model = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
-    labels = model.fit_predict(scaled)
+    # Reuse the saved (scaler, model) pair if it's still fresh and was
+    # fit for the same number of clusters this catalog size needs;
+    # otherwise fit fresh on today's catalog and save the result.
+    saved, meta = load_model(KMEANS_MODEL_NAME)
+    reuse = (
+        saved is not None
+        and not is_stale(meta, MAX_MODEL_AGE_HOURS)
+        and meta.get('n_clusters') == n_clusters
+    )
+    if reuse:
+        scaler, model = saved
+        scaled = scaler.transform(features)
+        labels = model.predict(scaled)
+    else:
+        scaler = StandardScaler()
+        scaled = scaler.fit_transform(features)
+        model = KMeans(n_clusters=n_clusters, random_state=KMEANS_RANDOM_STATE, n_init=KMEANS_N_INIT)
+        labels = model.fit_predict(scaled)
+
+        save_model(KMEANS_MODEL_NAME, (scaler, model), {
+            'n_clusters': n_clusters,
+            'catalog_size': n_samples,
+        })
+
     df = df.copy()
     df['_cluster'] = labels
 
@@ -372,8 +408,24 @@ def _detect_anomalies(df):
         return df.assign(isAnomaly=False), False
 
     features = df[['avgDailyDemand', 'demandVariability', 'daysOfSupplyCapped', 'inventoryValue']].fillna(0.0)
-    model = IsolationForest(contamination=0.05, random_state=42, n_estimators=150)
-    predictions = model.fit_predict(features)  # -1 = anomaly, 1 = normal
+
+    # Reuse the saved model if it's still fresh; otherwise fit fresh on
+    # today's catalog and save it. Either way every item in the current
+    # catalog gets scored — only the .fit() step is what's conditional.
+    saved, meta = load_model(ISOLATION_FOREST_MODEL_NAME)
+    if saved is not None and not is_stale(meta, MAX_MODEL_AGE_HOURS):
+        model = saved
+        predictions = model.predict(features)
+    else:
+        model = IsolationForest(
+            contamination=ISOLATION_FOREST_CONTAMINATION,
+            random_state=ISOLATION_FOREST_RANDOM_STATE,
+            n_estimators=ISOLATION_FOREST_N_ESTIMATORS
+        )
+        predictions = model.fit_predict(features)  # -1 = anomaly, 1 = normal
+        save_model(ISOLATION_FOREST_MODEL_NAME, model, {'catalog_size': len(df)})
+
+
     df = df.copy()
     df['isAnomaly'] = predictions == -1
     return df, True

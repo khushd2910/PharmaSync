@@ -52,8 +52,19 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 sys.path.insert(0, os.path.dirname(__file__))          # analytics/
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))  # python-service/
 
+from ml_config import (
+    DEMAND_RF_N_ESTIMATORS,
+    DEMAND_RF_MAX_DEPTH,
+    ISOLATION_FOREST_CONTAMINATION,
+    ISOLATION_FOREST_N_ESTIMATORS,
+    MLOPS_MAX_DEMAND_MAE,
+    MLOPS_MIN_INTENT_ACCURACY,
+    MLOPS_MIN_KMEANS_SILHOUETTE,
+)
+
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
+
 
 
 def get_db():

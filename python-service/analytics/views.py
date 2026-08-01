@@ -42,6 +42,8 @@ from . import inventory_deep_analysis as inventory_deep_engine
 from . import sales_analysis as sales_engine
 from . import demand_forecasting as forecast_engine
 from . import revenue_forecasting as revenue_forecast_engine
+from . import track_model_drift as drift_engine
+
 
 
 def _json_safe(value):
@@ -221,5 +223,21 @@ def run_revenue_forecast(request):
         return JsonResponse({'message': 'Revenue forecast generated successfully', 'analysis': _json_safe(result)})
     except Exception as e:
         return JsonResponse({'error': f'Failed to generate revenue forecast: {str(e)}'}, status=500)
+
+
+# ---------------------------------------------------------------------------
+# ML Model Drift & Accuracy Tracking
+# ---------------------------------------------------------------------------
+
+@require_http_methods(['GET'])
+def model_drift(request):
+    """GET /api/analytics/model-drift — returns production model drift & accuracy report"""
+    try:
+        db = forecast_engine.get_db()
+        report = drift_engine.run_drift_analysis(db)
+        return JsonResponse({'status': 'ok', 'driftReport': _json_safe(report)})
+    except Exception as e:
+        return JsonResponse({'error': f'Failed to generate model drift report: {str(e)}'}, status=500)
+
 
 

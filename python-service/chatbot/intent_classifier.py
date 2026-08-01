@@ -1,8 +1,21 @@
 import logging
+import os
+import sys
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'analytics'))
+from model_registry import save_model, load_model, is_stale
+from ml_config import (
+    CHATBOT_CONFIDENCE_THRESHOLD as DEFAULT_CONFIDENCE_THRESHOLD,
+    CHATBOT_LOGREG_C,
+    CHATBOT_LOGREG_MAX_ITER,
+    CHATBOT_MODEL_NAME as MODEL_NAME,
+    CHATBOT_MAX_MODEL_AGE_HOURS as MAX_MODEL_AGE_HOURS,
+)
+
 logger = logging.getLogger(__name__)
+
 
 # Labeled training dataset for supervised learning
 TRAINING_DATA = [
@@ -158,10 +171,26 @@ DEFAULT_CONFIDENCE_THRESHOLD = 0.42
 class IntentClassifier:
     def __init__(self):
         self.vectorizer = TfidfVectorizer(ngram_range=(1, 2), stop_words='english', lowercase=True)
-        self.classifier = LogisticRegression(C=10.0, max_iter=200, class_weight='balanced')
+        self.classifier = LogisticRegression(C=CHATBOT_LOGREG_C, max_iter=CHATBOT_LOGREG_MAX_ITER, class_weight='balanced')
         self.is_trained = False
+        self._load_or_train()
+
+
+    def _load_or_train(self):
+        saved, meta = load_model(MODEL_NAME)
+        if saved is not None and not is_stale(meta, MAX_MODEL_AGE_HOURS):
+            try:
+                self.vectorizer, self.classifier = saved
+                self.is_trained = True
+                logger.info(
+                    "Loaded saved intent classifier (trained_at=%s, %d records) instead of retraining",
+                    meta.get('trained_at'), meta.get('training_records'),
+                )
+                return
+            except Exception as e:
+                logger.warning("Saved intent classifier could not be loaded, retraining: %s", str(e))
         self._train()
-        
+
     def _train(self):
         try:
             texts = [item[0] for item in TRAINING_DATA]
@@ -170,6 +199,10 @@ class IntentClassifier:
             self.classifier.fit(X, labels)
             self.is_trained = True
             logger.info("Intent classifier trained successfully on %d records", len(TRAINING_DATA))
+            save_model(MODEL_NAME, (self.vectorizer, self.classifier), {
+                'training_records': len(TRAINING_DATA),
+                'num_intents': len(set(labels)),
+            })
         except Exception as e:
             logger.exception("Failed to train intent classifier: %s", str(e))
             self.is_trained = False
@@ -198,6 +231,71 @@ class IntentClassifier:
             logger.error("Error predicting intent: %s", str(e))
             return "general_question", 0.0
 
+    def explain_prediction(self, message):
+        """
+        Feature explainability (LogisticRegression.coef_ x TF-IDF token weights).
+        Returns a dictionary containing predicted intent, confidence score,
+        and human-readable explanations of which words/ngrams drove the classification.
+        """
+        intent, confidence = self.predict_intent(message)
+        if not self.is_trained or intent == "general_question":
+            return {
+                'intent': intent,
+                'confidence': confidence,
+                'explanation': 'Low confidence or unclassified message; fallback to general conversation.',
+                'top_contributing_words': []
+            }
+
+        try:
+            feature_names = self.vectorizer.get_feature_names_out()
+            X_msg = self.vectorizer.transform([message])
+            nonzero_indices = X_msg.nonzero()[1]
+
+            if len(nonzero_indices) == 0:
+                return {
+                    'intent': intent,
+                    'confidence': confidence,
+                    'explanation': 'No trained vocabulary terms present in message.',
+                    'top_contributing_words': []
+                }
+
+            class_idx = list(self.classifier.classes_).index(intent)
+            coefs = self.classifier.coef_[class_idx]
+
+            word_scores = []
+            for idx in nonzero_indices:
+                feature_word = feature_names[idx]
+                tfidf_val = X_msg[0, idx]
+                weight = coefs[idx]
+                contribution = tfidf_val * weight
+                if contribution > 0:
+                    word_scores.append((feature_word, float(round(contribution, 3))))
+
+            word_scores.sort(key=lambda x: x[1], reverse=True)
+            top_words = word_scores[:5]
+
+            if top_words:
+                formatted_terms = ", ".join([f"'{term}' (+{score:.2f})" for term, score in top_words])
+                explanation = f"Classification driven by key terms: {formatted_terms}"
+            else:
+                explanation = f"Matched intent '{intent}' based on global context distribution."
+
+            return {
+                'intent': intent,
+                'confidence': confidence,
+                'explanation': explanation,
+                'top_contributing_words': top_words
+            }
+        except Exception as e:
+            logger.error("Error explaining intent prediction: %s", str(e))
+            return {
+                'intent': intent,
+                'confidence': confidence,
+                'explanation': f"Explanation unavailable: {str(e)}",
+                'top_contributing_words': []
+            }
+
+
 # Singleton instance of classifier
 _instance = None
 
@@ -206,3 +304,20 @@ def get_classifier():
     if _instance is None:
         _instance = IntentClassifier()
     return _instance
+
+
+if __name__ == '__main__':
+    clf = get_classifier()
+    test_queries = [
+        "where is my order",
+        "how do i upload my prescription",
+        "i have a fever and headache",
+        "recommend some vitamins"
+    ]
+    print("\n--- Intent Classifier Explainability Demo ---")
+    for q in test_queries:
+        exp = clf.explain_prediction(q)
+        print(f"\nQuery: '{q}'")
+        print(f"  -> Predicted Intent: {exp['intent']} (Confidence: {exp['confidence']:.2f})")
+        print(f"  -> Explanation: {exp['explanation']}")
+

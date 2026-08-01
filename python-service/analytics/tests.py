@@ -145,3 +145,112 @@ class DemandForecastRouteTests(SimpleTestCase):
         self.assertEqual(response.status_code, 405)
 
 
+class ModelDriftRouteTests(SimpleTestCase):
+    def setUp(self):
+        self.db = mongomock.MongoClient().get_database('pharmasync_test')
+        self.patcher = patch.object(demand_forecasting, 'get_db', return_value=self.db)
+        self.patcher.start()
+        self.addCleanup(self.patcher.stop)
+
+    def test_get_route_returns_drift_report(self):
+        response = self.client.get('/api/analytics/model-drift')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['status'], 'ok')
+        self.assertIn('driftReport', response.json())
+
+
+# ---------------------------------------------------------------------------
+# ML Logic & Sanity Unit Tests (Item #5)
+# ---------------------------------------------------------------------------
+
+class DemandForecastingMLTests(SimpleTestCase):
+    def setUp(self):
+        self.db = mongomock.MongoClient().get_database('pharmasync_test')
+
+    def test_demand_forecasting_non_negative_predictions(self):
+        from . import predict_demand
+        # Seed mock medicine
+        med_id = self.db.medicines.insert_one({'name': 'Paracetamol 500mg', 'stock': 10, 'isDiscontinued': False}).inserted_id
+
+        # Seed mock POS sales
+        self.db.possales.insert_one({
+            'status': 'Completed',
+            'createdAt': datetime.now(),
+            'items': [{'medicine': med_id, 'quantity': 5}]
+        })
+
+        result = predict_demand.generate_forecast(self.db)
+        self.assertIn('predictions', result)
+        self.assertGreaterEqual(len(result['predictions']), 1)
+        for pred in result['predictions']:
+            self.assertGreaterEqual(pred['predictedWeeklyDemand'], 0.0)
+            self.assertGreaterEqual(pred['suggestedRestockQty'], 0)
+
+    def test_demand_forecasting_low_history_fallback(self):
+        from . import predict_demand
+        med_id = self.db.medicines.insert_one({'name': 'Rare Medicine', 'stock': 5, 'isDiscontinued': False}).inserted_id
+        result = predict_demand.generate_forecast(self.db)
+        pred = next(p for p in result['predictions'] if p['medicineId'] == str(med_id))
+        self.assertEqual(pred['predictedWeeklyDemand'], 0.0)
+        self.assertEqual(pred['suggestedRestockQty'], 0)
+
+
+class RevenueForecastingMLTests(SimpleTestCase):
+    def setUp(self):
+        self.db = mongomock.MongoClient().get_database('pharmasync_test')
+
+    def test_revenue_forecasting_non_negative_projections(self):
+        from . import predict_revenue
+        self.db.orders.insert_one({
+            'orderStatus': 'Delivered',
+            'createdAt': datetime.now(),
+            'totalAmount': 500.0
+        })
+
+        result = predict_revenue.generate_forecast(self.db)
+        self.assertIn('totalForecastedRevenue', result)
+        self.assertGreaterEqual(result['totalForecastedRevenue'], 0.0)
+        for p in result['predictions']:
+            self.assertGreaterEqual(p['predictedRevenue'], 0.0)
+
+
+class InventoryDeepMLTests(SimpleTestCase):
+    def setUp(self):
+        self.db = mongomock.MongoClient().get_database('pharmasync_test')
+
+    def test_inventory_deep_analysis_segmentation_and_anomalies(self):
+        from . import inventory_deep_analysis
+        # Seed 12 mock medicines
+        for i in range(12):
+            self.db.medicines.insert_one({
+                'name': f'Med {i}',
+                'price': (i + 1) * 20.0,
+                'stock': (i + 1) * 5,
+                'category': 'General',
+                'isDiscontinued': False
+            })
+
+        result = inventory_deep_analysis.generate_deep_analysis()
+        self.assertIn('summary', result)
+        self.assertIn('segments', result)
+        self.assertIn('anomalies', result)
+        self.assertTrue(result['summary']['totalMedicines'] >= 12)
+
+
+class ChatbotIntentMLTests(SimpleTestCase):
+    def test_intent_classifier_prediction_and_explainability(self):
+        from chatbot.intent_classifier import get_classifier
+        clf = get_classifier()
+        
+        intent, confidence = clf.predict_intent("where is my order")
+        self.assertEqual(intent, "order_status")
+        self.assertGreater(confidence, 0.4)
+
+        explanation = clf.explain_prediction("where is my order")
+        self.assertEqual(explanation['intent'], "order_status")
+        self.assertIn("order", [w[0] for w in explanation['top_contributing_words']])
+        self.assertIn("Classification driven by key terms", explanation['explanation'])
+
+
+
+

@@ -112,3 +112,33 @@ with "Start in" set to the `python-service` folder for each.
   configurable), but the `EXPIRY_ALERT_DAYS` env var controls how far out
   counts as "urgent enough for a dashboard notification" (default 30 —
   already-expired items always count as urgent too).
+
+## ML Training & Serving Split
+
+ML models follow a strict production training vs. serving split:
+
+- **Training Pipeline**:
+  - `train_demand_model.py`: Fits `RandomForestRegressor` per medicine over 90 days of sales history and persists timestamped versioned model artifacts (`demand_forecast_rf_models_<timestamp>.pkl`) to `python-service/models/`.
+  - `train_revenue_model.py`: Fits Holt-Winters or Linear Regression models over 180 days of transaction history and persists versioned models (`revenue_forecast_model_<timestamp>.pkl`).
+  - Run training weekly/monthly or when data shifts:
+    ```bash
+    python analytics/train_demand_model.py
+    python analytics/train_revenue_model.py
+    ```
+
+- **Serving Pipeline**:
+  - `predict_demand.py`: Loads the active persisted model via `model_registry.load_model()` and performs multi-step 7-day demand forecasting.
+  - `predict_revenue.py`: Loads the persisted revenue model and generates 30-day projected revenue forecasts.
+  - Run prediction daily or on-demand via HTTP `/api/demand-forecast/run`:
+    ```bash
+    python analytics/predict_demand.py
+    python analytics/predict_revenue.py
+    ```
+
+- **Model Registry (`model_registry.py`)**:
+  - Centralized model management with versioning, timestamping, metadata logging, and staleness checks.
+
+- **Model Cards Documentation (`MODEL_CARDS.md`)**:
+  - Detailed model specs, training data, retraining cadences, fallbacks, and benchmarks for all 5 ML models: [MODEL_CARDS.md](../MODEL_CARDS.md).
+
+

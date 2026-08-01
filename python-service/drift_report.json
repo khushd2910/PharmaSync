@@ -1,0 +1,11 @@
+{
+  "generatedAt": "2026-08-01T15:33:11.049888+00:00",
+  "demandForecastingDrift": {
+    "status": "no_forecasts",
+    "message": "No past demand forecasts found in MongoDB."
+  },
+  "revenueForecastingDrift": {
+    "status": "no_forecasts",
+    "message": "No past revenue forecasts found in MongoDB."
+  }
+}

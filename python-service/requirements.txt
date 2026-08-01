@@ -5,6 +5,7 @@ django>=5.0,<7.0
 requests>=2.31
 scikit-learn>=1.4.0
 statsmodels>=0.14.0
+joblib>=1.3  # model persistence — see analytics/model_registry.py
 
 # Test-only — stands in for MongoDB in analytics/tests.py so the
 # sales/inventory/expiry route tests run without needing a live database.
