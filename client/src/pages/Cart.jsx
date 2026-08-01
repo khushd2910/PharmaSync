@@ -230,7 +230,7 @@ const Cart = () => {
               return (
                 <div className="cart-item" key={medicine._id}>
                   <img
-                    src={getMedicineImage(medicine)}
+                    src={medicine.imageUrl ? `http://localhost:5000${medicine.imageUrl}` : getMedicineImage(medicine)}
                     alt={medicine.name}
                     className="cart-item-icon cart-item-img"
                     loading="lazy"

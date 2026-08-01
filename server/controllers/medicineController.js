@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 const Medicine = require('../models/Medicine');
 const Cart = require('../models/Cart');
 const Order = require('../models/Order');
@@ -18,6 +21,49 @@ const SORT_OPTIONS = {
 // Escapes regex special characters so user input can never be interpreted
 // as regex syntax (avoids both errors and regex-injection surprises)
 const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const ensureMedicineUploadDir = () => {
+  const uploadDir = path.join(__dirname, '..', '..', 'uploads', 'medicines');
+  fs.mkdirSync(uploadDir, { recursive: true });
+  return uploadDir;
+};
+
+const buildImageUrl = (filename) => `/uploads/medicines/${filename}`;
+
+const removeStoredImage = (imageUrl) => {
+  if (!imageUrl) return;
+  const resolvedPath = path.join(__dirname, '..', '..', imageUrl.replace(/^\/+/, ''));
+  if (fs.existsSync(resolvedPath)) {
+    fs.unlinkSync(resolvedPath);
+  }
+};
+
+const generateBarcode = () => {
+  const charset = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let code = '';
+  for (let i = 0; i < 12; i += 1) {
+    code += charset[Math.floor(Math.random() * charset.length)];
+  }
+  return code;
+};
+
+const normalizeBoolean = (value) => {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    return normalized === 'true' || normalized === '1' || normalized === 'yes';
+  }
+  return Boolean(value);
+};
+
+const escapeCsvValue = (value) => {
+  if (value === null || value === undefined) return '';
+  const stringValue = String(value);
+  if (/[",\n]/.test(stringValue)) {
+    return `"${stringValue.replace(/"/g, '""')}"`;
+  }
+  return stringValue;
+};
 
 // Case-insensitive SUBSTRING search (not MongoDB's $text, which only does
 // whole-word/stemmed matching and would miss "roz" inside "Rozu"). Splits
@@ -345,18 +391,25 @@ const createMedicine = catchAsync(async (req, res, next) => {
     barcode,
   } = req.body;
 
-  const medicine = await Medicine.create({
+  const payload = {
     name,
     brand,
     category,
-    price,
-    stock,
+    price: Number(price),
+    stock: Number(stock),
     expiryDate: expiryDate || undefined,
     manufacturer,
     description,
-    requiresPrescription: requiresPrescription === true || requiresPrescription === 'true',
-    barcode: barcode || undefined,
-  });
+    requiresPrescription: normalizeBoolean(requiresPrescription),
+    barcode: barcode?.trim() || generateBarcode(),
+  };
+
+  if (req.file) {
+    ensureMedicineUploadDir();
+    payload.imageUrl = buildImageUrl(req.file.filename);
+  }
+
+  const medicine = await Medicine.create(payload);
 
   return res.status(201).json({ message: 'Medicine added successfully', medicine });
 });
@@ -422,6 +475,11 @@ const updateMedicine = catchAsync(async (req, res, next) => {
     'discountPercent',
   ];
 
+  const existingMedicine = await Medicine.findById(req.params.id);
+  if (!existingMedicine) {
+    return next(new AppError('Medicine not found', 404));
+  }
+
   const updates = {};
   for (const field of EDITABLE_FIELDS) {
     if (req.body[field] !== undefined) {
@@ -431,26 +489,41 @@ const updateMedicine = catchAsync(async (req, res, next) => {
   if (updates.expiryDate === '') {
     updates.expiryDate = null;
   }
+  if (updates.requiresPrescription !== undefined) {
+    updates.requiresPrescription = normalizeBoolean(updates.requiresPrescription);
+  }
+  if (updates.discountPercent !== undefined) {
+    updates.discountPercent = Number(updates.discountPercent);
+  }
+  if (updates.price !== undefined) {
+    updates.price = Number(updates.price);
+  }
+  if (updates.stock !== undefined) {
+    updates.stock = Number(updates.stock);
+  }
 
-  // Clearing the barcode needs $unset, not $set-to-null/empty-string — the
-  // sparse-unique index only skips documents where the field is entirely
-  // *absent*. A stored null or '' would still be indexed, so two medicines
-  // with a cleared barcode would collide on the unique constraint.
-  let clearBarcode = false;
+  if (req.file) {
+    ensureMedicineUploadDir();
+    if (existingMedicine.imageUrl) {
+      removeStoredImage(existingMedicine.imageUrl);
+    }
+    updates.imageUrl = buildImageUrl(req.file.filename);
+  }
+
+  // Preserve the barcode once it exists; only generate one when the record
+  // was created without one. A blank edit field should not erase it.
   if (updates.barcode === '') {
     delete updates.barcode;
-    clearBarcode = true;
+  }
+  if (updates.barcode === undefined && !existingMedicine.barcode) {
+    updates.barcode = generateBarcode();
   }
 
   const medicine = await Medicine.findByIdAndUpdate(
     req.params.id,
-    clearBarcode ? { $set: updates, $unset: { barcode: '' } } : updates,
+    updates,
     { new: true, runValidators: true }
   );
-
-  if (!medicine) {
-    return next(new AppError('Medicine not found', 404));
-  }
 
   return res.status(200).json({ message: 'Medicine updated successfully', medicine });
 });
@@ -520,6 +593,30 @@ const restockMedicine = catchAsync(async (req, res, next) => {
 
 const BULK_IMPORT_MAX_ROWS = 500;
 
+const exportMedicinesCsv = catchAsync(async (req, res) => {
+  const medicines = await Medicine.find({}).sort({ name: 1 });
+  const headers = ['name', 'brand', 'category', 'price', 'stock', 'manufacturer', 'description', 'expiryDate', 'requiresPrescription', 'barcode', 'imageUrl'];
+  const rows = medicines.map((medicine) => [
+    escapeCsvValue(medicine.name),
+    escapeCsvValue(medicine.brand),
+    escapeCsvValue(medicine.category),
+    escapeCsvValue(medicine.price),
+    escapeCsvValue(medicine.stock),
+    escapeCsvValue(medicine.manufacturer),
+    escapeCsvValue(medicine.description),
+    escapeCsvValue(medicine.expiryDate ? new Date(medicine.expiryDate).toISOString().slice(0, 10) : ''),
+    escapeCsvValue(medicine.requiresPrescription ? 'true' : 'false'),
+    escapeCsvValue(medicine.barcode || ''),
+    escapeCsvValue(medicine.imageUrl || ''),
+  ]);
+
+  const csv = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', 'attachment; filename="all-medicines.csv"');
+  return res.status(200).send(csv);
+});
+
 // Column headers a real pharmacy admin would produce in Excel/CSV, matching
 // the Add Medicine form's own fields — deliberately NOT the raw external
 // dataset's column names (short_composition1, Is_discontinued, ...) used by
@@ -564,7 +661,7 @@ const mapRow = (row, rowNumber) => {
       description: row.description?.trim() || undefined,
       expiryDate,
       requiresPrescription: toBool(row.requiresPrescription),
-      barcode: row.barcode?.trim() || undefined,
+      barcode: row.barcode?.trim() || generateBarcode(),
     },
   };
 };
@@ -664,4 +761,5 @@ module.exports = {
   deleteMedicine,
   restockMedicine,
   bulkImportMedicines,
+  exportMedicinesCsv,
 };

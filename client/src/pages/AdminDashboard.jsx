@@ -153,8 +153,16 @@ const AdminDashboard = () => {
             </div>
           </Link>
 
-          <Link to="/admin/revenue-analysis" className="placeholder-card admin-action-card">
+          <Link to="/admin/pos-revenue" className="placeholder-card admin-action-card">
             <Wallet size={20} strokeWidth={2} className="placeholder-icon" />
+            <div>
+              <strong>POS Revenue</strong>
+              <p className="muted-text">Browse every in-store POS sale, filter by item or customer, and refund transactions.</p>
+            </div>
+          </Link>
+
+          <Link to="/admin/revenue-analysis" className="placeholder-card admin-action-card">
+            <BarChart3 size={20} strokeWidth={2} className="placeholder-icon" />
             <div>
               <strong>Revenue Analysis</strong>
               <p className="muted-text">Medicine-by-medicine revenue totals across both online and offline sales channels.</p>

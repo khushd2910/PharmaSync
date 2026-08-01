@@ -184,7 +184,7 @@ const MedicineDetails = () => {
     <div className="details-page">
       <div className="details-grid">
         <div className="details-image">
-          <img src={getMedicineImage(medicine)} alt={medicine.name} />
+          <img src={medicine.imageUrl ? `http://localhost:5000${medicine.imageUrl}` : getMedicineImage(medicine)} alt={medicine.name} />
         </div>
 
         <div className="details-main">

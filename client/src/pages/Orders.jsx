@@ -362,7 +362,7 @@ const Orders = () => {
                         {order.items.slice(0, MAX_THUMBS).map((item, i) => (
                           <img
                             key={i}
-                            src={getMedicineImage({ name: item.name })}
+                            src={item.imageUrl ? `http://localhost:5000${item.imageUrl}` : getMedicineImage({ name: item.name })}
                             alt={item.name}
                             className="order-thumb"
                             loading="lazy"

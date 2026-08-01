@@ -45,6 +45,7 @@ const AdminMedicines = lazy(() => import('./pages/AdminMedicines'));
 const AdminEditMedicine = lazy(() => import('./pages/AdminEditMedicine'));
 const AdminPOS = lazy(() => import('./pages/AdminPOS'));
 const AdminSalesAnalysis = lazy(() => import('./pages/AdminSalesAnalysis'));
+const AdminPOSRevenue = lazy(() => import('./pages/AdminPOSRevenue'));
 const AdminRevenueAnalysis = lazy(() => import('./pages/AdminRevenueAnalysis'));
 const AdminQuickInventoryAnalysis = lazy(() => import('./pages/AdminQuickInventoryAnalysis'));
 const AdminPriceSensitivityAnalysis = lazy(() => import('./pages/AdminPriceSensitivityAnalysis'));
@@ -219,6 +220,14 @@ function App() {
                   element={
                     <ProtectedRoute role="admin">
                       <AdminSalesAnalysis />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/pos-revenue"
+                  element={
+                    <ProtectedRoute role="admin">
+                      <AdminPOSRevenue />
                     </ProtectedRoute>
                   }
                 />

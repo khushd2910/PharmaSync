@@ -125,6 +125,20 @@ const AdminMedicines = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleDownloadAllMedicines = async () => {
+    try {
+      const res = await api.get('/admin/medicines/export', { responseType: 'blob' });
+      const url = URL.createObjectURL(res.data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'all-medicines.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Could not download medicine CSV', 'error');
+    }
+  };
+
   const handleImportClick = () => fileInputRef.current?.click();
 
   const handleFileSelected = async (e) => {
@@ -164,6 +178,9 @@ const AdminMedicines = () => {
           <h2>Medicines</h2>
         </div>
         <div className="admin-header-actions">
+          <button type="button" className="btn-secondary admin" onClick={handleDownloadAllMedicines}>
+            <Download size={14} strokeWidth={2} /> Download All Medicines
+          </button>
           <button type="button" className="btn-secondary admin" onClick={handleDownloadTemplate}>
             <Download size={14} strokeWidth={2} /> CSV Template
           </button>

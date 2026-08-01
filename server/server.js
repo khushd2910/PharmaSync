@@ -1,4 +1,5 @@
 require('dotenv').config();
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -40,6 +41,7 @@ app.use(cors({ origin: true, credentials: true }));
 // which can legitimately be a few hundred KB of raw CSV text in one request.
 app.use(express.json({ limit: '2mb' }));
 app.use(cookieParser());
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -1,5 +1,6 @@
 import logging
 import os
+import random
 import re
 import json
 from django.http import JsonResponse
@@ -15,6 +16,11 @@ except ImportError:  # pragma: no cover
 
 from .knowledge_base import (
     DISCLAIMER,
+    EMPTY_MEDICINE_PROMPT_RESPONSES,
+    EMPTY_RECOMMENDATION_RESPONSES,
+    NO_ORDERS_RESPONSES,
+    NOT_FOUND_RESPONSES,
+    ORDER_STATUS_RESPONSES,
     clarify_response,
     delivery_faq_response,
     fallback_response,
@@ -102,15 +108,15 @@ def resolve_follow_up_message(message, user_id):
 # ---------------------------------------------------------------------------
 def handle_order_status(user_id):
     if not user_id:
-        return {'reply': "Please log in so I can look up your orders.", 'intent': 'order_status'}
+        return {'reply': random.choice(ORDER_STATUS_RESPONSES), 'intent': 'order_status'}
     try:
         oid = ObjectId(user_id)
     except InvalidId:
-        return {'reply': "Please log in so I can look up your orders.", 'intent': 'order_status'}
+        return {'reply': random.choice(ORDER_STATUS_RESPONSES), 'intent': 'order_status'}
 
     order = db.orders.find_one({'user': oid}, sort=[('createdAt', -1)])
     if not order:
-        return {'reply': "I couldn't find any orders on your account yet.", 'intent': 'order_status'}
+        return {'reply': random.choice(NO_ORDERS_RESPONSES), 'intent': 'order_status'}
 
     invoice = order.get('invoiceNumber') or 'N/A'
     order_status = order.get('orderStatus') or 'Pending'
@@ -144,7 +150,7 @@ def handle_medicine_question(message):
     query = _MEDICINE_FILLER.sub(' ', message).strip()
     query = re.sub(r'\s+', ' ', query)
     if not query:
-        return {'reply': "Which medicine would you like to know about?", 'intent': 'medicine_question'}
+        return {'reply': random.choice(EMPTY_MEDICINE_PROMPT_RESPONSES), 'intent': 'medicine_question'}
 
     results = list(db.medicines.find({'$text': {'$search': query}}, {'name': 1, 'price': 1, 'stock': 1}).limit(3))
     if not results:
@@ -155,7 +161,7 @@ def handle_medicine_question(message):
 
     if not results:
         return {
-            'reply': f"I couldn't find a medicine matching \"{query}\" in our catalog.",
+            'reply': f"{random.choice(NOT_FOUND_RESPONSES)} Try: \"{query}\" with a different spelling, or tell me the brand name if you have it.",
             'intent': 'medicine_question',
             'data': {'query': query, 'matches': []},
         }
@@ -184,7 +190,7 @@ def handle_recommendation():
     )
     if not results:
         return {
-            'reply': "I don't have a specific recommendation right now — try browsing the Popular section on the home page.",
+            'reply': random.choice(EMPTY_RECOMMENDATION_RESPONSES),
             'intent': 'recommendation',
         }
     lines = [

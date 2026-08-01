@@ -1175,6 +1175,72 @@ FALLBACK_RESPONSE = (
 )
 
 
+NOT_FOUND_RESPONSES = (
+    "I couldn’t find a match for that in our catalog right now, but I can help you try a different medicine name or browse related products.",
+    "I wasn’t able to find that item in the current catalog. If you want, I can help you search a different name or suggest similar options.",
+    "That medicine doesn’t seem to be listed under that name here. Try a slightly different spelling or share a brand name and I’ll help narrow it down.",
+    "I couldn’t pull up that entry from our catalog just now. A different spelling or a broader description may help me find it faster.",
+    "I’m not seeing that product in the catalog at the moment. I can help search for a close match or another medicine that fits what you need.",
+    "I’m not seeing that item in the catalog under that name. A brand name, dosage, or a more general description may help me find it.",
+    "That one doesn’t seem to be available in our current catalog listing. I can help search a close match or a similar product if you want.",
+    "I couldn’t locate that medicine in the catalog right now. If you share a different spelling or a related product name, I’ll try again.",
+    "There isn’t a clear catalog entry for that name at the moment. I can help narrow it down by trying a different phrase or brand.",
+    "I don’t see that medicine listed under that exact wording. A slight variation in the name may help me find the right match.",
+)
+
+ORDER_STATUS_RESPONSES = (
+    "Please log in so I can look up your orders.",
+    "I can check your order details once you’re signed in, so I can pull up the right account for you.",
+    "I’ll need your signed-in account to look up recent orders and tracking details.",
+    "To view your order history, please sign in first and I’ll help you from there.",
+    "I’d need to see your account details before I can look up an order for you.",
+    "Once you’re signed in, I can help check the latest status of your order.",
+    "I can only look up orders for an authenticated account, so please log in if you want me to help.",
+    "Order history is tied to your signed-in account, so I’ll need you to log in first.",
+    "I can help with order status once your account is signed in.",
+    "To check your orders, please sign in and I’ll pull up the details for you.",
+)
+
+NO_ORDERS_RESPONSES = (
+    "I couldn’t find any orders on your account yet.",
+    "There doesn’t seem to be any order history linked to this account right now.",
+    "I’m not seeing any orders for your account yet, but I can help if you want to place one or check a specific order.",
+    "No orders appear to be attached to this account at the moment.",
+    "Your account doesn’t show any orders yet.",
+    "There isn’t any recent order history linked to this profile right now.",
+    "I’m not seeing any completed or active orders for this account yet.",
+    "No orders are showing up under this account at the moment.",
+    "This account looks like it hasn’t placed any orders yet.",
+    "I don’t see any order history for this profile right now.",
+)
+
+EMPTY_MEDICINE_PROMPT_RESPONSES = (
+    "Which medicine would you like to know about?",
+    "What medicine do you want me to look up for you?",
+    "Tell me the medicine name and I’ll check the catalog for you.",
+    "Share the medicine you’re interested in and I’ll help you find it.",
+    "Which medicine or brand should I look up for you?",
+    "What medicine are you trying to find?",
+    "Tell me the medicine name, brand, or category and I’ll help search it.",
+    "Name the medicine and I’ll see what’s available in the catalog.",
+    "What item would you like me to check for you?",
+    "Tell me the product name and I’ll help you with it.",
+)
+
+EMPTY_RECOMMENDATION_RESPONSES = (
+    "I don’t have a specific recommendation right now — try browsing the Popular section on the home page.",
+    "I’m not seeing a strong pick to recommend at the moment, but the Popular section should have a few good options.",
+    "Nothing stands out as a top recommendation right now, so the Popular page may be the best place to browse.",
+    "I don’t have a fresh recommendation to share just now, but the store’s featured items are worth a look.",
+    "I don’t have a clear top pick at the moment, so checking the featured or popular products may be the quickest way to browse.",
+    "There isn’t a standout recommendation to share right now, but the home page’s popular picks are a good place to start.",
+    "Nothing obvious comes to mind as a recommendation right now, so the featured catalog is probably your best bet.",
+    "I don’t have a new suggestion to give you just now, but the popular items on the store page are worth a look.",
+    "I’m not seeing a single best pick at the moment, so browsing the popular products may help you decide.",
+    "I don’t have a fresh recommendation to share right this second, but the featured items are worth exploring.",
+)
+
+
 def greeting_response():
     return random.choice(GREETING_RESPONSES)
 

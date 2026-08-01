@@ -20,6 +20,8 @@ const EMPTY_FORM = {
 const AdminAddMedicine = () => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -28,15 +30,25 @@ const AdminAddMedicine = () => {
     setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setImagePreview(reader.result);
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.post('/admin/medicines', {
-        ...form,
-        price: Number(form.price),
-        stock: Number(form.stock),
+      const formData = new FormData();
+      Object.entries({ ...form, price: Number(form.price), stock: Number(form.stock) }).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) formData.append(key, value);
       });
+      if (imageFile) formData.append('image', imageFile);
+      await api.post('/admin/medicines', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       showToast('Medicine added successfully', 'success');
       navigate('/admin/medicines');
     } catch (err) {
@@ -106,6 +118,12 @@ const AdminAddMedicine = () => {
                 placeholder="Scan or type — used by POS lookup"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="field-label">Primary image</label>
+            <input type="file" accept="image/*" onChange={handleImageChange} />
+            {imagePreview && <img src={imagePreview} alt="Preview" style={{ width: 140, height: 140, objectFit: 'cover', marginTop: 10, borderRadius: 8 }} />}
           </div>
 
           <label className="field-label">Description</label>

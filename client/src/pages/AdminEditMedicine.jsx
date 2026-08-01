@@ -22,6 +22,8 @@ const AdminEditMedicine = () => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -43,6 +45,9 @@ const AdminEditMedicine = () => {
           requiresPrescription: !!m.requiresPrescription,
           barcode: m.barcode || '',
         });
+        if (m.imageUrl) {
+          setImagePreview(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${m.imageUrl}`);
+        }
       })
       .catch((err) => {
         showToast(err.response?.data?.message || 'Could not load medicine', 'error');
@@ -57,15 +62,25 @@ const AdminEditMedicine = () => {
     setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setImagePreview(reader.result);
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.patch(`/admin/medicines/${id}`, {
-        ...form,
-        price: Number(form.price),
-        stock: Number(form.stock),
+      const formData = new FormData();
+      Object.entries({ ...form, price: Number(form.price), stock: Number(form.stock) }).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) formData.append(key, value);
       });
+      if (imageFile) formData.append('image', imageFile);
+      await api.patch(`/admin/medicines/${id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       showToast('Medicine updated — live on the storefront now', 'success');
       navigate('/admin/medicines');
     } catch (err) {
@@ -141,6 +156,12 @@ const AdminEditMedicine = () => {
               <label className="field-label">Barcode</label>
               <input name="barcode" value={form.barcode} onChange={handleChange} placeholder="Scan or type — used by POS lookup" />
             </div>
+          </div>
+
+          <div>
+            <label className="field-label">Primary image</label>
+            <input type="file" accept="image/*" onChange={handleImageChange} />
+            {imagePreview && <img src={imagePreview} alt="Preview" style={{ width: 140, height: 140, objectFit: 'cover', marginTop: 10, borderRadius: 8 }} />}
           </div>
 
           <label className="field-label">Description</label>

@@ -94,7 +94,7 @@ const MedicineCard = ({ medicine, onAddToCart, rating }) => {
           <Heart size={15} strokeWidth={2} fill={wishlisted ? 'currentColor' : 'none'} />
         </button>
         <img
-          src={getMedicineImage(medicine)}
+          src={medicine.imageUrl ? `http://localhost:5000${medicine.imageUrl}` : getMedicineImage(medicine)}
           alt={medicine.name}
           className="medicine-card-img"
           loading="lazy"

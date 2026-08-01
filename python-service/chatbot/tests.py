@@ -183,3 +183,16 @@ class ExpandedResponseVarietyTests(SimpleTestCase):
     def test_fallback_response_grew(self):
         from chatbot.knowledge_base import FALLBACK_RESPONSE
         self.assertGreaterEqual(len(FALLBACK_RESPONSE), 10)
+
+    def test_order_and_not_found_messages_vary(self):
+        login_replies = {
+            self.client.post('/api/chat', data={'message': 'show my orders'}, content_type='application/json').json()['reply']
+            for _ in range(10)
+        }
+        self.assertGreater(len(login_replies), 1)
+
+        not_found_replies = {
+            self.client.post('/api/chat', data={'message': 'do you have xyznotamedicine'}, content_type='application/json').json()['reply']
+            for _ in range(10)
+        }
+        self.assertGreater(len(not_found_replies), 1)

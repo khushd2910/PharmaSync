@@ -19,9 +19,11 @@ const {
   deleteMedicine,
   restockMedicine,
   bulkImportMedicines,
+  exportMedicinesCsv,
 } = require('../controllers/medicineController');
 const { validate, addMedicineRules, updateMedicineRules } = require('../middleware/validators');
 const { adminListPrescriptions, adminReviewPrescription } = require('../controllers/prescriptionController');
+const uploadMedicine = require('../middleware/uploadMedicine');
 
 router.use(protect, adminOnly); // every admin route requires an admin login
 
@@ -132,9 +134,13 @@ router.patch('/orders/:id/status', adminUpdateOrderStatus);
 // @route GET /api/admin/medicines?search=&page=&limit=
 router.get('/medicines', adminListMedicines);
 
+// @desc  Download the full medicine catalog as CSV
+// @route GET /api/admin/medicines/export
+router.get('/medicines/export', exportMedicinesCsv);
+
 // @desc  Add a new medicine to the catalog
 // @route POST /api/admin/medicines
-router.post('/medicines', addMedicineRules, validate, createMedicine);
+router.post('/medicines', uploadMedicine, addMedicineRules, validate, createMedicine);
 
 // @desc  Bulk-add/update medicines from CSV text (parsed client-side,
 //        sent as { csv: "..." } — no file-upload middleware needed)
@@ -144,7 +150,7 @@ router.post('/medicines/bulk-import', bulkImportMedicines);
 // @desc  Edit an existing medicine — takes effect on the storefront (and
 //        future POS) immediately, since both read the same catalog.
 // @route PATCH /api/admin/medicines/:id
-router.patch('/medicines/:id', updateMedicineRules, validate, updateMedicine);
+router.patch('/medicines/:id', uploadMedicine, updateMedicineRules, validate, updateMedicine);
 
 // @desc  Refill stock by a given amount — the quick action for a low-stock alert
 // @route PATCH /api/admin/medicines/:id/restock
