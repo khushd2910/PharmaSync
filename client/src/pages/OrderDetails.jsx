@@ -204,16 +204,6 @@ const OrderDetails = () => {
         <OrderStatusStepper order={order} />
       </section>
 
-      <ConfirmModal
-        open={confirmCancelOpen}
-        title="Cancel this order?"
-        message="Your order will be cancelled and stock will be released back to inventory."
-        confirmLabel="Cancel order"
-        danger={true}
-        onConfirm={handleCancel}
-        onCancel={() => setConfirmCancelOpen(false)}
-      />
-
       <div className="order-details-grid">
         <section className="checkout-section">
           <h2 className="checkout-section-title"><FileText size={16} strokeWidth={2} /> Items</h2>

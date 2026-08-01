@@ -7,6 +7,7 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { addRecentlyViewed, removeRecentlyViewed } from '../utils/recentlyViewed';
 import { getMedicineImage } from '../utils/medicineFormImage';
+import { resolveImageUrl } from '../utils/imageUrl';
 import MedicineRow from '../components/MedicineRow';
 import MedicineReviews from '../components/MedicineReviews';
 import { SkeletonBlock, SkeletonText } from '../components/Skeleton';
@@ -184,7 +185,7 @@ const MedicineDetails = () => {
     <div className="details-page">
       <div className="details-grid">
         <div className="details-image">
-          <img src={medicine.imageUrl ? `http://localhost:5000${medicine.imageUrl}` : getMedicineImage(medicine)} alt={medicine.name} />
+          <img src={resolveImageUrl(medicine.imageUrl) || getMedicineImage(medicine)} alt={medicine.name} />
         </div>
 
         <div className="details-main">

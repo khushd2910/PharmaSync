@@ -12,6 +12,7 @@ import { useCart } from '../context/CartContext';
 import { computeDisplayStatus, isCancellable, ORDER_STAGES } from '../utils/orderStatus';
 import IconInput from '../components/IconInput';
 import { getMedicineImage } from '../utils/medicineFormImage';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const PAGE_SIZE = 6;
@@ -160,7 +161,7 @@ const Orders = () => {
       showToast(err.response?.data?.message || 'Could not cancel order', 'error');
     } finally {
       setCancellingId(null);
-      setConfirmingCancelId(null);
+      setOrderToCancel(null);
     }
   };
 
@@ -368,7 +369,7 @@ const Orders = () => {
                         {order.items.slice(0, MAX_THUMBS).map((item, i) => (
                           <img
                             key={i}
-                            src={item.imageUrl ? `http://localhost:5000${item.imageUrl}` : getMedicineImage({ name: item.name })}
+                            src={resolveImageUrl(item.imageUrl) || getMedicineImage({ name: item.name })}
                             alt={item.name}
                             className="order-thumb"
                             loading="lazy"
@@ -461,7 +462,7 @@ const Orders = () => {
         message="Your order will be cancelled and stock will be released back to inventory."
         confirmLabel="Cancel order"
         danger={true}
-        onConfirm={handleCancel}
+        onConfirm={() => handleCancel(orderToCancel?._id)}
         onCancel={() => setOrderToCancel(null)}
       />
 

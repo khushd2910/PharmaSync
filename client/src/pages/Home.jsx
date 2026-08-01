@@ -125,11 +125,6 @@ const Home = () => {
     queryKey: ['rating-summaries', visibleMedicineIds],
     queryFn: async () => {
       const res = await api.get('/medicines/reviews/summary', { params: { ids: visibleMedicineIds } });
-      // TEMP DEBUG: confirms the reviews service is reachable and shows
-      // exactly what's coming back for the cards on screen. Remove once
-      // you've confirmed ratings are showing up correctly.
-      console.log('[ratings] requested ids:', visibleMedicineIds);
-      console.log('[ratings] summaries received:', res.data.summaries);
       return res.data.summaries || {};
     },
     enabled: visibleMedicineIds.length > 0,

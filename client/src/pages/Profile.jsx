@@ -209,26 +209,38 @@ const Profile = () => {
     setLocatingFor(formId);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
         try {
           const { latitude, longitude } = pos.coords;
           const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18`,
+            { headers: { Accept: 'application/json' }, signal: controller.signal }
           );
+          if (!res.ok) throw new Error('reverse geocode request failed');
           const data = await res.json();
           const addr = data.address || {};
+
+          const houseNumber = addr.house_number ? `${addr.house_number}, ` : '';
+          const street = addr.road || addr.pedestrian || addr.footway || addr.neighbourhood || addr.suburb || '';
+          const line1 = `${houseNumber}${street}`.trim() || (data.display_name || '').split(',')[0] || '';
+          const pincode = (addr.postcode || '').replace(/\D/g, '').slice(0, 6);
+
           setter((prev) => ({
             ...prev,
-            line1: [addr.house_number, addr.road || addr.suburb || addr.neighbourhood]
-              .filter(Boolean)
-              .join(' ') || prev.line1,
+            line1: line1 || prev.line1,
             city: addr.city || addr.town || addr.village || addr.county || prev.city,
             state: addr.state || prev.state,
-            pincode: addr.postcode || prev.pincode,
+            pincode: pincode.length === 6 ? pincode : prev.pincode,
           }));
           showToast('Address auto-filled from your location', 'success');
         } catch (err) {
-          showToast('Could not fetch address for your location', 'error');
+          const message = err.name === 'AbortError'
+            ? 'Location lookup timed out — please enter the address manually'
+            : 'Could not fetch address for your location';
+          showToast(message, 'error');
         } finally {
+          clearTimeout(timeoutId);
           setLocatingFor(null);
         }
       },
@@ -436,7 +448,7 @@ const Profile = () => {
                       />
                       <input
                         value={editAddress.pincode}
-                        onChange={(e) => setEditAddress({ ...editAddress, pincode: e.target.value })}
+                        onChange={(e) => setEditAddress({ ...editAddress, pincode: e.target.value.replace(/\D/g, '').slice(0, 6) })}
                         placeholder="Pincode (6 digits)"
                         maxLength={6}
                         inputMode="numeric"
@@ -528,7 +540,7 @@ const Profile = () => {
                 />
                 <input
                   value={newAddress.pincode}
-                  onChange={(e) => setNewAddress({ ...newAddress, pincode: e.target.value })}
+                  onChange={(e) => setNewAddress({ ...newAddress, pincode: e.target.value.replace(/\D/g, '').slice(0, 6) })}
                   placeholder="Pincode (6 digits)"
                   maxLength={6}
                   inputMode="numeric"

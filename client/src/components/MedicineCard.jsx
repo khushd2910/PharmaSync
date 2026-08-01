@@ -3,6 +3,7 @@ import { FileWarning, Plus, Minus, Heart } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
 import { getStripSize } from '../utils/stripSize';
 import { getMedicineImage } from '../utils/medicineFormImage';
+import { resolveImageUrl } from '../utils/imageUrl';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
@@ -94,7 +95,7 @@ const MedicineCard = ({ medicine, onAddToCart, rating }) => {
           <Heart size={15} strokeWidth={2} fill={wishlisted ? 'currentColor' : 'none'} />
         </button>
         <img
-          src={medicine.imageUrl ? `http://localhost:5000${medicine.imageUrl}` : getMedicineImage(medicine)}
+          src={resolveImageUrl(medicine.imageUrl) || getMedicineImage(medicine)}
           alt={medicine.name}
           className="medicine-card-img"
           loading="lazy"

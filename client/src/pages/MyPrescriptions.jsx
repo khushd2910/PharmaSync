@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FileText, Eye, Clock } from 'lucide-react';
+import { FileText, Eye, Clock, AlertTriangle } from 'lucide-react';
 import api from '../api/axios';
+import { useToast } from '../context/ToastContext';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -17,11 +18,17 @@ const formatDate = (value) =>
 const MyPrescriptions = () => {
   const [prescriptions, setPrescriptions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
     api
       .get('/prescriptions')
       .then((res) => setPrescriptions(res.data.prescriptions))
+      .catch((err) => {
+        setError(true);
+        showToast(err.response?.data?.message || 'Could not load your prescriptions', 'error');
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -29,6 +36,19 @@ const MyPrescriptions = () => {
     return (
       <div className="saved-page">
         <p className="info-text center-text">Loading your prescriptions…</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="saved-page">
+        <div className="empty-state">
+          <AlertTriangle size={40} strokeWidth={1.5} />
+          <h2>Couldn't load your prescriptions</h2>
+          <p className="muted-text">Something went wrong while fetching your prescriptions. Please try again.</p>
+          <button type="button" className="btn-primary" onClick={() => window.location.reload()}>Retry</button>
+        </div>
       </div>
     );
   }

@@ -9,6 +9,7 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { formatCurrency } from '../utils/format';
 import { getMedicineImage } from '../utils/medicineFormImage';
+import { resolveImageUrl } from '../utils/imageUrl';
 import { COUPONS, computeCouponDiscount } from '../utils/coupons';
 import api from '../api/axios';
 
@@ -230,7 +231,7 @@ const Cart = () => {
               return (
                 <div className="cart-item" key={medicine._id}>
                   <img
-                    src={medicine.imageUrl ? `http://localhost:5000${medicine.imageUrl}` : getMedicineImage(medicine)}
+                    src={resolveImageUrl(medicine.imageUrl) || getMedicineImage(medicine)}
                     alt={medicine.name}
                     className="cart-item-icon cart-item-img"
                     loading="lazy"
@@ -395,7 +396,11 @@ const Cart = () => {
               <span className="muted-text">Cart total</span>
               <span className="cart-checkout-amount num">{formatCurrency(amountToPay)}</span>
             </div>
-            <button className="btn-primary checkout-btn" disabled={loading} onClick={() => navigate('/checkout')}>
+            <button
+              className="btn-primary checkout-btn"
+              disabled={loading || cart.items.length === 0}
+              onClick={() => navigate('/checkout')}
+            >
               Continue <ChevronRight size={16} />
             </button>
           </div>
