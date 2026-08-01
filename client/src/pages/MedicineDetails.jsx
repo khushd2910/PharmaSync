@@ -29,6 +29,7 @@ const MedicineDetails = () => {
   const [loadError, setLoadError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
   const [related, setRelated] = useState({ similar: [], topInCategory: [], alsoBought: [] });
+  const [relatedRatings, setRelatedRatings] = useState({});
 
   const { user } = useAuth();
   const { addToCart } = useCart();
@@ -104,6 +105,31 @@ const MedicineDetails = () => {
       cancelled = true;
     };
   }, [medicine?._id]);
+
+  // Star ratings for the related-product rows below — one bulk request per
+  // related-set change rather than one per card. Medicines with no reviews
+  // just aren't in the response, so their cards render without a rating.
+  useEffect(() => {
+    const relatedIds = Array.from(
+      new Set([...related.similar, ...related.topInCategory, ...related.alsoBought].map((m) => m._id))
+    ).sort();
+    if (relatedIds.length === 0) {
+      setRelatedRatings({});
+      return;
+    }
+    let cancelled = false;
+    api
+      .get('/medicines/reviews/summary', { params: { ids: relatedIds.join(',') } })
+      .then((res) => {
+        if (!cancelled) setRelatedRatings(res.data.summaries || {});
+      })
+      .catch(() => {
+        if (!cancelled) setRelatedRatings({});
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [related]);
 
   const handleAddToCart = async () => {
     if (!user) {
@@ -287,14 +313,15 @@ const MedicineDetails = () => {
         </DetailSection>
       </div>
 
-      <MedicineRow title="Similar Products" icon={Sparkles} medicines={related.similar} onAddToCart={handleRelatedAddToCart} />
+      <MedicineRow title="Similar Products" icon={Sparkles} medicines={related.similar} onAddToCart={handleRelatedAddToCart} ratings={relatedRatings} />
       <MedicineRow
         title={medicine.category ? `Top 10 in ${medicine.category}` : 'Top 10 Picks'}
         icon={TrendingUp}
         medicines={related.topInCategory}
         onAddToCart={handleRelatedAddToCart}
+        ratings={relatedRatings}
       />
-      <MedicineRow title="People Also Bought" icon={Users} medicines={related.alsoBought} onAddToCart={handleRelatedAddToCart} />
+      <MedicineRow title="People Also Bought" icon={Users} medicines={related.alsoBought} onAddToCart={handleRelatedAddToCart} ratings={relatedRatings} />
 
       <p className="disclaimer-text">
         This information is for general reference only and is not a substitute for professional

@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Heart } from 'lucide-react';
+import api from '../api/axios';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -18,8 +20,33 @@ const Wishlist = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const [ratings, setRatings] = useState({});
 
   const wishlistItems = medicines || [];
+
+  // Star ratings for every wishlisted medicine — one bulk request rather
+  // than one per card. Medicines with no reviews just aren't in the
+  // response, so their cards render without a rating.
+  useEffect(() => {
+    if (wishlistItems.length === 0) {
+      setRatings({});
+      return;
+    }
+    let cancelled = false;
+    const ids = wishlistItems.map((m) => m._id).join(',');
+    api
+      .get('/medicines/reviews/summary', { params: { ids } })
+      .then((res) => {
+        if (!cancelled) setRatings(res.data.summaries || {});
+      })
+      .catch(() => {
+        if (!cancelled) setRatings({});
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [medicines]);
 
   const handleAddToCart = async (medicine) => {
     if (!user) {
@@ -70,7 +97,7 @@ const Wishlist = () => {
 
       <div className="medicine-grid">
         {wishlistItems.map((medicine) => (
-          <MedicineCard key={medicine._id} medicine={medicine} onAddToCart={handleAddToCart} />
+          <MedicineCard key={medicine._id} medicine={medicine} onAddToCart={handleAddToCart} rating={ratings[medicine._id]} />
         ))}
       </div>
     </div>

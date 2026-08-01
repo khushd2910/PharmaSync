@@ -43,6 +43,7 @@ const Cart = () => {
   const [couponInput, setCouponInput] = useState('');
   const [couponError, setCouponError] = useState('');
   const [relatedItems, setRelatedItems] = useState([]);
+  const [relatedRatings, setRelatedRatings] = useState({});
   const [genericAlternatives, setGenericAlternatives] = useState({});
 
   // Used only to unlock the first-order coupon — falls back to "not first
@@ -90,6 +91,29 @@ const Cart = () => {
     loadRelatedItems();
     loadGenericAlternatives();
   }, [cart.items]);
+
+  // Star ratings for the "Frequently bought together" row — medicines with
+  // no reviews just aren't in the response, so their cards render without
+  // a rating rather than showing empty/zero stars.
+  useEffect(() => {
+    if (relatedItems.length === 0) {
+      setRelatedRatings({});
+      return;
+    }
+    let cancelled = false;
+    const ids = relatedItems.map((m) => m._id).join(',');
+    api
+      .get('/medicines/reviews/summary', { params: { ids } })
+      .then((res) => {
+        if (!cancelled) setRelatedRatings(res.data.summaries || {});
+      })
+      .catch(() => {
+        if (!cancelled) setRelatedRatings({});
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [relatedItems]);
 
   const handleQuantityChange = async (medicineId, newQty, stock) => {
     if (newQty < 1) return;
@@ -369,6 +393,7 @@ const Cart = () => {
                 <MedicineRow
                   title=""
                   medicines={relatedItems}
+                  ratings={relatedRatings}
                   onAddToCart={(medicine) => addToCart(medicine._id, 1).then((result) => {
                     if (result.success) showToast(`${medicine.name} added to cart`, 'success');
                     else showToast(result.message, 'error');
