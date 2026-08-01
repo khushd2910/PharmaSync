@@ -9,7 +9,7 @@ const {
   getMedicineById,
   getRelatedMedicines,
 } = require('../controllers/medicineController');
-const { getMedicineReviews, createReview } = require('../controllers/reviewController');
+const { getMedicineReviews, createReview, getBulkRatingSummaries } = require('../controllers/reviewController');
 const { protect } = require('../middleware/authMiddleware');
 
 // All public — no `protect` middleware — so guests can browse without
@@ -19,6 +19,7 @@ router.get('/categories', getCategories);
 router.get('/brands', getBrands);
 router.get('/by-ids', getMedicinesByIds);
 router.get('/generics', getGenericAlternatives);
+router.get('/reviews/summary', getBulkRatingSummaries);
 router.get('/', listMedicines);
 router.get('/:id/related', getRelatedMedicines);
 // Reviews — reading is public, posting one requires login (protect attaches

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Search, ShieldCheck, Truck, FileText, Tag, Heart } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -9,6 +10,7 @@ import { useToast } from '../context/ToastContext';
 import IconInput from '../components/IconInput';
 import MedicineCard from '../components/MedicineCard';
 import MedicineRow from '../components/MedicineRow';
+import { SkeletonMedicineCard } from '../components/Skeleton';
 import { getRecentlyViewed, setRecentlyViewed as persistRecentlyViewed } from '../utils/recentlyViewed';
 
 const highlights = [
@@ -25,7 +27,6 @@ const Home = () => {
   const [offers, setOffers] = useState([]);
   const [popular, setPopular] = useState([]);
   const [recent, setRecent] = useState([]);
-  const [recentlyViewed, setRecentlyViewed] = useState([]);
 
   // Search/filter state — initialized from the URL so a shared link,
   // bookmark, or browser back/forward restores the same filtered view
@@ -77,39 +78,58 @@ const Home = () => {
   // clicks through to a "not found" page, re-check every cached id against
   // the server on load and quietly drop anything that no longer comes back
   // (also refreshing price/stock for the ones that do).
-  useEffect(() => {
-    const cached = getRecentlyViewed(recentScope);
-    if (cached.length === 0) {
-      setRecentlyViewed([]);
-      return;
-    }
+  //
+  // This used to be a hand-rolled effect with its own cancelled-flag
+  // cleanup. React Query gets the same result for less code, plus caching
+  // for free: navigating Home → a medicine → back to Home reuses the
+  // cached result (same queryKey) instead of re-fetching every time.
+  const cachedRecentlyViewed = getRecentlyViewed(recentScope);
+  const cachedRecentlyViewedIds = cachedRecentlyViewed.map((m) => m._id).join(',');
 
-    let cancelled = false;
-    const ids = cached.map((m) => m._id).join(',');
+  const { data: validatedRecentlyViewed } = useQuery({
+    queryKey: ['recently-viewed', recentScope, cachedRecentlyViewedIds],
+    queryFn: async () => {
+      const res = await api.get('/medicines/by-ids', { params: { ids: cachedRecentlyViewedIds } });
+      const byId = new Map(res.data.medicines.map((m) => [m._id, m]));
+      // Keep the cache's most-recent-first order, just filtered down to
+      // (and refreshed with) whatever the server confirms still exists.
+      const stillValid = cachedRecentlyViewed.map((m) => byId.get(m._id)).filter(Boolean);
+      persistRecentlyViewed(stillValid, recentScope);
+      return stillValid;
+    },
+    enabled: cachedRecentlyViewedIds.length > 0,
+    staleTime: 60 * 1000,
+  });
 
-    api
-      .get('/medicines/by-ids', { params: { ids } })
-      .then((res) => {
-        if (cancelled) return;
-        const byId = new Map(res.data.medicines.map((m) => [m._id, m]));
-        // Keep the cache's most-recent-first order, just filtered down to
-        // (and refreshed with) whatever the server confirms still exists.
-        const stillValid = cached.map((m) => byId.get(m._id)).filter(Boolean);
-        setRecentlyViewed(stillValid);
-        persistRecentlyViewed(stillValid, recentScope);
-      })
-      .catch(() => {
-        // If the validation call itself fails (offline, server hiccup),
-        // fall back to showing the cache as-is rather than hiding the row —
-        // worst case a stale click still goes through the existing 404
-        // handling on the details page.
-        if (!cancelled) setRecentlyViewed(cached);
-      });
+  // While the validation query is loading (or if it fails — offline, server
+  // hiccup), fall back to showing the cache as-is rather than hiding the
+  // row entirely; worst case a stale click still goes through the existing
+  // 404 handling on the details page.
+  const recentlyViewed = validatedRecentlyViewed ?? cachedRecentlyViewed;
 
-    return () => {
-      cancelled = true;
-    };
-  }, [recentScope]);
+  // Star ratings for every medicine currently on screen (discovery rows +
+  // catalog grid + recently viewed + wishlist) — one bulk request rather
+  // than one per card. Medicines with no reviews just aren't in the
+  // response, so their cards render without a rating rather than 0 stars.
+  const visibleMedicineIds = Array.from(
+    new Set(
+      [...offers, ...popular, ...recent, ...medicines, ...recentlyViewed, ...(wishlistMedicines || [])].map(
+        (m) => m._id
+      )
+    )
+  )
+    .sort()
+    .join(',');
+
+  const { data: ratings = {} } = useQuery({
+    queryKey: ['rating-summaries', visibleMedicineIds],
+    queryFn: async () => {
+      const res = await api.get('/medicines/reviews/summary', { params: { ids: visibleMedicineIds } });
+      return res.data.summaries || {};
+    },
+    enabled: visibleMedicineIds.length > 0,
+    staleTime: 60 * 1000,
+  });
 
   const fetchMedicines = async (targetPage, append = false) => {
     setLoading(true);
@@ -264,19 +284,19 @@ const Home = () => {
 
       {/* Promo rows — additive, shown above the catalog only while browsing */}
       {isBrowsing && wishlistMedicines?.length > 0 && (
-        <MedicineRow title="My Wishlist" icon={Heart} medicines={wishlistMedicines} onAddToCart={handleAddToCart} />
+        <MedicineRow title="My Wishlist" icon={Heart} medicines={wishlistMedicines} onAddToCart={handleAddToCart} ratings={ratings} />
       )}
       {isBrowsing && recentlyViewed.length > 0 && (
-        <MedicineRow title="Recently Viewed" medicines={recentlyViewed} onAddToCart={handleAddToCart} />
+        <MedicineRow title="Recently Viewed" medicines={recentlyViewed} onAddToCart={handleAddToCart} ratings={ratings} />
       )}
       {isBrowsing && offers.length > 0 && (
-        <MedicineRow title="Offers" icon={Tag} medicines={offers} onAddToCart={handleAddToCart} />
+        <MedicineRow title="Offers" icon={Tag} medicines={offers} onAddToCart={handleAddToCart} ratings={ratings} />
       )}
       {isBrowsing && popular.length > 0 && (
-        <MedicineRow title="Popular Medicines" medicines={popular} onAddToCart={handleAddToCart} />
+        <MedicineRow title="Popular Medicines" medicines={popular} onAddToCart={handleAddToCart} ratings={ratings} />
       )}
       {isBrowsing && recent.length > 0 && (
-        <MedicineRow title="Recently Added" medicines={recent} onAddToCart={handleAddToCart} />
+        <MedicineRow title="Recently Added" medicines={recent} onAddToCart={handleAddToCart} ratings={ratings} />
       )}
 
       {/* Filters + catalog grid — always visible and always functional */}
@@ -314,14 +334,18 @@ const Home = () => {
         </div>
 
         {loading && medicines.length === 0 ? (
-          <p className="info-text center-text">Loading medicines…</p>
+          <div className="medicine-grid">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <SkeletonMedicineCard key={i} />
+            ))}
+          </div>
         ) : medicines.length === 0 ? (
           <p className="info-text center-text">No medicines match your filters.</p>
         ) : (
           <>
             <div className="medicine-grid">
               {medicines.map((m) => (
-                <MedicineCard key={m._id} medicine={m} onAddToCart={handleAddToCart} />
+                <MedicineCard key={m._id} medicine={m} onAddToCart={handleAddToCart} rating={ratings[m._id]} />
               ))}
             </div>
             {page < pages && (

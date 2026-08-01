@@ -7,13 +7,14 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import RatingStars from './RatingStars';
 
 // Below this many units left, show an urgency hint ("Only 3 left")
 // instead of a flat "in stock" — a trust/transparency signal that sets
 // expectations before checkout rather than at it.
 const LOW_STOCK_THRESHOLD = 5;
 
-const MedicineCard = ({ medicine, onAddToCart }) => {
+const MedicineCard = ({ medicine, onAddToCart, rating }) => {
   const { cart, updateQuantity, removeFromCart } = useCart();
   const { user } = useAuth();
   const wishlist = useWishlist();
@@ -139,6 +140,7 @@ const MedicineCard = ({ medicine, onAddToCart }) => {
         <span className="medicine-card-savings">{hasDiscount ? `${formatCurrency(savings)} OFF` : '\u00A0'}</span>
 
         <span className="medicine-card-name">{medicine.name}</span>
+        {rating && <RatingStars average={rating.average} count={rating.count} />}
         <p className="medicine-card-sub">
           {stripSize} tablets/strip{medicine.manufacturer ? ` · ${medicine.manufacturer}` : ''}
         </p>

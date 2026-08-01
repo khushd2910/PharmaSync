@@ -280,7 +280,11 @@ const Cart = () => {
                     )}
                   </div>
                 <div className="qty-stepper">
-                  <button onClick={() => handleQuantityChange(medicine._id, quantity - 1, medicine.stock)} disabled={quantity <= 1}>
+                  <button
+                    onClick={() => handleQuantityChange(medicine._id, quantity - 1, medicine.stock)}
+                    disabled={quantity <= 1}
+                    aria-label="Decrease quantity"
+                  >
                     <Minus size={14} />
                   </button>
                   <span>{quantity}</span>
@@ -288,6 +292,7 @@ const Cart = () => {
                     onClick={() => handleQuantityChange(medicine._id, quantity + 1, medicine.stock)}
                     disabled={quantity >= medicine.stock}
                     title={quantity >= medicine.stock ? `Only ${medicine.stock} in stock` : 'Add one more'}
+                    aria-label="Increase quantity"
                   >
                     <Plus size={14} />
                   </button>

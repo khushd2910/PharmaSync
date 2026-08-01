@@ -12,6 +12,7 @@ import { useTheme } from '../context/ThemeContext';
 import IconInput from '../components/IconInput';
 import Avatar from '../components/Avatar';
 import ConfirmModal from '../components/ConfirmModal';
+import { SkeletonBlock } from '../components/Skeleton';
 
 const emptyAddress = { label: 'Home', line1: '', city: '', state: '', pincode: '' };
 
@@ -353,20 +354,25 @@ const Profile = () => {
           </div>
           <div className="profile-summary-card-block">
             <strong><FileText size={14} strokeWidth={2} style={{ verticalAlign: -2, marginRight: 4 }} />My Prescriptions</strong>
-            <p>
-              {stats
-                ? `${stats.prescriptionCount} uploaded${stats.pendingPrescriptionCount > 0 ? ` · ${stats.pendingPrescriptionCount} awaiting review` : ''}.`
-                : 'View and track your uploaded prescriptions.'}
-            </p>
+            {stats ? (
+              <p>
+                {stats.prescriptionCount} uploaded
+                {stats.pendingPrescriptionCount > 0 ? ` · ${stats.pendingPrescriptionCount} awaiting review` : ''}.
+              </p>
+            ) : (
+              <SkeletonBlock height={14} width="80%" style={{ margin: '8px 0' }} />
+            )}
             <Link to="/prescriptions" className="link-btn">View prescriptions</Link>
           </div>
           <div className="profile-summary-card-block">
             <strong><Receipt size={14} strokeWidth={2} style={{ verticalAlign: -2, marginRight: 4 }} />Lifetime stats</strong>
-            <p>
-              {stats
-                ? `${stats.orderCount} order${stats.orderCount === 1 ? '' : 's'} placed · ₹${stats.totalSpent.toLocaleString('en-IN')} spent lifetime.`
-                : 'Your order history and spend will show up here.'}
-            </p>
+            {stats ? (
+              <p>
+                {stats.orderCount} order{stats.orderCount === 1 ? '' : 's'} placed · ₹{stats.totalSpent.toLocaleString('en-IN')} spent lifetime.
+              </p>
+            ) : (
+              <SkeletonBlock height={14} width="80%" style={{ margin: '8px 0' }} />
+            )}
           </div>
           <div className="profile-summary-card-block">
             <strong>Support hub</strong>

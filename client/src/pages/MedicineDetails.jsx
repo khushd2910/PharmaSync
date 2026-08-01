@@ -9,6 +9,7 @@ import { addRecentlyViewed, removeRecentlyViewed } from '../utils/recentlyViewed
 import { getMedicineImage } from '../utils/medicineFormImage';
 import MedicineRow from '../components/MedicineRow';
 import MedicineReviews from '../components/MedicineReviews';
+import { SkeletonBlock, SkeletonText } from '../components/Skeleton';
 
 const MedicineDetails = () => {
   const { id } = useParams();
@@ -134,7 +135,19 @@ const MedicineDetails = () => {
     );
   };
 
-  if (loading) return <p className="info-text center-text">Loading medicine details…</p>;
+  if (loading) {
+    return (
+      <div className="details-grid" aria-busy="true">
+        <SkeletonBlock height={260} radius={12} />
+        <div>
+          <SkeletonBlock height={14} width="30%" />
+          <SkeletonBlock height={26} width="70%" style={{ marginTop: 12 }} />
+          <SkeletonText lines={3} />
+          <SkeletonBlock height={40} width="50%" style={{ marginTop: 20 }} />
+        </div>
+      </div>
+    );
+  }
 
   if (loadError === 'notFound') {
     return (

@@ -4,7 +4,7 @@ import MedicineCard from './MedicineCard';
 // sections (Offers / Popular / Recently Added / Recently Viewed) and for
 // the detail page's "Similar Products" / "Top in category" / "People also
 // bought" rows at the bottom.
-const MedicineRow = ({ title, icon: Icon, medicines, onAddToCart }) => {
+const MedicineRow = ({ title, icon: Icon, medicines, onAddToCart, ratings }) => {
   if (!medicines || medicines.length === 0) return null;
 
   return (
@@ -18,7 +18,7 @@ const MedicineRow = ({ title, icon: Icon, medicines, onAddToCart }) => {
       <div className="browse-row-scroll">
         {medicines.map((m) => (
           <div className="browse-row-item" key={m._id}>
-            <MedicineCard medicine={m} onAddToCart={onAddToCart} />
+            <MedicineCard medicine={m} onAddToCart={onAddToCart} rating={ratings?.[m._id]} />
           </div>
         ))}
       </div>

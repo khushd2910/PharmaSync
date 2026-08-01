@@ -106,6 +106,39 @@ def _rating_summary(medicine_id):
 
 
 @csrf_exempt
+def medicines_rating_summary(request):
+    """GET /api/medicines/reviews/summary?ids=<comma-separated medicine ids>
+    -> {"summaries": {"<medicineId>": {"count": n, "average": x.x}, ...}}
+
+    Bulk version of `_rating_summary` for many medicines at once — used by
+    the storefront catalog/discovery rows so showing a star rating on each
+    card doesn't mean one reviews request per card. Medicines with zero
+    reviews are simply absent from the response (nothing to show for them,
+    rather than a 0.0-star entry).
+    """
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    raw_ids = request.GET.get('ids', '')
+    medicine_ids = [i for i in raw_ids.split(',') if i]
+    if not medicine_ids:
+        return JsonResponse({'summaries': {}})
+
+    pipeline = [
+        {'$match': {'medicineId': {'$in': medicine_ids}}},
+        {'$group': {'_id': '$medicineId', 'count': {'$sum': 1}, 'totalStars': {'$sum': '$rating'}}},
+    ]
+    summaries = {}
+    for row in reviews_collection.aggregate(pipeline):
+        count = row['count']
+        summaries[row['_id']] = {
+            'count': count,
+            'average': round(row['totalStars'] / count, 1) if count else 0,
+        }
+    return JsonResponse({'summaries': summaries})
+
+
+@csrf_exempt
 def medicine_reviews(request, medicine_id):
     """GET  /api/medicines/<medicine_id>/reviews — list reviews + summary
     POST /api/medicines/<medicine_id>/reviews — create a review (one per user)

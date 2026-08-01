@@ -135,4 +135,30 @@ const deleteReview = catchAsync(async (req, res, next) => {
   return res.status(200).json(data);
 });
 
-module.exports = { getMedicineReviews, createReview, updateReview, deleteReview };
+// @desc    Bulk rating summary (count + average) for many medicines at
+//          once — used by the storefront catalog/discovery rows so
+//          showing stars on a card doesn't mean one request per card.
+//          Medicines with no reviews are simply absent from the response.
+// @route   GET /api/medicines/reviews/summary?ids=id1,id2,...
+// @access  Public
+const getBulkRatingSummaries = catchAsync(async (req, res, next) => {
+  const ids = (req.query.ids || '').toString();
+  if (!ids) {
+    return res.status(200).json({ summaries: {} });
+  }
+
+  let upstream;
+  try {
+    upstream = await callDjango(`/api/medicines/reviews/summary?ids=${encodeURIComponent(ids)}`);
+  } catch (err) {
+    return next(new AppError('Reviews are temporarily unavailable', 502));
+  }
+
+  const data = await upstream.json().catch(() => ({}));
+  if (!upstream.ok) {
+    return next(new AppError(data.error || 'Could not load rating summaries', upstream.status));
+  }
+  return res.status(200).json(data);
+});
+
+module.exports = { getMedicineReviews, createReview, updateReview, deleteReview, getBulkRatingSummaries };

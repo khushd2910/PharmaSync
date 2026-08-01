@@ -672,8 +672,12 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 .browse-controls .icon-input { flex: 1; min-width: 220px; }
 .browse-controls .icon-input input { padding: 9px 12px 9px 36px; }
 
-.browse-row-scroll { display: flex; align-items: stretch; gap: 14px; overflow-x: auto; padding-bottom: 6px; }
-.browse-row-item { width: 210px; flex-shrink: 0; display: flex; }
+.browse-row-scroll {
+  display: flex; align-items: stretch; gap: 14px; overflow-x: auto; padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+}
+.browse-row-item { width: 210px; flex-shrink: 0; display: flex; scroll-snap-align: start; }
 
 .medicine-grid { display: grid; align-items: stretch; grid-template-columns: repeat(4, 1fr); gap: 14px; }
 @media (min-width: 1300px) {
@@ -809,6 +813,8 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
   min-height: calc(1.3em * 2);
 }
 .medicine-card:hover .medicine-card-name { color: var(--teal); }
+.rating-stars { display: flex; align-items: center; gap: 1px; color: var(--amber); margin: 0 0 4px; }
+.rating-count { font-size: 11px; font-weight: 600; color: var(--muted); margin-left: 3px; }
 .medicine-card-sub {
   font-size: 11.5px; color: var(--muted); margin: 0 0 9px; line-height: 1.4;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -838,7 +844,7 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 }
 .badge-discount { background: var(--amber-tint); color: #6b4c14; }
 .badge-rx { background: var(--red-tint); color: var(--red); }
-.badge-outofstock { background: #eceee7; color: var(--muted); }
+.badge-outofstock { background: #eceee7; color: #525d47; }
 .badge-category { background: var(--teal-tint); color: var(--teal-dark); }
 .badge-status { background: var(--teal-tint); color: var(--teal-dark); }
 .badge-success { background: var(--green-tint); color: var(--green); }
@@ -1482,6 +1488,17 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 .skeleton-thumbs { display: flex; gap: 8px; }
 .skeleton-thumb { width: 52px; height: 52px; }
 
+/* Shared Skeleton.jsx primitives — layout wrappers only; the pulsing
+   rectangles themselves reuse .skeleton-block/@skeleton-pulse above so
+   every skeleton in the app (old bespoke ones and these) animates the
+   same way. */
+.skeleton-text-block { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
+.skeleton-medicine-row { display: flex; gap: 14px; overflow: hidden; }
+.skeleton-medicine-card { width: 168px; flex-shrink: 0; }
+.medicine-grid .skeleton-medicine-card { width: auto; }
+.skeleton-list-row { padding: 14px 0; border-top: 1px solid var(--line); }
+.skeleton-list-row:first-child { border-top: none; }
+
 .order-details-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
 .order-actions { display: flex; gap: 8px; }
 .order-details-side { display: flex; flex-direction: column; }
@@ -1562,6 +1579,7 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 @media (max-width: 900px) {
   .medicine-grid { grid-template-columns: repeat(2, 1fr); }
   .checkout-grid, .order-details-grid, .profile-grid { grid-template-columns: 1fr; }
+  .details-grid { grid-template-columns: 1fr; }
   .form-grid { grid-template-columns: 1fr; }
   .stat-grid { grid-template-columns: repeat(3, 1fr); }
   .analysis-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1599,7 +1617,6 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
   .dashboard-header { flex-direction: column; align-items: flex-start; gap: 10px; }
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
   .medicine-grid { grid-template-columns: 1fr; }
-  .details-grid { grid-template-columns: 1fr; }
   .details-image { width: 100%; height: 190px; }
   .cart-item { grid-template-columns: 38px 1fr; row-gap: 8px; }
   .cart-item-total, .qty-stepper, .icon-btn-danger { grid-column: 2; }

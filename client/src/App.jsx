@@ -1,5 +1,6 @@
 import { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { CartProvider } from './context/CartContext';
@@ -8,6 +9,8 @@ import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicLayout from './components/PublicLayout';
 import ScrollManager from './components/ScrollManager';
+import ErrorBoundary from './components/ErrorBoundary';
+import NetworkStatusListener from './components/NetworkStatusListener';
 
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -47,14 +50,33 @@ const AdminPrescriptions = lazy(() => import('./pages/AdminPrescriptions'));
 
 const AdminPageFallback = () => <p className="info-text center-text admin-theme">Loading…</p>;
 
+// One QueryClient for the whole app lifetime — created outside the
+// component so it isn't recreated (and its cache lost) on every render.
+// Conservative defaults: don't refetch just because the window regained
+// focus (this is a pharmacy storefront, not a dashboard), but do treat
+// data as staleish after a minute so a background revalidation still
+// happens on remount.
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
 function App() {
   return (
-    <ThemeProvider>
-      <ToastProvider>
-        <AuthProvider>
-          <CartProvider>
-          <WishlistProvider>
-            <ScrollManager />
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <ToastProvider>
+            <NetworkStatusListener />
+            <AuthProvider>
+              <CartProvider>
+              <WishlistProvider>
+                <ScrollManager />
             <Suspense fallback={<AdminPageFallback />}>
             <Routes>
               {/* Public pages share the Navbar via PublicLayout */}
@@ -210,9 +232,11 @@ function App() {
             </Suspense>
           </WishlistProvider>
           </CartProvider>
-        </AuthProvider>
-      </ToastProvider>
-    </ThemeProvider>
+            </AuthProvider>
+          </ToastProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
