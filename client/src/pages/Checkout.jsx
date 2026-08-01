@@ -19,7 +19,53 @@ const FREE_DELIVERY_THRESHOLD = 500;
 const PLATFORM_FEE = 12;
 const COD_MIN_MRP = 500;
 
-const UPI_ID_REGEX = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z][a-zA-Z0-9.]{1,63}$/;
+// A UPI ID (VPA) is username@handle. The handle is NOT a free-form domain —
+// it's one of a closed set of PSP/bank handles that NPCI issues to banks and
+// payment apps. So "letters@letters" being syntactically shaped like an
+// address (which the old regex accepted — it happily passed things like
+// name@gmail.com) isn't the same as it being a real UPI ID. This checks both
+// halves the way UPI apps actually do: the username's allowed characters and
+// length, and the handle against the common PSP/bank handles seen in
+// practice. NPCI onboards new handles over time so this list isn't
+// exhaustive, but it now catches the obvious non-UPI mistakes (typing an
+// email, a random word, a phone number with no handle at all) instead of
+// waving them through.
+const UPI_USERNAME_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9.\-_]{0,254}[a-zA-Z0-9]$/;
+const UPI_HANDLE_SHAPE_REGEX = /^[a-zA-Z][a-zA-Z0-9.]{1,63}$/;
+const KNOWN_UPI_HANDLES = new Set([
+  // Google Pay
+  'okhdfcbank', 'okicici', 'oksbi', 'okaxis', 'okbizaxis', 'okkotak', 'okyesbank', 'okhdfc',
+  // PhonePe
+  'ybl', 'ibl', 'axl', 'phonepe',
+  // Paytm
+  'paytm', 'ptaxis', 'ptsbi', 'ptyes',
+  // Amazon Pay
+  'apl', 'rapl', 'yapl',
+  // BHIM / NPCI
+  'upi',
+  // Other apps
+  'jio', 'jiopay', 'freecharge', 'airtel', 'airtelpaymentsbank', 'slice', 'fam',
+  'waaxis', 'waicici', 'wahdfcbank', 'wasbi', 'pockets', 'jupiteraxis', 'timecosmos',
+  'yesg', 'csbpay', 'fifederal',
+  // Bank handles
+  'sbi', 'hdfcbank', 'icici', 'axisbank', 'kotak', 'idfcbank', 'indus', 'indusind',
+  'federal', 'yesbank', 'pnb', 'unionbank', 'unionbankofindia', 'cnrb', 'canara',
+  'centralbank', 'cbin', 'boi', 'bandhan', 'bandhanbank', 'rbl', 'sib', 'southindianbank',
+  'karb', 'karnatakabank', 'dcb', 'dcbbank', 'idbi', 'idbibank', 'uco', 'ucobank',
+  'allbank', 'uboi', 'barodampay', 'equitas', 'dbs', 'hsbc', 'citi', 'citibank', 'scb',
+  'jkb', 'nsdl', 'kvb', 'kvbank', 'tjsb',
+]);
+
+const isValidUpiId = (value) => {
+  const trimmed = (value || '').trim();
+  const atIndex = trimmed.indexOf('@');
+  if (atIndex <= 0 || trimmed.indexOf('@', atIndex + 1) !== -1) return false; // exactly one '@'
+  const username = trimmed.slice(0, atIndex);
+  const handle = trimmed.slice(atIndex + 1);
+  if (!UPI_USERNAME_REGEX.test(username)) return false;
+  if (!UPI_HANDLE_SHAPE_REGEX.test(handle)) return false;
+  return KNOWN_UPI_HANDLES.has(handle.toLowerCase());
+};
 const MOBILE_REGEX = /^[6-9]\d{9}$/;
 // Indian PIN codes are always 6 digits and never start with 0.
 const PINCODE_REGEX = /^[1-9][0-9]{5}$/;
@@ -159,10 +205,49 @@ const Checkout = () => {
     }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setAddress((prev) => ({ ...prev, lat: pos.coords.latitude, lng: pos.coords.longitude }));
-        showToast('Location captured', 'success');
-        setLocating(false);
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        // Capture the coordinates immediately so the map preview shows up
+        // even if the reverse-geocoding lookup below is slow or fails.
+        setAddress((prev) => ({ ...prev, lat: latitude, lng: longitude }));
+
+        try {
+          // Turn the coordinates into an actual street address. This was the
+          // missing piece — capturing lat/lng alone never touched the
+          // address line/city/state/pincode fields, so "use current
+          // location" looked like it did nothing useful. Nominatim (OSM's
+          // free reverse-geocoding API, same provider as the map preview
+          // below) needs no API key for this volume of lookups.
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18`,
+            { headers: { Accept: 'application/json' } }
+          );
+          if (!res.ok) throw new Error('reverse geocode request failed');
+          const data = await res.json();
+          const a = data.address || {};
+
+          const houseNumber = a.house_number ? `${a.house_number}, ` : '';
+          const street = a.road || a.pedestrian || a.footway || a.neighbourhood || a.suburb || '';
+          const line1 = `${houseNumber}${street}`.trim() || (data.display_name || '').split(',')[0] || '';
+          const city = a.city || a.town || a.village || a.municipality || a.county || '';
+          const state = a.state || '';
+          const pincode = (a.postcode || '').replace(/\D/g, '').slice(0, 6);
+
+          setAddress((prev) => ({
+            ...prev,
+            lat: latitude,
+            lng: longitude,
+            line1: line1 || prev.line1,
+            city: city || prev.city,
+            state: state || prev.state,
+            pincode: pincode.length === 6 ? pincode : prev.pincode,
+          }));
+          showToast('Location captured — address filled in, please double-check it', 'success');
+        } catch {
+          showToast('Location captured, but the address could not be auto-filled — please enter it manually', 'error');
+        } finally {
+          setLocating(false);
+        }
       },
       () => {
         showToast('Could not access your location. Please allow location permission.', 'error');
@@ -239,8 +324,19 @@ const Checkout = () => {
 
   const handleCheckUpiFormat = () => {
     const trimmed = upiId.trim();
-    if (!UPI_ID_REGEX.test(trimmed)) {
-      setUpiError('Enter a valid UPI ID, e.g. name@bank');
+    const atIndex = trimmed.indexOf('@');
+    if (atIndex <= 0 || trimmed.indexOf('@', atIndex + 1) !== -1) {
+      setUpiError('Enter a valid UPI ID, e.g. name@oksbi');
+      setUpiChecked(false);
+      return;
+    }
+    if (!UPI_USERNAME_REGEX.test(trimmed.slice(0, atIndex))) {
+      setUpiError('UPI ID before the @ can only have letters, numbers, dots, hyphens or underscores');
+      setUpiChecked(false);
+      return;
+    }
+    if (!isValidUpiId(trimmed)) {
+      setUpiError(`"@${trimmed.slice(atIndex + 1)}" isn't a bank/UPI app handle we recognise — check for typos`);
       setUpiChecked(false);
       return;
     }

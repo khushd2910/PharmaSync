@@ -80,21 +80,38 @@ const renderInvoicePdf = (invoiceData, res) => {
 
   // --- Item table -------------------------------------------------
   const col = { name: leftX, qty: leftX + 300, price: leftX + 350, amount: leftX + 430 };
-  const tableTop = y;
+  const rowHeight = 20;
+  const pageBottom = doc.page.height - doc.page.margins.bottom;
 
-  doc.font('Helvetica-Bold').fontSize(9.5).fillColor('#ffffff');
-  doc.rect(leftX, tableTop, pageWidth, 20).fill('#123B36');
-  doc.fillColor('#ffffff');
-  doc.text('Item', col.name + 6, tableTop + 6);
-  doc.text('Qty', col.qty, tableTop + 6, { width: 40, align: 'right' });
-  doc.text('Unit Price', col.price, tableTop + 6, { width: 70, align: 'right' });
-  doc.text('Amount', col.amount, tableTop + 6, { width: 70, align: 'right' });
+  const drawTableHeader = (topY) => {
+    doc.font('Helvetica-Bold').fontSize(9.5).fillColor('#ffffff');
+    doc.rect(leftX, topY, pageWidth, 20).fill('#123B36');
+    doc.fillColor('#ffffff');
+    doc.text('Item', col.name + 6, topY + 6);
+    doc.text('Qty', col.qty, topY + 6, { width: 40, align: 'right' });
+    doc.text('Unit Price', col.price, topY + 6, { width: 70, align: 'right' });
+    doc.text('Amount', col.amount, topY + 6, { width: 70, align: 'right' });
+    return topY + 20;
+  };
 
-  let rowY = tableTop + 20;
+  let tableTop = y;
+  let rowY = drawTableHeader(tableTop);
   doc.font('Helvetica').fontSize(9.5).fillColor('#222222');
 
   invoiceData.items.forEach((item, i) => {
-    const rowHeight = 20;
+    // Break to a fresh page (with its own table header) once the next row
+    // wouldn't fit above the bottom margin. Without this explicit check,
+    // PDFKit's own automatic pagination fires mid-row on these
+    // absolute-positioned cells once y runs past the page height, and every
+    // subsequent row keeps computing its y from the old (off-page) position
+    // — which is what was producing a new page per line item on longer carts.
+    if (rowY + rowHeight > pageBottom) {
+      doc.rect(leftX, tableTop, pageWidth, rowY - tableTop).strokeColor('#dddddd').stroke();
+      doc.addPage();
+      tableTop = doc.page.margins.top;
+      rowY = drawTableHeader(tableTop);
+      doc.font('Helvetica').fontSize(9.5).fillColor('#222222');
+    }
     if (i % 2 === 1) {
       doc.rect(leftX, rowY, pageWidth, rowHeight).fill('#f4f6f1');
       doc.fillColor('#222222');
@@ -114,9 +131,18 @@ const renderInvoicePdf = (invoiceData, res) => {
   const cgst = gstAmount / 2;
   const sgst = gstAmount / 2;
 
-  let totalsY = rowY + 16;
   const totalsLabelX = col.price;
   const totalsValueWidth = 70;
+
+  // Rough height of the totals + payment block, so it doesn't get split
+  // across a page boundary right after the item table ends.
+  const totalsLineCount = 2 + (invoiceData.couponCode && invoiceData.couponDiscount > 0 ? 1 : 0);
+  const estimatedTotalsBlockHeight = totalsLineCount * 16 + 22 + 14 + 14 + 13 + 20;
+  let totalsY = rowY + 16;
+  if (totalsY + estimatedTotalsBlockHeight > pageBottom) {
+    doc.addPage();
+    totalsY = doc.page.margins.top;
+  }
 
   const totalsRow = (label, value, bold = false) => {
     doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(9.5).fillColor('#222222');
