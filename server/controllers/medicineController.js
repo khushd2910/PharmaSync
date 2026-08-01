@@ -2,6 +2,7 @@ const Medicine = require('../models/Medicine');
 const Cart = require('../models/Cart');
 const Order = require('../models/Order');
 const POSSale = require('../models/POSSale');
+const MarketBasketAnalysis = require('../models/MarketBasketAnalysis');
 const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
 const fetchDrugInfo = require('../utils/fetchDrugInfo');
@@ -235,8 +236,17 @@ const getMedicineById = catchAsync(async (req, res, next) => {
 //            - topInCategory: the category's best-sellers, ranked by units
 //              actually sold (from Order history) rather than a stored
 //              popularity flag, so it reflects real demand
-//            - alsoBought: medicines most often bought IN THE SAME ORDER as
-//              this one (a real co-purchase signal, not a guess)
+//            - alsoBought: medicines most often bought together with this
+//              one. Two signals feed this, ranked strongest-first:
+//                1. Market Basket Analysis (Apriori/association rules,
+//                   python-service/analytics/market_basket_analysis.py) —
+//                   consequents of rules whose antecedent is this medicine,
+//                   already ranked by lift (how much more likely the pair
+//                   is than chance), the strongest available signal.
+//                2. Same-order co-purchase counting (Order history) — a
+//                   simpler "how many orders contained both" count, used
+//                   to fill in anything the mined rules don't cover yet
+//                   (e.g. a fresh catalog with no analysis run yet).
 //          A fresh/lightly-used catalog won't have much order history yet,
 //          so topInCategory and alsoBought both pad out with same-category
 //          picks (favoring featured/discounted/in-stock items) whenever the
@@ -275,7 +285,7 @@ const getRelatedMedicines = catchAsync(async (req, res, next) => {
     return [...results, ...extra];
   };
 
-  const [similar, topSoldIds, coBoughtIds] = await Promise.all([
+  const [similar, topSoldIds, coBoughtIds, basketSnapshot] = await Promise.all([
     popularFallback(categoryFilter, ROW_SIZE),
     medicine.category
       ? Order.aggregate([
@@ -304,7 +314,18 @@ const getRelatedMedicines = catchAsync(async (req, res, next) => {
       { $sort: { timesBoughtWith: -1 } },
       { $limit: ROW_SIZE },
     ]),
+    // Only `rules` is needed here — `topPairs` is for the admin page, not
+    // this lookup — and the doc can otherwise be sizeable.
+    MarketBasketAnalysis.findOne().sort({ generatedAt: -1 }).select('rules').lean(),
   ]);
+
+  // Association rules mined for this medicine as the antecedent, already
+  // ranked by lift/confidence (python-side ordering is preserved here) —
+  // the strongest "bought together" signal available when it exists.
+  const ruleBoughtIds = (basketSnapshot?.rules || [])
+    .filter((rule) => rule.antecedents?.[0]?.medicineId === String(medicine._id))
+    .map((rule) => rule.consequents?.[0]?.medicineId)
+    .filter(Boolean);
 
   // Both aggregations only return ids + a rank — re-fetch the full,
   // currently-live (not discontinued) documents and put them back in the
@@ -317,13 +338,34 @@ const getRelatedMedicines = catchAsync(async (req, res, next) => {
     return ids.map((id) => byId.get(String(id))).filter(Boolean);
   };
 
+  // Same idea as hydrateInRankOrder, but for a plain list of id strings
+  // (the shape ruleBoughtIds/the merged list come in) rather than the
+  // { _id, ... } aggregation-result shape the function above expects.
+  const hydrateIdsInRankOrder = async (ids) => {
+    if (ids.length === 0) return [];
+    const docs = await Medicine.find({ _id: { $in: ids }, isDiscontinued: { $ne: true } });
+    const byId = new Map(docs.map((d) => [String(d._id), d]));
+    return ids.map((id) => byId.get(String(id))).filter(Boolean);
+  };
+
+  // Merge the two "bought together" signals, strongest first: mined
+  // association rules, then same-order co-purchase counts for anything
+  // the rules don't already cover (deduped, rules win the ranking).
+  const seen = new Set();
+  const mergedAlsoBoughtIds = [...ruleBoughtIds, ...coBoughtIds.map((r) => String(r._id))].filter((id) => {
+    if (seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
+
   const [topInCategory, alsoBought] = await Promise.all([
     hydrateInRankOrder(topSoldIds).then((docs) => padWithFallback(docs, categoryFilter)),
-    hydrateInRankOrder(coBoughtIds).then((docs) => padWithFallback(docs, categoryFilter)),
+    hydrateIdsInRankOrder(mergedAlsoBoughtIds).then((docs) => padWithFallback(docs, categoryFilter)),
   ]);
 
   return res.status(200).json({ similar, topInCategory, alsoBought });
 });
+
 
 // @desc    Add a new medicine to the catalog (admin manual entry). New
 //          medicines are immediately visible to guest/user browsing and, once

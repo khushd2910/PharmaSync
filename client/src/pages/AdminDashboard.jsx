@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  ClipboardList, Pill, Package, Wallet, AlertTriangle, CalendarClock, ScanBarcode, BarChart3, RefreshCw, BellRing,
+  ClipboardList, Pill, Package, Wallet, AlertTriangle, CalendarClock, ScanBarcode, BarChart3, RefreshCw, BellRing, ShoppingBasket,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
@@ -315,6 +315,14 @@ const AdminDashboard = () => {
         <div>
           <strong>Sales Analysis</strong>
           <p className="muted-text">Daily, weekly, and monthly trends, revenue, and best/worst sellers.</p>
+        </div>
+      </Link>
+
+      <Link to="/admin/market-basket-analysis" className="placeholder-card admin-action-card">
+        <ShoppingBasket size={20} strokeWidth={2} className="placeholder-icon" />
+        <div>
+          <strong>Market Basket Analysis</strong>
+          <p className="muted-text">Association rules — which medicines get bought together, and how strongly.</p>
         </div>
       </Link>
 

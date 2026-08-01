@@ -42,6 +42,7 @@ from . import inventory_deep_analysis as inventory_deep_engine
 from . import sales_analysis as sales_engine
 from . import demand_forecasting as forecast_engine
 from . import revenue_forecasting as revenue_forecast_engine
+from . import market_basket_analysis as basket_engine
 
 
 def _json_safe(value):
@@ -221,5 +222,34 @@ def run_revenue_forecast(request):
         return JsonResponse({'message': 'Revenue forecast generated successfully', 'analysis': _json_safe(result)})
     except Exception as e:
         return JsonResponse({'error': f'Failed to generate revenue forecast: {str(e)}'}, status=500)
+
+
+# ---------------------------------------------------------------------------
+# Market Basket Analysis — Apriori / association rules over order + POS
+# line-item baskets. See market_basket_analysis.py for the full pipeline.
+# ---------------------------------------------------------------------------
+
+@require_http_methods(['GET'])
+def market_basket_analysis(request):
+    """GET /api/market-basket-analysis — latest snapshot, same contract as
+    sales_analysis() above."""
+    db = basket_engine.get_db()
+    return JsonResponse({'analysis': _latest(db, basket_engine.RESULT_COLLECTION)})
+
+
+@require_http_methods(['POST'])
+def run_market_basket_analysis(request):
+    """POST /api/market-basket-analysis/run — mines a fresh snapshot now."""
+    try:
+        db = basket_engine.get_db()
+        since = datetime.now(timezone.utc) - timedelta(days=basket_engine.LOOKBACK_DAYS)
+
+        baskets, id_to_name = basket_engine.load_baskets(db, since)
+        result = basket_engine.build_analysis(baskets, id_to_name)
+        db[basket_engine.RESULT_COLLECTION].insert_one(result)
+
+        return JsonResponse({'message': 'Analysis complete', 'analysis': _json_safe(result)})
+    except Exception as e:
+        return JsonResponse({'error': f'Failed to run market basket analysis: {str(e)}'}, status=500)
 
 

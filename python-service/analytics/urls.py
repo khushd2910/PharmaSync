@@ -15,4 +15,6 @@ urlpatterns = [
     path('api/demand-forecast/run', views.run_demand_forecast),
     path('api/revenue-forecast', views.revenue_forecast),
     path('api/revenue-forecast/run', views.run_revenue_forecast),
+    path('api/market-basket-analysis', views.market_basket_analysis),
+    path('api/market-basket-analysis/run', views.run_market_basket_analysis),
 ]
