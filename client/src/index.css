@@ -1521,13 +1521,14 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 
 .admin-orders-table { display: flex; flex-direction: column; gap: 8px; }
 .admin-revenue-table-wrap {
-  width: 100%; overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-md);
+  width: 100%; max-height: 540px; overflow: auto; border: 1px solid var(--line); border-radius: var(--r-md);
   background: var(--surface); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
 }
 .admin-revenue-table {
   width: 100%; min-width: 860px; border-collapse: separate; border-spacing: 0;
 }
 .admin-revenue-table thead th {
+  position: sticky; top: 0; z-index: 1;
   padding: 14px 16px; text-align: left; font-size: 0.74rem; letter-spacing: 0.08em;
   text-transform: uppercase; color: var(--muted); background: var(--paper); border-bottom: 1px solid var(--line);
 }
@@ -1535,6 +1536,11 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
   padding: 16px; font-size: 0.96rem; color: var(--ink); border-bottom: 1px solid var(--line);
   vertical-align: middle; white-space: nowrap;
 }
+.revenue-sort-button {
+  cursor: pointer; border: none; background: transparent; padding: 0; margin: 0;
+  color: inherit; font: inherit; letter-spacing: inherit; text-transform: inherit;
+}
+.revenue-sort-button:hover { color: var(--teal); }
 .admin-revenue-table tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.02); }
 .admin-revenue-table tbody tr:last-child td { border-bottom: none; }
 .revenue-analysis-header {

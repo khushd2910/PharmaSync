@@ -10,6 +10,8 @@ const AdminRevenueAnalysis = () => {
   const [running, setRunning] = useState(false);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState('totalRevenue');
+  const [sortDir, setSortDir] = useState('desc');
   const PAGE_SIZE = 20;
 
   const loadRevenueAnalysis = () => {
@@ -45,8 +47,14 @@ const AdminRevenueAnalysis = () => {
       ? analysis.medicineRevenueBreakdown.filter((item) => item.name.toLowerCase().includes(q))
       : analysis.medicineRevenueBreakdown;
 
-    return filtered.sort((a, b) => b.totalRevenue - a.totalRevenue);
-  }, [analysis, search]);
+    const sorted = [...filtered].sort((a, b) => {
+      const multiplier = sortDir === 'asc' ? 1 : -1;
+      const raw = a[sortBy] - b[sortBy];
+      return raw * multiplier;
+    });
+
+    return sorted;
+  }, [analysis, search, sortBy, sortDir]);
 
   const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE));
   const currentPageItems = filteredItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -54,6 +62,20 @@ const AdminRevenueAnalysis = () => {
   useEffect(() => {
     setPage(1);
   }, [search]);
+
+  const handleSort = (column) => {
+    if (sortBy === column) {
+      setSortDir((current) => (current === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortBy(column);
+      setSortDir(column === 'name' ? 'asc' : 'desc');
+    }
+  };
+
+  const renderSortIndicator = (column) => {
+    if (sortBy !== column) return ' ↕';
+    return sortDir === 'asc' ? ' ↑' : ' ↓';
+  };
 
   return (
     <div className="dashboard-page admin-theme">
@@ -120,13 +142,13 @@ const AdminRevenueAnalysis = () => {
                   <table className="admin-revenue-table">
                     <thead>
                       <tr>
-                        <th>Medicine</th>
+                        <th><button type="button" className="revenue-sort-button" onClick={() => handleSort('name')}>Medicine{renderSortIndicator('name')}</button></th>
                         <th>Total Units</th>
                         <th>Online Units</th>
                         <th>Offline Units</th>
-                        <th>Total Revenue</th>
-                        <th>Online Revenue</th>
-                        <th>Offline Revenue</th>
+                        <th><button type="button" className="revenue-sort-button" onClick={() => handleSort('totalRevenue')}>Total Revenue{renderSortIndicator('totalRevenue')}</button></th>
+                        <th><button type="button" className="revenue-sort-button" onClick={() => handleSort('onlineRevenue')}>Online Revenue{renderSortIndicator('onlineRevenue')}</button></th>
+                        <th><button type="button" className="revenue-sort-button" onClick={() => handleSort('posRevenue')}>Offline Revenue{renderSortIndicator('posRevenue')}</button></th>
                       </tr>
                     </thead>
                     <tbody>

@@ -11,6 +11,8 @@ import MedicineRow from '../components/MedicineRow';
 import MedicineReviews from '../components/MedicineReviews';
 import { SkeletonBlock, SkeletonText } from '../components/Skeleton';
 
+const LOW_STOCK_THRESHOLD = 5;
+
 const MedicineDetails = () => {
   const { id } = useParams();
   const [medicine, setMedicine] = useState(null);
@@ -173,6 +175,7 @@ const MedicineDetails = () => {
   const hasDiscount = medicine.discountPercent > 0;
   const effectivePrice = hasDiscount ? medicine.price * (1 - medicine.discountPercent / 100) : medicine.price;
   const outOfStock = medicine.stock <= 0;
+  const lowStock = !outOfStock && medicine.stock <= LOW_STOCK_THRESHOLD;
   const expiryLabel = medicine.expiryDate
     ? new Date(medicine.expiryDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short' })
     : 'N/A';
@@ -213,7 +216,9 @@ const MedicineDetails = () => {
           <div className="details-meta-grid">
             <div className="details-meta-item">
               <Boxes size={14} strokeWidth={2} />
-              <span>{outOfStock ? 'Out of stock' : `${medicine.stock} in stock`}</span>
+              <span>
+                {outOfStock ? 'Out of stock' : lowStock ? `Only ${medicine.stock} left` : 'In stock'}
+              </span>
             </div>
             <div className="details-meta-item">
               <Calendar size={14} strokeWidth={2} />

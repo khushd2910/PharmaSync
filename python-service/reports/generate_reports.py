@@ -225,6 +225,93 @@ def build_orders_csv(db):
     return df
 
 
+def build_revenue_csv(db):
+    """Flat medicine revenue export across both online and POS channels,
+    one row per medicine with channel-split totals and a combined revenue value."""
+    online = list(db.orders.aggregate([
+        {'$match': {'orderStatus': {'$ne': 'Cancelled'}}},
+        {'$unwind': '$items'},
+        {'$project': {
+            '_id': 0,
+            'medicineId': '$items.medicine',
+            'name': '$items.name',
+            'quantity': '$items.quantity',
+            'price': '$items.price',
+            'channel': {'$literal': 'Online'},
+        }},
+    ]))
+
+    pos = list(db.possales.aggregate([
+        {'$match': {'status': {'$ne': 'Refunded'}}},
+        {'$unwind': '$items'},
+        {'$project': {
+            '_id': 0,
+            'medicineId': '$items.medicine',
+            'name': '$items.name',
+            'quantity': '$items.quantity',
+            'price': '$items.price',
+            'channel': {'$literal': 'POS'},
+        }},
+    ]))
+
+    rows = []
+    for source in (online, pos):
+        for item in source:
+            qty_value = pd.to_numeric(item.get('quantity', 0), errors='coerce')
+            price_value = pd.to_numeric(item.get('price', 0), errors='coerce')
+            qty = int(qty_value) if pd.notna(qty_value) else 0
+            price = float(price_value) if pd.notna(price_value) else 0.0
+            revenue = float(qty * price)
+            rows.append({
+                'medicineId': str(item.get('medicineId', '')),
+                'name': item.get('name', ''),
+                'channel': item.get('channel', ''),
+                'unitsSold': qty,
+                'revenue': revenue,
+            })
+
+    columns = ['medicineId', 'name', 'channel', 'unitsSold', 'revenue']
+    df = pd.DataFrame(rows, columns=columns)
+    if df.empty:
+        return pd.DataFrame(columns=['medicineId', 'name', 'onlineUnits', 'onlineRevenue', 'offlineUnits', 'offlineRevenue', 'totalUnits', 'totalRevenue'])
+
+    medicine_rows = {}
+    for _, row in df.iterrows():
+        key = str(row['medicineId'])
+        if key not in medicine_rows:
+            medicine_rows[key] = {
+                'medicineId': key,
+                'name': row['name'],
+                'onlineUnits': 0,
+                'onlineRevenue': 0.0,
+                'offlineUnits': 0,
+                'offlineRevenue': 0.0,
+                'totalUnits': 0,
+                'totalRevenue': 0.0,
+            }
+
+        entry = medicine_rows[key]
+        if row['channel'] == 'Online':
+            entry['onlineUnits'] += int(row['unitsSold'])
+            entry['onlineRevenue'] += float(row['revenue'])
+        else:
+            entry['offlineUnits'] += int(row['unitsSold'])
+            entry['offlineRevenue'] += float(row['revenue'])
+
+        entry['totalUnits'] += int(row['unitsSold'])
+        entry['totalRevenue'] += float(row['revenue'])
+
+    report_df = pd.DataFrame(list(medicine_rows.values()))
+    report_df['onlineUnits'] = report_df['onlineUnits'].fillna(0).astype(int)
+    report_df['onlineRevenue'] = report_df['onlineRevenue'].fillna(0.0).round(2)
+    report_df['offlineUnits'] = report_df['offlineUnits'].fillna(0).astype(int)
+    report_df['offlineRevenue'] = report_df['offlineRevenue'].fillna(0.0).round(2)
+    report_df['totalUnits'] = report_df['totalUnits'].fillna(0).astype(int)
+    report_df['totalRevenue'] = report_df['totalRevenue'].fillna(0.0).round(2)
+    report_df = report_df.sort_values('totalRevenue', ascending=False)
+    return report_df[['medicineId', 'name', 'onlineUnits', 'onlineRevenue', 'offlineUnits', 'offlineRevenue', 'totalUnits', 'totalRevenue']]
+
+
 def main():
     db = get_db()
     now = datetime.now(timezone.utc)
@@ -234,6 +321,7 @@ def main():
     written.append(_write_csv(build_inventory_csv(db), 'Inventory.csv'))
     written.append(_write_csv(build_expiry_csv(db, now), 'Expiry.csv'))
     written.append(_write_csv(build_orders_csv(db), 'Orders.csv'))
+    written.append(_write_csv(build_revenue_csv(db), 'Revenue.csv'))
 
     print(f"[generate_reports] {now.isoformat()} — wrote {len(written)} CSVs to {EXPORTS_DIR}:")
     for path in written:

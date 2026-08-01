@@ -11,7 +11,7 @@ const EXPORTS_DIR = path.join(__dirname, '..', '..', 'reports', 'exports');
 // and of what /download/:filename will ever serve — the filename comes
 // straight from the URL, so accepting anything other than an exact match
 // against this list would open a path-traversal hole.
-const REPORT_FILES = ['Sales.csv', 'Inventory.csv', 'Expiry.csv', 'Orders.csv'];
+const REPORT_FILES = ['Sales.csv', 'Inventory.csv', 'Expiry.csv', 'Orders.csv', 'Revenue.csv'];
 
 // Shape the on-disk state of the four exports into what the dashboard
 // needs to render: whether each one exists yet, and if so, its size and
@@ -28,7 +28,7 @@ const listExports = () =>
     return { filename, generatedAt: stats.mtime, sizeBytes: stats.size };
   });
 
-// @desc    Current state of the four CSV exports (name, size, last
+// @desc    Current state of the CSV exports (name, size, last
 //          generated) without triggering a new run — for the reports page
 //          to render on load.
 // @route   GET /api/admin/reports
@@ -39,8 +39,8 @@ const listReports = catchAsync(async (req, res) => {
 
 // @desc    Run the Module 7 report-generation script now. Spawns
 //          generate_reports.py, which overwrites Sales.csv, Inventory.csv,
-//          Expiry.csv, and Orders.csv under reports/exports with a fresh
-//          snapshot, then returns the refreshed file listing.
+//          Expiry.csv, Orders.csv, and Revenue.csv under reports/exports
+//          with a fresh snapshot, then returns the refreshed file listing.
 // @route   POST /api/admin/reports/generate
 // @access  Private (admin)
 const generateReports = catchAsync(async (req, res) => {
@@ -48,7 +48,7 @@ const generateReports = catchAsync(async (req, res) => {
   return res.status(200).json({ message: 'Reports generated', reports: listExports() });
 });
 
-// @desc    Download one of the four generated CSVs.
+// @desc    Download one of the generated CSVs.
 // @route   GET /api/admin/reports/download/:filename
 // @access  Private (admin)
 const downloadReport = catchAsync(async (req, res, next) => {

@@ -12,6 +12,7 @@ const REPORT_LABELS = {
   'Inventory.csv': 'Full medicine catalog snapshot — stock, price, status',
   'Expiry.csv': 'Active medicines with a known expiry date, nearest first',
   'Orders.csv': 'Online orders only, with customer + delivery detail',
+  'Revenue.csv': 'Medicine revenue export — online vs offline channel split and combined revenue total',
 };
 
 const formatSize = (bytes) => {
