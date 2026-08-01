@@ -23,6 +23,7 @@
 const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
 const { getLocalFallbackReply } = require('../utils/localChatFallback');
+const djangoAuthHeaders = require('../utils/djangoAuthHeaders');
 
 const CHATBOT_API_URL = process.env.CHATBOT_API_URL || process.env.DJANGO_API_URL || 'http://localhost:8000';
 const FETCH_TIMEOUT_MS = 8000; // Gemini calls can take a moment longer than a plain DB lookup
@@ -52,7 +53,7 @@ const sendChatMessage = catchAsync(async (req, res, next) => {
 
     const upstream = await fetch(`${CHATBOT_API_URL.replace(/\/$/, '')}/api/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...djangoAuthHeaders() },
       body: JSON.stringify({ message, userId }),
       signal: controller.signal,
     });
@@ -95,7 +96,7 @@ const resetChat = catchAsync(async (req, res) => {
     const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
     await fetch(`${CHATBOT_API_URL.replace(/\/$/, '')}/api/chat/reset`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...djangoAuthHeaders() },
       body: JSON.stringify({ userId }),
       signal: controller.signal,
     });

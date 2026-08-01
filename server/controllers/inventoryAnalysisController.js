@@ -1,20 +1,19 @@
 /**
- * Module 4 — Inventory Analysis, now served by Django + pandas instead of
- * Node spawning `python3 analytics/inventory_analysis.py` as a subprocess
- * per request.
- *
- * Node's job here is thin, the same split already used for Modules 5, 8,
- * and 9 (see salesAnalysisController.js, utils/fetchDrugInfo.js,
- * chatController.js): keep the existing admin-only auth check in place
- * (protect + restrictTo('admin') in adminRoutes.js — this Django service
- * has no auth/session system of its own and was never meant to be
- * reachable directly from a browser) and forward the request over HTTP to
- * the Django analytics app, which does the actual MongoDB + pandas work.
- * See python-service/analytics/views.py for that side.
+ * Module 4 — Inventory Analysis. Computing a fresh snapshot ("Run
+ * Analysis Now") genuinely needs pandas, so that still goes through
+ * Django + python-service/analytics. Reading the *latest already-computed*
+ * snapshot doesn't — it's the same plain "find the newest doc in this
+ * collection" query Django was doing, against a database Node already has
+ * a live connection to (see utils/readLatestAnalysis.js) — so that read no
+ * longer depends on python-service being up. Every write into that
+ * collection still comes from the Python side (the nightly cron job and
+ * the /run endpoint below); Node only ever reads it here.
  */
 
 const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
+const readLatestAnalysis = require('../utils/readLatestAnalysis');
+const djangoAuthHeaders = require('../utils/djangoAuthHeaders');
 
 const ANALYTICS_API_URL = process.env.ANALYTICS_API_URL || process.env.DJANGO_API_URL || 'http://localhost:8000';
 const FETCH_TIMEOUT_MS = 30000; // pandas over the whole catalog + a lookback window (and, for the deep analysis, training KMeans/Isolation Forest) can take a moment longer than a plain DB read
@@ -22,32 +21,21 @@ const FETCH_TIMEOUT_MS = 30000; // pandas over the whole catalog + a lookback wi
 const forwardToDjango = (path, { method = 'GET' } = {}) => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-  return fetch(`${ANALYTICS_API_URL.replace(/\/$/, '')}${path}`, { method, signal: controller.signal }).finally(() =>
-    clearTimeout(timeout)
-  );
+  return fetch(`${ANALYTICS_API_URL.replace(/\/$/, '')}${path}`, {
+    method,
+    signal: controller.signal,
+    headers: djangoAuthHeaders(),
+  }).finally(() => clearTimeout(timeout));
 };
 
 // @desc    Latest inventory analysis snapshot — Total Stock, Low Stock,
-//          Fast Selling, Slow Selling. Computed and stored by the Django
-//          analytics service (python-service/analytics); this just proxies
-//          the read.
+//          Fast Selling, Slow Selling. Computed by the Django analytics
+//          service; read here straight from MongoDB.
 // @route   GET /api/admin/inventory-analysis
 // @access  Private (admin)
-const getInventoryAnalysis = catchAsync(async (req, res, next) => {
-  let upstream;
-  try {
-    upstream = await forwardToDjango('/api/inventory-analysis');
-  } catch (err) {
-    // Network error, timeout, or the Django service isn't running —
-    // report it plainly rather than letting the dashboard hang.
-    return next(new AppError('Inventory analysis service is temporarily unavailable', 502));
-  }
-  if (!upstream.ok) {
-    return next(new AppError('Inventory analysis service is temporarily unavailable', 502));
-  }
-
-  const data = await upstream.json();
-  return res.status(200).json(data);
+const getInventoryAnalysis = catchAsync(async (req, res) => {
+  const analysis = await readLatestAnalysis('inventory_analysis');
+  return res.status(200).json({ analysis });
 });
 
 // @desc    Run the inventory analysis job right now instead of waiting for
@@ -72,24 +60,14 @@ const runInventoryAnalysis = catchAsync(async (req, res, next) => {
 
 // @desc    Latest deep inventory analysis snapshot — ABC/Pareto
 //          classification, reorder point/safety stock/EOQ, KMeans
-//          behavioural segments, Isolation Forest anomalies. Computed and
-//          stored by the Django analytics service; this just proxies the
-//          read. See python-service/analytics/inventory_deep_analysis.py.
+//          behavioural segments, Isolation Forest anomalies. Computed by
+//          the Django analytics service; read here straight from MongoDB.
+//          See python-service/analytics/inventory_deep_analysis.py.
 // @route   GET /api/admin/inventory-analysis/deep
 // @access  Private (admin)
-const getDeepInventoryAnalysis = catchAsync(async (req, res, next) => {
-  let upstream;
-  try {
-    upstream = await forwardToDjango('/api/inventory-analysis/deep');
-  } catch (err) {
-    return next(new AppError('Inventory analysis service is temporarily unavailable', 502));
-  }
-  if (!upstream.ok) {
-    return next(new AppError('Inventory analysis service is temporarily unavailable', 502));
-  }
-
-  const data = await upstream.json();
-  return res.status(200).json(data);
+const getDeepInventoryAnalysis = catchAsync(async (req, res) => {
+  const analysis = await readLatestAnalysis('inventory_deep_analysis');
+  return res.status(200).json({ analysis });
 });
 
 // @desc    Train fresh KMeans/Isolation Forest models and compute a new

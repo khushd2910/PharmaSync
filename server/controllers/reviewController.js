@@ -7,10 +7,24 @@
  * of it. Node's job is to verify who's logged in (via `protect`) and
  * forward their identity — id, name, admin-ness — since the Django side
  * has no session system of its own and trusts whatever Node tells it.
+ *
+ * Exception: getBulkRatingSummaries below. That one powers the star
+ * ratings shown on every medicine card across the storefront (home page,
+ * discovery rows, wishlist, related products). If the Django service is
+ * down — or just hasn't been started alongside Node — those requests
+ * were failing silently and every card was rendering with no rating at
+ * all. Since Node already holds a connection to the same shared MongoDB
+ * database (reviews live in the same `reviews` collection either way),
+ * this one read-only endpoint queries Mongo directly instead of proxying,
+ * so card ratings don't depend on a second service being up. Everything
+ * else (posting/editing/deleting a review, a single medicine's review
+ * list) still goes through Django as before.
  */
 
+const mongoose = require('mongoose');
 const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
+const djangoAuthHeaders = require('../utils/djangoAuthHeaders');
 
 const REVIEWS_API_URL = process.env.REVIEWS_API_URL || process.env.DJANGO_API_URL || 'http://localhost:8000';
 const FETCH_TIMEOUT_MS = 5000;
@@ -20,7 +34,7 @@ const callDjango = (path, options = {}) => {
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
   return fetch(`${REVIEWS_API_URL.replace(/\/$/, '')}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...djangoAuthHeaders() },
     signal: controller.signal,
     ...options,
   }).finally(() => clearTimeout(timeout));
@@ -143,22 +157,28 @@ const deleteReview = catchAsync(async (req, res, next) => {
 // @access  Public
 const getBulkRatingSummaries = catchAsync(async (req, res, next) => {
   const ids = (req.query.ids || '').toString();
-  if (!ids) {
+  const medicineIds = ids.split(',').map((id) => id.trim()).filter(Boolean);
+  if (medicineIds.length === 0) {
     return res.status(200).json({ summaries: {} });
   }
 
-  let upstream;
-  try {
-    upstream = await callDjango(`/api/medicines/reviews/summary?ids=${encodeURIComponent(ids)}`);
-  } catch (err) {
-    return next(new AppError('Reviews are temporarily unavailable', 502));
+  const pipeline = [
+    { $match: { medicineId: { $in: medicineIds } } },
+    { $group: { _id: '$medicineId', count: { $sum: 1 }, totalStars: { $sum: '$rating' } } },
+  ];
+
+  const rows = await mongoose.connection.db.collection('reviews').aggregate(pipeline).toArray();
+
+  const summaries = {};
+  for (const row of rows) {
+    const count = row.count;
+    summaries[row._id] = {
+      count,
+      average: count ? Math.round((row.totalStars / count) * 10) / 10 : 0,
+    };
   }
 
-  const data = await upstream.json().catch(() => ({}));
-  if (!upstream.ok) {
-    return next(new AppError(data.error || 'Could not load rating summaries', upstream.status));
-  }
-  return res.status(200).json(data);
+  return res.status(200).json({ summaries });
 });
 
 module.exports = { getMedicineReviews, createReview, updateReview, deleteReview, getBulkRatingSummaries };

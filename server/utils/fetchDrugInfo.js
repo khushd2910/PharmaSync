@@ -17,6 +17,8 @@
  * problem with the Python service never breaks the medicine detail page.
  */
 
+const djangoAuthHeaders = require('./djangoAuthHeaders');
+
 const MEDICINE_API_URL = process.env.MEDICINE_API_URL || process.env.DJANGO_API_URL || 'http://localhost:8000';
 const FETCH_TIMEOUT_MS = 4000;
 
@@ -40,7 +42,7 @@ const fetchDrugInfo = async (fdaAlias) => {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
-    const res = await fetch(url, { signal: controller.signal });
+    const res = await fetch(url, { signal: controller.signal, headers: djangoAuthHeaders() });
     clearTimeout(timeout);
 
     if (!res.ok) {

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'config.middleware.InternalApiKeyMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -78,4 +79,12 @@ STATIC_URL = 'static/'
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/pharmasync')
 mongo_client = MongoClient(MONGO_URI)
 MONGO_DB = mongo_client.get_default_database()
+
+# Shared secret the Node server attaches to every request it makes into
+# this service (see config/middleware.py — InternalApiKeyMiddleware — for
+# why this exists). Must match INTERNAL_API_KEY in server/.env. Left
+# blank, the middleware allows all requests through (dev-friendly default,
+# same as leaving SMTP creds blank), so set this in any deployment where
+# this service's port could be reached by anything other than Node.
+INTERNAL_API_KEY = os.getenv('INTERNAL_API_KEY', '')
 
