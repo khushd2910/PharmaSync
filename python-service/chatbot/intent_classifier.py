@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 import sys
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
@@ -14,11 +15,38 @@ from ml_config import (
     CHATBOT_MAX_MODEL_AGE_HOURS as MAX_MODEL_AGE_HOURS,
 )
 
+
+def _expand_training_data(base_examples):
+    prefixes = [
+        '', 'please ', 'please can you ', 'can you ', 'could you ',
+        'hey ', 'hi ', 'hello ', 'hey there, ', 'hi there, ', 'hello there, '
+    ]
+    expanded = []
+    seen = set()
+    for text, label in base_examples:
+        normalized_text = re.sub(r'\s+', ' ', text.strip())
+        for prefix in prefixes:
+            candidate = f"{prefix}{normalized_text}".strip()
+            candidate = re.sub(r'\s+', ' ', candidate)
+            variants = {candidate}
+            if not candidate.endswith('?'):
+                variants.add(f"{candidate}?")
+            for variant in variants:
+                variant = re.sub(r'\s+', ' ', variant).replace(' ?', '?').strip()
+                if variant not in seen:
+                    seen.add(variant)
+                    expanded.append((variant, label))
+    return expanded
+
+
+def _normalize_intent_message(message):
+    return re.sub(r'[^a-z0-9\s]+', ' ', (message or '').lower()).strip()
+
 logger = logging.getLogger(__name__)
 
 
 # Labeled training dataset for supervised learning
-TRAINING_DATA = [
+_BASE_TRAINING_DATA = [
     # greeting
     ("hi", "greeting"),
     ("hello", "greeting"),
@@ -166,6 +194,8 @@ TRAINING_DATA = [
     ("something is wrong with me", "symptom_clarify"),
 ]
 
+TRAINING_DATA = _expand_training_data(_BASE_TRAINING_DATA)
+
 DEFAULT_CONFIDENCE_THRESHOLD = 0.42
 
 class IntentClassifier:
@@ -217,7 +247,8 @@ class IntentClassifier:
             return "general_question", 0.0
 
         try:
-            X_msg = self.vectorizer.transform([message])
+            normalized_message = _normalize_intent_message(message)
+            X_msg = self.vectorizer.transform([normalized_message])
             probs = self.classifier.predict_proba(X_msg)[0]
             max_idx = probs.argmax()
             intent = self.classifier.classes_[max_idx]

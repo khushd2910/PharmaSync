@@ -60,9 +60,22 @@ def is_pure_greeting(message_lower):
     return len(stripped.split()) <= _GREETING_MAX_WORDS
 
 
+def _strip_leading_greeting(message_lower):
+    if is_pure_greeting(message_lower):
+        return message_lower
+
+    for greeting in GREETING_WORDS:
+        if message_lower.startswith(greeting + ' '):
+            return message_lower[len(greeting):].strip(' ,.!?')
+        if message_lower.startswith(greeting + ','):
+            return message_lower[len(greeting) + 1:].strip(' ,.!?')
+    return message_lower
+
+
 def classify_message(message_lower):
+    normalized_message = _strip_leading_greeting(message_lower)
     classifier = get_classifier()
-    ml_intent, confidence = classifier.predict_intent(message_lower)
+    ml_intent, confidence = classifier.predict_intent(normalized_message)
 
     if ml_intent != 'general_question' and confidence >= DEFAULT_CONFIDENCE_THRESHOLD:
         if ml_intent == 'greeting' and not is_pure_greeting(message_lower):
