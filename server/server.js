@@ -43,6 +43,15 @@ app.use(express.json({ limit: '2mb' }));
 app.use(cookieParser());
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
+// The API is entirely dynamic (order status, stock, prices all change
+// server-side) — never let the browser serve a stale cached response for
+// any /api route, which would otherwise mask admin-side updates (e.g. an
+// order's ETA) from a user who already had the page open.
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', module: 'Module 1 - Authentication' });

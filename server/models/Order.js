@@ -44,15 +44,14 @@ const orderSchema = new mongoose.Schema(
     deliveryFee: { type: Number, default: 0, min: 0 },
     platformFee: { type: Number, default: 0, min: 0 },
     paymentStatus: { type: String, default: 'Pending' },
-    // Randomized 15–25 min ETA shown on the post-payment confirmation step,
-    // fixed at order creation so it stays consistent on refresh/revisit.
-    estimatedDeliveryMinutes: { type: Number, min: 15, max: 25 },
-    // Real multi-day delivery ETA shown on the order history/details pages
-    // (the "Expected by" date). Set at checkout to a default window, then
-    // kept current by an admin as the order moves through fulfillment — see
-    // orderController.adminUpdateOrderStatus. Replaces the old client-side
-    // "placed date + 3 days" guess that never reflected actual progress.
-    estimatedDeliveryDate: { type: Date },
+    // Quick-commerce style ETA in minutes (Blinkit-like), randomized 15-25
+    // at checkout so it's stable across refreshes/revisits. Shown on the
+    // post-payment confirmation step and then again on the order
+    // history/details pages until the order is delivered. An admin can
+    // correct this value from Order Management as the order actually
+    // progresses — see orderController.adminUpdateOrderStatus. Once the
+    // order reaches 'Delivered' it's locked and no longer editable.
+    estimatedDeliveryMinutes: { type: Number, min: 1 },
     // Module 10 — Prescription Medicine Alert. Set at checkout time if the
     // cart contained any requiresPrescription medicine; `prescription`
     // points at the actual uploaded file (server/models/Prescription.js)

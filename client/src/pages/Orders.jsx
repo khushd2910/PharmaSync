@@ -17,7 +17,6 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 const PAGE_SIZE = 6;
 const MAX_THUMBS = 4;
 const NEW_ORDER_WINDOW_MS = 48 * 60 * 60 * 1000; // orders placed within this window get a "New" tag
-const FALLBACK_DELIVERY_DAYS = 3; // only used for legacy orders placed before estimatedDeliveryDate existed
 
 // Turns an item list into a compact readable string, e.g.
 // "Paracetamol, Azithromycin +2 more" instead of dumping every name.
@@ -59,11 +58,6 @@ const monthLabelFor = (dateStr) =>
 
 const isRecentOrder = (order) => Date.now() - new Date(order.createdAt).getTime() < NEW_ORDER_WINDOW_MS;
 
-const estimatedDeliveryDate = (order) =>
-  order.estimatedDeliveryDate
-    ? new Date(order.estimatedDeliveryDate)
-    : new Date(new Date(order.createdAt).getTime() + FALLBACK_DELIVERY_DAYS * 24 * 60 * 60 * 1000);
-
 // Loading placeholders shaped like the real card, so the layout doesn't
 // jump once orders arrive — feels like a real product, not a spinner.
 const OrderCardSkeleton = () => (
@@ -94,12 +88,32 @@ const Orders = () => {
   const { addToCart } = useCart();
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const loadOrders = (silent = false) => {
     api
       .get('/orders')
       .then((res) => setOrders(res.data.orders))
-      .catch((err) => showToast(err.response?.data?.message || 'Could not load orders', 'error'))
+      .catch((err) => {
+        if (!silent) showToast(err.response?.data?.message || 'Could not load orders', 'error');
+      })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadOrders();
+
+    // A user might leave this tab open while an admin updates an order
+    // (e.g. its ETA) elsewhere — refetch whenever they come back to it so
+    // it doesn't keep showing what was current when the page first loaded.
+    const handleFocus = () => loadOrders(true);
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') loadOrders(true);
+    };
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -332,11 +346,11 @@ const Orders = () => {
                             {isDelivered
                               ? `Delivered ${formatDate(order.updatedAt)}`
                               : `Placed ${formatDate(order.createdAt)}`}
-                            {isActive && (
+                            {isActive && order.estimatedDeliveryMinutes && (
                               <>
                                 {' · '}
                                 <Clock size={11} strokeWidth={2} className="inline-icon" />
-                                {' '}Expected by {formatDate(estimatedDeliveryDate(order))}
+                                {' '}Arriving in ~{order.estimatedDeliveryMinutes} mins
                               </>
                             )}
                           </p>

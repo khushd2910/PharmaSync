@@ -69,24 +69,10 @@ const DELIVERY_FEE = 40;
 const FREE_DELIVERY_THRESHOLD = 500;
 const PLATFORM_FEE = 12;
 
-// Default delivery window quoted at checkout, before an admin has touched
-// the order at all.
-const DEFAULT_DELIVERY_WINDOW_DAYS = 3;
-
-// Once an admin moves an order to a given status, the ETA is refreshed to
-// a sensible window measured from *now* — so "Expected by" tightens up as
-// the order actually progresses instead of staying pinned to the checkout
-// guess. Cancelled orders keep whatever date they last had; it's no longer
-// meaningful once cancelled, and the UI hides it for that status anyway.
-const STATUS_DELIVERY_OFFSET_DAYS = {
-  Pending: 3,
-  Confirmed: 3,
-  Packed: 2,
-  'Out for Delivery': 1,
-  Delivered: 0,
-};
-
-const addDays = (date, days) => new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
+// Randomized quick-commerce ETA window quoted at checkout (minutes), before
+// an admin has touched the order at all.
+const DEFAULT_ETA_MIN_MINUTES = 15;
+const DEFAULT_ETA_MAX_MINUTES = 25;
 
 // @desc    Place an order from the current cart
 // @route   POST /api/orders
@@ -205,11 +191,11 @@ const createOrder = catchAsync(async (req, res, next) => {
     prescriptionStatus:
       rxItems.length === 0 ? 'Not Required' : prescription.status === 'Approved' ? 'Approved' : 'Pending Review',
     prescription: prescription ? prescription._id : null,
-    // Randomized once here so it's stable across refreshes/order-history views.
-    estimatedDeliveryMinutes: Math.floor(Math.random() * (25 - 15 + 1)) + 15,
-    // Real "Expected by" date — a genuine field an admin can later correct,
-    // not a placeholder recomputed from createdAt every time it's shown.
-    estimatedDeliveryDate: addDays(new Date(), DEFAULT_DELIVERY_WINDOW_DAYS),
+    // Randomized once here so it's stable across refreshes/order-history
+    // views. An admin can later correct this from Order Management as the
+    // order actually progresses (see adminUpdateOrderStatus).
+    estimatedDeliveryMinutes:
+      Math.floor(Math.random() * (DEFAULT_ETA_MAX_MINUTES - DEFAULT_ETA_MIN_MINUTES + 1)) + DEFAULT_ETA_MIN_MINUTES,
   });
 
   if (prescription) {
@@ -361,12 +347,15 @@ const adminListOrders = catchAsync(async (req, res) => {
   });
 });
 
-// @desc    Manually set an order's status — takes it out of demo-timer mode
-//          permanently. Cancelling here also restocks the items.
+// @desc    Manually set an order's status and/or its quick-commerce ETA
+//          (minutes). Cancelling here also restocks the items. Once an
+//          order is already 'Delivered' it's locked — no further status
+//          or ETA changes are accepted, matching the storefront no longer
+//          showing any editable controls for it.
 // @route   PATCH /api/admin/orders/:id/status
 // @access  Private (admin)
 const adminUpdateOrderStatus = catchAsync(async (req, res, next) => {
-  const { status, estimatedDeliveryDate } = req.body;
+  const { status, estimatedDeliveryMinutes } = req.body;
   if (!Order.ORDER_STATUSES.includes(status)) {
     return next(new AppError(`status must be one of: ${Order.ORDER_STATUSES.join(', ')}`, 400));
   }
@@ -376,6 +365,10 @@ const adminUpdateOrderStatus = catchAsync(async (req, res, next) => {
     return next(new AppError('Order not found', 404));
   }
 
+  if (order.orderStatus === 'Delivered') {
+    return next(new AppError('This order has already been delivered and can no longer be modified', 400));
+  }
+
   if (status === 'Cancelled' && order.orderStatus !== 'Cancelled') {
     await restockItems(order.items);
     if (order.paymentStatus === 'Paid') {
@@ -383,27 +376,21 @@ const adminUpdateOrderStatus = catchAsync(async (req, res, next) => {
     }
   }
 
-  const statusChanged = status !== order.orderStatus;
   order.orderStatus = status;
 
-  // An admin can send an explicit estimatedDeliveryDate to correct the ETA
-  // directly (e.g. from the date picker in Order Management) — that always
-  // wins. Otherwise, if the status itself just changed, refresh the ETA to
-  // a sensible window measured from now, so it keeps reflecting reality as
-  // the order moves through fulfillment instead of sitting on the original
-  // checkout-time guess.
-  if (Object.prototype.hasOwnProperty.call(req.body, 'estimatedDeliveryDate')) {
-    if (estimatedDeliveryDate === null || estimatedDeliveryDate === '') {
-      order.estimatedDeliveryDate = null;
+  // An admin can correct the ETA (in minutes) directly from Order
+  // Management, independent of a status change — e.g. traffic pushed the
+  // delivery back but the order is still "Out for Delivery".
+  if (Object.prototype.hasOwnProperty.call(req.body, 'estimatedDeliveryMinutes')) {
+    if (estimatedDeliveryMinutes === null || estimatedDeliveryMinutes === '') {
+      order.estimatedDeliveryMinutes = null;
     } else {
-      const parsedDate = new Date(estimatedDeliveryDate);
-      if (Number.isNaN(parsedDate.getTime())) {
-        return next(new AppError('estimatedDeliveryDate must be a valid date', 400));
+      const minutes = Number(estimatedDeliveryMinutes);
+      if (!Number.isFinite(minutes) || minutes < 1) {
+        return next(new AppError('estimatedDeliveryMinutes must be a positive number', 400));
       }
-      order.estimatedDeliveryDate = parsedDate;
+      order.estimatedDeliveryMinutes = Math.round(minutes);
     }
-  } else if (statusChanged && STATUS_DELIVERY_OFFSET_DAYS[status] !== undefined) {
-    order.estimatedDeliveryDate = addDays(new Date(), STATUS_DELIVERY_OFFSET_DAYS[status]);
   }
 
   await order.save();

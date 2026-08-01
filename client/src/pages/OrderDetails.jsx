@@ -6,7 +6,7 @@ import { useToast } from '../context/ToastContext';
 import ConfirmModal from '../components/ConfirmModal';
 import OrderStatusStepper from '../components/OrderStatusStepper';
 import { isCancellable, computeDisplayStatus } from '../utils/orderStatus';
-import { formatCurrency, formatDateTime, formatDate } from '../utils/format';
+import { formatCurrency, formatDateTime } from '../utils/format';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -29,18 +29,35 @@ const OrderDetails = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
-  const loadOrder = () => {
-    setLoading(true);
+  const loadOrder = (silent = false) => {
+    if (!silent) setLoading(true);
     const endpoint = location.pathname.startsWith('/admin/') ? `/admin/orders/${id}` : `/orders/${id}`;
     api
       .get(endpoint)
       .then((res) => setOrder(res.data.order))
-      .catch((err) => showToast(err.response?.data?.message || 'Order not found', 'error'))
-      .finally(() => setLoading(false));
+      .catch((err) => {
+        if (!silent) showToast(err.response?.data?.message || 'Order not found', 'error');
+      })
+      .finally(() => {
+        if (!silent) setLoading(false);
+      });
   };
 
   useEffect(() => {
     loadOrder();
+
+    // A user might leave this order's page open while an admin edits it
+    // elsewhere (status, ETA) — refetch whenever they return to the tab.
+    const handleFocus = () => loadOrder(true);
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') loadOrder(true);
+    };
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
@@ -176,11 +193,6 @@ const OrderDetails = () => {
             {order.estimatedDeliveryMinutes && computeDisplayStatus(order) !== 'Delivered' && computeDisplayStatus(order) !== 'Cancelled' && (
               <p className="muted-text" style={{ marginTop: 8 }}>
                 Estimated delivery: ~{order.estimatedDeliveryMinutes} minutes
-              </p>
-            )}
-            {order.estimatedDeliveryDate && computeDisplayStatus(order) !== 'Delivered' && computeDisplayStatus(order) !== 'Cancelled' && (
-              <p className="muted-text" style={{ marginTop: 4 }}>
-                Expected by {formatDate(order.estimatedDeliveryDate)}
               </p>
             )}
           </section>

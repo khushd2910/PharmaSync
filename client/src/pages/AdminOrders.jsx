@@ -9,16 +9,6 @@ import { formatCurrency, formatDate } from '../utils/format';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const ALL_STATUSES = [...ORDER_STAGES, 'Cancelled'];
 
-// yyyy-mm-dd for a native <input type="date">'s value/onChange, in the
-// browser's local time so the picker shows the date an admin expects.
-const toDateInputValue = (date) => {
-  if (!date) return '';
-  const d = new Date(date);
-  if (Number.isNaN(d.getTime())) return '';
-  const offset = d.getTimezoneOffset();
-  return new Date(d.getTime() - offset * 60000).toISOString().slice(0, 10);
-};
-
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
@@ -68,21 +58,32 @@ const AdminOrders = () => {
     }
   };
 
-  // Lets an admin correct the "Expected by" date directly, independent of
-  // a status change — e.g. a delivery got delayed but the order is still
-  // "Out for Delivery". Sends the order's current status back unchanged
-  // so only the date moves.
-  const handleDeliveryDateChange = async (order, newDateValue) => {
+  // Lets an admin correct the quick-commerce ETA (in minutes) directly,
+  // independent of a status change — e.g. traffic pushed the delivery back
+  // but the order is still "Out for Delivery". Sends the order's current
+  // status back unchanged so only the ETA moves. The input is uncontrolled
+  // (see the `key` on it below) so this reads straight off the DOM value
+  // on blur — no local draft state to fall out of sync.
+  const handleDeliveryMinutesSave = async (order, rawValue) => {
+    const trimmed = String(rawValue).trim();
+    const currentValue = order.estimatedDeliveryMinutes == null ? '' : String(order.estimatedDeliveryMinutes);
+    if (trimmed === currentValue) return; // unchanged, nothing to save
+
+    if (trimmed !== '' && (!Number.isFinite(Number(trimmed)) || Number(trimmed) < 1)) {
+      showToast('Delivery time must be a number of 1 or more minutes', 'error');
+      return;
+    }
+
     setUpdatingId(order._id);
     try {
       const res = await api.patch(`/admin/orders/${order._id}/status`, {
         status: order.orderStatus,
-        estimatedDeliveryDate: newDateValue ? new Date(`${newDateValue}T00:00:00`).toISOString() : null,
+        estimatedDeliveryMinutes: trimmed === '' ? null : Number(trimmed),
       });
       setOrders((prev) => prev.map((o) => (o._id === order._id ? res.data.order : o)));
-      showToast('Expected delivery date updated', 'success');
+      showToast('Estimated delivery time updated', 'success');
     } catch (err) {
-      showToast(err.response?.data?.message || 'Could not update delivery date', 'error');
+      showToast(err.response?.data?.message || 'Could not update delivery time', 'error');
     } finally {
       setUpdatingId(null);
     }
@@ -156,26 +157,37 @@ const AdminOrders = () => {
                 View details
               </Link>
 
-              <select
-                className="sort-select"
-                value={order.orderStatus}
-                disabled={updatingId === order._id}
-                onChange={(e) => handleStatusChange(order._id, e.target.value)}
-              >
-                {ALL_STATUSES.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
+              {order.orderStatus !== 'Delivered' && (
+                <select
+                  className="sort-select"
+                  value={order.orderStatus}
+                  disabled={updatingId === order._id}
+                  onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                >
+                  {ALL_STATUSES.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              )}
 
-              {order.orderStatus !== 'Cancelled' && (
+              {order.orderStatus !== 'Cancelled' && order.orderStatus !== 'Delivered' && (
                 <label className="admin-eta-field">
-                  <span className="muted-text" style={{ fontSize: 11 }}>Expected by</span>
+                  <span className="muted-text" style={{ fontSize: 11 }}>Delivery in (mins)</span>
                   <input
-                    type="date"
+                    type="number"
+                    min={1}
                     className="sort-select"
-                    value={toDateInputValue(order.estimatedDeliveryDate)}
+                    // Keying on the saved value forces React to remount this
+                    // input (fresh defaultValue) whenever the server-side
+                    // value actually changes, so it can never get stuck
+                    // showing a stale number after a save.
+                    key={`${order._id}-${order.estimatedDeliveryMinutes ?? 'none'}`}
+                    defaultValue={order.estimatedDeliveryMinutes ?? ''}
                     disabled={updatingId === order._id}
-                    onChange={(e) => handleDeliveryDateChange(order, e.target.value)}
+                    onBlur={(e) => handleDeliveryMinutesSave(order, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') e.target.blur();
+                    }}
                   />
                 </label>
               )}
