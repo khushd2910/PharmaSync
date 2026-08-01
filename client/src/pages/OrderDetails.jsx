@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { FileText, MapPin, CreditCard, Download, XCircle, ShieldAlert, Eye, Check, X } from 'lucide-react';
+import { FileText, MapPin, CreditCard, Download, XCircle, ShieldAlert, Eye, Check, X, RotateCcw, Star } from 'lucide-react';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
+import { useCart } from '../context/CartContext';
 import ConfirmModal from '../components/ConfirmModal';
 import OrderStatusStepper from '../components/OrderStatusStepper';
 import { isCancellable, computeDisplayStatus, ORDER_STAGES } from '../utils/orderStatus';
@@ -30,7 +31,10 @@ const OrderDetails = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [reviewingPrescription, setReviewingPrescription] = useState(false);
   const [confirmRejectOpen, setConfirmRejectOpen] = useState(false);
+  const [reordering, setReordering] = useState(false);
+  const [ratingBusy, setRatingBusy] = useState(false);
   const { showToast } = useToast();
+  const { addToCart } = useCart();
   const navigate = useNavigate();
   const isAdmin = location.pathname.startsWith('/admin/');
 
@@ -148,6 +152,73 @@ const OrderDetails = () => {
     }
   };
 
+  // The medicine catalog is periodically wiped and re-imported (see
+  // Orders.jsx), which mints new _ids for the same medicine. If the
+  // direct id lookup 404s, fall back to an exact (case-insensitive) name
+  // match against the current catalog before giving up on that item.
+  const findCurrentMedicineByName = async (name) => {
+    try {
+      const res = await api.get('/medicines', { params: { search: name, limit: 5 } });
+      const candidates = res.data.medicines || [];
+      return candidates.find((m) => m.name.trim().toLowerCase() === name.trim().toLowerCase()) || null;
+    } catch {
+      return null;
+    }
+  };
+
+  // Adds every item from this order back into the cart, then takes the
+  // user straight to checkout. Items that are now genuinely out of stock
+  // or discontinued are skipped (reported to the user) rather than
+  // blocking the whole reorder. Mirrors Orders.jsx's handleReorder.
+  const handleReorder = async () => {
+    setReordering(true);
+    let added = 0;
+    let failed = 0;
+
+    for (const item of order.items) {
+      // eslint-disable-next-line no-await-in-loop
+      let res = await addToCart(item.medicine, item.quantity);
+
+      if (!res.success) {
+        // eslint-disable-next-line no-await-in-loop
+        const match = await findCurrentMedicineByName(item.name);
+        if (match) {
+          // eslint-disable-next-line no-await-in-loop
+          res = await addToCart(match._id, item.quantity);
+        }
+      }
+
+      if (res.success) added += 1;
+      else failed += 1;
+    }
+    setReordering(false);
+
+    if (added === 0) {
+      showToast('None of these items are available to reorder anymore', 'error');
+      return;
+    }
+    showToast(
+      failed > 0
+        ? `Added ${added} item${added > 1 ? 's' : ''} to cart — ${failed} no longer available`
+        : 'Items added to your cart',
+      failed > 0 ? 'error' : 'success'
+    );
+    navigate('/checkout');
+  };
+
+  const handleRate = async (value) => {
+    setRatingBusy(true);
+    try {
+      const res = await api.patch(`/orders/${id}/rating`, { rating: value });
+      setOrder(res.data.order);
+      showToast('Thanks for your feedback!', 'success');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Could not save your rating', 'error');
+    } finally {
+      setRatingBusy(false);
+    }
+  };
+
   if (loading) return <p className="info-text center-text">Loading order…</p>;
   if (!order) return <p className="info-text center-text">Order not found.</p>;
 
@@ -170,6 +241,11 @@ const OrderDetails = () => {
             >
               <Download size={14} strokeWidth={2} /> Invoice
             </a>
+          )}
+          {!isAdmin && (
+            <button className="btn-secondary" onClick={handleReorder} disabled={reordering}>
+              <RotateCcw size={14} strokeWidth={2} /> {reordering ? 'Adding…' : 'Reorder'}
+            </button>
           )}
           {isCancellable(order) && (
             <button className="btn-secondary danger" onClick={() => setConfirmCancelOpen(true)} disabled={cancelling}>
@@ -230,6 +306,28 @@ const OrderDetails = () => {
             <span>Total</span>
             <span>{formatCurrency(order.totalAmount)}</span>
           </div>
+
+          {!isAdmin && computeDisplayStatus(order) === 'Delivered' && (
+            <div className="order-rating">
+              <span className="muted-text">
+                {order.rating ? 'Thanks for rating this order!' : 'Rate this order:'}
+              </span>
+              <div className="order-rating-stars">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    className="star-btn"
+                    onClick={() => handleRate(n)}
+                    disabled={ratingBusy}
+                    aria-label={`Rate ${n} star${n > 1 ? 's' : ''}`}
+                  >
+                    <Star size={14} strokeWidth={2} fill={(order.rating || 0) >= n ? 'currentColor' : 'none'} />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {order.prescriptionRequired && (
             <div className="prescription-status-block">

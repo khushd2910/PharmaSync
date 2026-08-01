@@ -7,6 +7,7 @@ import {
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '../context/ToastContext';
 import { useTheme } from '../context/ThemeContext';
 import IconInput from '../components/IconInput';
@@ -52,6 +53,7 @@ const scorePasswordStrength = (password) => {
 const Profile = () => {
   const { user, login, logout } = useAuth();
   const { cart } = useCart();
+  const { medicines: wishlistMedicines } = useWishlist() || {};
   const { showToast } = useToast();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -363,6 +365,11 @@ const Profile = () => {
             <strong>Saved items</strong>
             <p>{cart.savedItems?.length || 0} item{(cart.savedItems?.length || 0) !== 1 ? 's' : ''} saved for later.</p>
             <Link to="/saved-items" className="link-btn">View saved items</Link>
+          </div>
+          <div className="profile-summary-card-block">
+            <strong>Wishlist</strong>
+            <p>{wishlistMedicines?.length || 0} medicine{(wishlistMedicines?.length || 0) !== 1 ? 's' : ''} on your wishlist.</p>
+            <Link to="/wishlist" className="link-btn">View wishlist</Link>
           </div>
           <div className="profile-summary-card-block">
             <strong><FileText size={14} strokeWidth={2} style={{ verticalAlign: -2, marginRight: 4 }} />My Prescriptions</strong>

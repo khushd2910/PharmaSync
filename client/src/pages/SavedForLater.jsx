@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, Trash2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
+import { getMedicineImage } from '../utils/medicineFormImage';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 const SavedForLater = () => {
   const { cart, moveSavedToCart, removeSavedItem, loading } = useCart();
@@ -40,6 +42,12 @@ const SavedForLater = () => {
       <div className="saved-items-list">
         {savedItems.map(({ medicine, quantity }) => (
           <div className="saved-item" key={medicine._id}>
+            <img
+              src={resolveImageUrl(medicine.imageUrl) || getMedicineImage(medicine)}
+              alt={medicine.name}
+              className="saved-item-img"
+              loading="lazy"
+            />
             <div className="saved-item-info">
               <Link to={`/medicines/${medicine._id}`} className="saved-item-name">
                 {medicine.name}

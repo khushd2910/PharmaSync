@@ -11,7 +11,7 @@ const faqs = [
   },
   {
     question: 'How do I request a refund?',
-    answer: 'If your order is eligible, open the order details and request a refund from the support section, or contact help directly.',
+    answer: 'Refunds aren\u2019t self-service yet. Contact support with your order number and we\u2019ll review it — once approved, the refund status will show on that order\u2019s Payment details.',
   },
 ];
 

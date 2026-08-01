@@ -962,13 +962,22 @@ textarea { font-family: var(--font-body); resize: vertical; min-height: 90px; }
 
 .saved-item {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr auto;
   gap: 16px;
   align-items: center;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-md);
   padding: 18px;
+}
+
+.saved-item-img {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-sm);
+  background: var(--teal-tint);
+  object-fit: contain;
+  padding: 4px;
 }
 
 .saved-item-info {

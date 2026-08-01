@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LogOut, ShoppingCart, User as UserIcon, ClipboardList, LayoutDashboard, ScanBarcode,
-  BarChart3, FileSpreadsheet, ShieldAlert, Pill, Menu, X,
+  BarChart3, FileSpreadsheet, ShieldAlert, Pill, Menu, X, Heart,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -87,6 +87,9 @@ const Navbar = () => {
           <>
             <Link to="/orders" className="navbar-link icon-link" onClick={closeMenu}>
               <ClipboardList size={16} strokeWidth={2} /> Orders
+            </Link>
+            <Link to="/wishlist" className="navbar-link icon-link" onClick={closeMenu}>
+              <Heart size={16} strokeWidth={2} /> Wishlist
             </Link>
             <Link to="/profile" className="navbar-link icon-link" onClick={closeMenu}>
               <UserIcon size={16} strokeWidth={2} /> Profile
