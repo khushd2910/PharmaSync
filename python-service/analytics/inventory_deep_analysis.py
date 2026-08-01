@@ -330,19 +330,18 @@ def _estimate_discount_recommendation(df, sales_df):
                 'Category shows weak response to markdowns'
             )
 
-    dead_mask = (df['stock'] > 0) & (df['unitsSold'] == 0)
-    for idx, row in df[dead_mask].iterrows():
-        slope = float(row['discountModelSlope'])
+    for idx, row in df.iterrows():
+        slope = float(row['discountModelSlope']) if pd.notna(row['discountModelSlope']) else 0.0
         if slope < 0:
             rec = min(max(int(round(abs(slope) * 50)), 10), 40)
             df.at[idx, 'discountRecommendationPct'] = rec
             df.at[idx, 'discountRecommendationReason'] = (
-                f'Suggest {rec}% markdown for {row["category"]} slow movers.'
+                f'{row["category"]} is price-sensitive. A {rec}% markdown is the AI-tested starting point for clearing slow inventory.'
             )
         else:
             df.at[idx, 'discountRecommendationPct'] = 0
             df.at[idx, 'discountRecommendationReason'] = (
-                'Discounts are unlikely to clear this category quickly.'
+                f'{row["category"]} is not showing a strong markdown response. Keep the current price and focus on assortment, stock, or bundle tactics instead.'
             )
 
     return df
@@ -540,6 +539,7 @@ def build_analysis(medicines_df, sales_df):
         'segments': segment_breakdown,
         'reorderAlerts': reorder_alerts,
         'deadStock': dead_stock,
+        'priceSensitivityRecommendations': records,
         'anomalies': anomalies,
     }
 

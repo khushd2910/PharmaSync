@@ -9,7 +9,7 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { formatCurrency } from '../utils/format';
 import { getMedicineImage } from '../utils/medicineFormImage';
-import { COUPONS, computeCouponDiscount, chooseBestCoupon } from '../utils/coupons';
+import { COUPONS, computeCouponDiscount } from '../utils/coupons';
 import api from '../api/axios';
 
 const UPI_OFFERS = [
@@ -163,14 +163,6 @@ const Cart = () => {
       setCouponError(err.response?.data?.message || 'Invalid coupon code');
     }
   };
-
-  useEffect(() => {
-    if (appliedCoupon) return;
-    const best = chooseBestCoupon(availableCoupons, discountedValue, isFirstOrder);
-    if (best) {
-      setAppliedCoupon(best.coupon);
-    }
-  }, [availableCoupons, discountedValue, isFirstOrder, appliedCoupon, setAppliedCoupon]);
 
   const removeCoupon = () => {
     setAppliedCoupon(null);

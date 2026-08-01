@@ -419,6 +419,7 @@ const updateMedicine = catchAsync(async (req, res, next) => {
     'requiresPrescription',
     'isDiscontinued',
     'barcode',
+    'discountPercent',
   ];
 
   const updates = {};

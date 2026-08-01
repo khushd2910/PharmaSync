@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect, adminOnly } = require('../middleware/authMiddleware');
-const { adminListOrders, adminUpdateOrderStatus } = require('../controllers/orderController');
+const { adminListOrders, adminGetOrderById, adminUpdateOrderStatus } = require('../controllers/orderController');
 const { getDashboardStats } = require('../controllers/adminController');
 const {
   getInventoryAnalysis,
@@ -119,6 +119,10 @@ router.get('/reports/download/:filename', downloadReport);
 // @desc  List all orders, optionally filtered by status
 // @route GET /api/admin/orders?status=&page=&limit=
 router.get('/orders', adminListOrders);
+
+// @desc  Fetch one order for admin review/detail view
+// @route GET /api/admin/orders/:id
+router.get('/orders/:id', adminGetOrderById);
 
 // @desc  Manually advance/cancel an order's status
 // @route PATCH /api/admin/orders/:id/status

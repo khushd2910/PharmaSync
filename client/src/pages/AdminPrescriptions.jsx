@@ -18,6 +18,8 @@ const AdminPrescriptions = () => {
   const [bulkRunning, setBulkRunning] = useState(false);
   const { showToast } = useToast();
 
+  const pendingCount = prescriptions.filter((p) => p.status === 'Pending').length;
+
   const loadPrescriptions = () => {
     setLoading(true);
     const params = {};
@@ -106,12 +108,19 @@ const AdminPrescriptions = () => {
           <p className="eyebrow">Admin</p>
           <h2>Prescription Verification</h2>
         </div>
-        <select className="sort-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-          <option value="">All statuses</option>
-          {STATUSES.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          {pendingCount > 0 && (
+            <span className="badge badge-status">
+              {pendingCount} pending review
+            </span>
+          )}
+          <select className="sort-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <option value="">All statuses</option>
+            {STATUSES.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {selected.length > 0 && (

@@ -44,6 +44,17 @@ const decrementStockOrRollback = async (items) => {
   return { success: true };
 };
 
+const ensureStockAvailability = async (items) => {
+  for (const item of items) {
+    const medicine = await Medicine.findById(item.medicine._id);
+    if (!medicine || medicine.stock < item.quantity) {
+      return { success: false, failedItem: item };
+    }
+  }
+
+  return { success: true };
+};
+
 // Reverses decrementStockOrRollback for a cancelled order — used both for
 // user-initiated cancellation and admin-initiated cancellation.
 const restockItems = async (items) => {
@@ -128,11 +139,21 @@ const createOrder = catchAsync(async (req, res, next) => {
     }
   }
 
-  const stockResult = await decrementStockOrRollback(validItems);
-  if (!stockResult.success) {
+  const stockAvailability = await ensureStockAvailability(validItems);
+  if (!stockAvailability.success) {
     return next(
-      new AppError(`"${stockResult.failedItem.medicine.name}" no longer has enough stock. Please update your cart.`, 409)
+      new AppError(`"${stockAvailability.failedItem.medicine.name}" no longer has enough stock. Please update your cart.`, 409)
     );
+  }
+
+  const shouldReserveStock = paymentMethod !== 'COD';
+  if (shouldReserveStock) {
+    const stockResult = await decrementStockOrRollback(validItems);
+    if (!stockResult.success) {
+      return next(
+        new AppError(`"${stockResult.failedItem.medicine.name}" no longer has enough stock. Please update your cart.`, 409)
+      );
+    }
   }
 
   const orderItems = validItems.map((item) => ({
@@ -214,6 +235,17 @@ const getMyOrders = catchAsync(async (req, res) => {
 // @access  Private
 const getOrderById = catchAsync(async (req, res, next) => {
   const order = await Order.findOne({ _id: req.params.id, user: req.user._id });
+  if (!order) {
+    return next(new AppError('Order not found', 404));
+  }
+  return res.status(200).json({ order });
+});
+
+// @desc    Fetch one order for the admin order-detail view
+// @route   GET /api/admin/orders/:id
+// @access  Private (admin)
+const adminGetOrderById = catchAsync(async (req, res, next) => {
+  const order = await Order.findById(req.params.id).populate('user', 'name email');
   if (!order) {
     return next(new AppError('Order not found', 404));
   }
@@ -383,6 +415,7 @@ module.exports = {
   createOrder,
   getMyOrders,
   getOrderById,
+  adminGetOrderById,
   cancelOrder,
   rateOrder,
   downloadInvoice,

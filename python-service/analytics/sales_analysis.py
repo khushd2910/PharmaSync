@@ -220,6 +220,47 @@ def build_best_worst_sellers(df):
     return best, worst
 
 
+def build_medicine_revenue_breakdown(df):
+    if df.empty:
+        return []
+
+    medicine_totals = df.groupby(['medicineId', 'name'], as_index=False).agg(
+        unitsSold=('quantity', 'sum'),
+        totalRevenue=('revenue', 'sum'),
+    )
+
+    online = df[df['channel'] == 'online'].groupby(['medicineId', 'name'], as_index=False).agg(
+        onlineUnits=('quantity', 'sum'),
+        onlineRevenue=('revenue', 'sum'),
+    )
+    pos = df[df['channel'] == 'pos'].groupby(['medicineId', 'name'], as_index=False).agg(
+        posUnits=('quantity', 'sum'),
+        posRevenue=('revenue', 'sum'),
+    )
+
+    merged = medicine_totals.merge(online, on=['medicineId', 'name'], how='left')
+    merged = merged.merge(pos, on=['medicineId', 'name'], how='left')
+    merged['onlineUnits'] = merged['onlineUnits'].fillna(0)
+    merged['onlineRevenue'] = merged['onlineRevenue'].fillna(0)
+    merged['posUnits'] = merged['posUnits'].fillna(0)
+    merged['posRevenue'] = merged['posRevenue'].fillna(0)
+
+    merged = merged.sort_values('totalRevenue', ascending=False)
+    return [
+        {
+            'medicineId': row['medicineId'],
+            'name': row['name'],
+            'unitsSold': int(row['unitsSold']),
+            'totalRevenue': round(float(row['totalRevenue']), 2),
+            'onlineUnits': int(row['onlineUnits']),
+            'onlineRevenue': round(float(row['onlineRevenue']), 2),
+            'posUnits': int(row['posUnits']),
+            'posRevenue': round(float(row['posRevenue']), 2),
+        }
+        for _, row in merged.iterrows()
+    ]
+
+
 def build_analysis(df):
     total_revenue = round(float(df['revenue'].sum()), 2) if not df.empty else 0.0
     online_revenue = round(float(df.loc[df['channel'] == 'online', 'revenue'].sum()), 2) if not df.empty else 0.0
@@ -227,6 +268,7 @@ def build_analysis(df):
     total_orders = int(df['orderId'].nunique()) if not df.empty else 0
 
     best_sellers, worst_sellers = build_best_worst_sellers(df)
+    medicine_revenue_breakdown = build_medicine_revenue_breakdown(df)
 
     return {
         'generatedAt': datetime.now(timezone.utc),
@@ -240,6 +282,7 @@ def build_analysis(df):
         'monthly': build_monthly_sales(df),
         'bestSellers': best_sellers,
         'worstSellers': worst_sellers,
+        'medicineRevenueBreakdown': medicine_revenue_breakdown,
     }
 
 

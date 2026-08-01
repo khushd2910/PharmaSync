@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { FileText, MapPin, CreditCard, Download, XCircle, ShieldAlert } from 'lucide-react';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
@@ -21,6 +21,7 @@ const PAYMENT_METHOD_LABELS = {
 
 const OrderDetails = () => {
   const { id } = useParams();
+  const location = useLocation();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
@@ -30,8 +31,9 @@ const OrderDetails = () => {
 
   const loadOrder = () => {
     setLoading(true);
+    const endpoint = location.pathname.startsWith('/admin/') ? `/admin/orders/${id}` : `/orders/${id}`;
     api
-      .get(`/orders/${id}`)
+      .get(endpoint)
       .then((res) => setOrder(res.data.order))
       .catch((err) => showToast(err.response?.data?.message || 'Order not found', 'error'))
       .finally(() => setLoading(false));

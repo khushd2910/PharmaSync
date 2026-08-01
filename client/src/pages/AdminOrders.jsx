@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Download, ChevronLeft, ChevronRight, Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Download, ChevronLeft, ChevronRight, Star, ShieldAlert } from 'lucide-react';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import { computeDisplayStatus, ORDER_STAGES } from '../utils/orderStatus';
@@ -26,6 +27,8 @@ const AdminOrders = () => {
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 1 });
   const { showToast } = useToast();
+
+  const pendingReviewCount = orders.filter((order) => order.prescriptionRequired && order.prescriptionStatus === 'Pending Review').length;
 
   const loadOrders = (pageValue) => {
     setLoading(true);
@@ -92,12 +95,20 @@ const AdminOrders = () => {
           <p className="eyebrow">Admin</p>
           <h2>Order Management</h2>
         </div>
-        <select className="sort-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-          <option value="">All statuses</option>
-          {ALL_STATUSES.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          {pendingReviewCount > 0 && (
+            <span className="badge badge-status">
+              <ShieldAlert size={12} strokeWidth={2} style={{ marginRight: 4 }} />
+              {pendingReviewCount} prescription{pendingReviewCount === 1 ? '' : 's'} pending
+            </span>
+          )}
+          <select className="sort-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <option value="">All statuses</option>
+            {ALL_STATUSES.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {loading ? (
@@ -133,6 +144,17 @@ const AdminOrders = () => {
               </div>
 
               <span className="badge badge-status">{computeDisplayStatus(order)}</span>
+
+              {order.prescriptionRequired && order.prescriptionStatus === 'Pending Review' && (
+                <span className="badge badge-rx" title="Prescription needs admin review before fulfillment">
+                  <ShieldAlert size={12} strokeWidth={2} style={{ marginRight: 4 }} />
+                  Prescription pending
+                </span>
+              )}
+
+              <Link className="btn-secondary admin" to={`/admin/orders/${order._id}`}>
+                View details
+              </Link>
 
               <select
                 className="sort-select"

@@ -141,40 +141,8 @@ const AdminDashboard = () => {
 
       <section className="checkout-section analysis-section">
         <div className="analysis-header">
-          <h2 className="checkout-section-title"><BarChart3 size={16} strokeWidth={2} /> Analysis Modules</h2>
-        </div>
-
-        <div className="analysis-grid">
-          <button className="placeholder-card admin-action-card" onClick={handleOpenQuickInventory}>
-            <BarChart3 size={20} strokeWidth={2} className="placeholder-icon" />
-            <div>
-              <strong>Quick Inventory Analysis</strong>
-              <p className="muted-text">Low Stock, Fast Selling, and Slow Selling snapshots that auto-run on arrival.</p>
-            </div>
-          </button>
-
-          <button className="placeholder-card admin-action-card" onClick={handleOpenDiscountOptimization}>
-            <Wallet size={20} strokeWidth={2} className="placeholder-icon" />
-            <div>
-              <strong>Price Sensitivity / Discount Optimization</strong>
-              <p className="muted-text">Dead-stock markdown recommendations based on category elasticity.</p>
-            </div>
-          </button>
-
-          <button className="placeholder-card admin-action-card" onClick={handleOpenDeepInventory}>
-            <Sparkles size={20} strokeWidth={2} className="placeholder-icon" />
-            <div>
-              <strong>Deep Inventory Analysis</strong>
-              <p className="muted-text">ABC, reorder/EOQ, cluster segmentation, and anomaly detection.</p>
-            </div>
-          </button>
-        </div>
-      </section>
-
-      <section className="checkout-section analysis-section">
-        <div className="analysis-header">
           <h2 className="checkout-section-title">
-            <CalendarClock size={16} strokeWidth={2} /> Expiry Analysis
+            <CalendarClock size={16} strokeWidth={2} /> Expiry Management
             {expiryAnalysis?.alertCount > 0 && (
               <span className="badge badge-rx expiry-alert-badge">
                 <BellRing size={12} strokeWidth={2.2} /> {expiryAnalysis.alertCount} urgent
@@ -258,45 +226,93 @@ const AdminDashboard = () => {
         )}
       </section>
 
-      <Link to="/admin/pos" className="placeholder-card admin-action-card">
-        <ScanBarcode size={20} strokeWidth={2} className="placeholder-icon" />
-        <div>
-          <strong>POS Billing</strong>
-          <p className="muted-text">Ring up walk-in customers — scan or search, bill, and print a GST receipt.</p>
+      <section className="checkout-section analysis-section">
+        <div className="analysis-header">
+          <h2 className="checkout-section-title"><BarChart3 size={16} strokeWidth={2} /> Sales Analysis</h2>
         </div>
-      </Link>
 
-      <Link to="/admin/sales-analysis" className="placeholder-card admin-action-card">
-        <BarChart3 size={20} strokeWidth={2} className="placeholder-icon" />
-        <div>
-          <strong>Sales Analysis</strong>
-          <p className="muted-text">Daily, weekly, and monthly trends, revenue, and best/worst sellers.</p>
-        </div>
-      </Link>
+        <div className="analysis-grid">
+          <Link to="/admin/sales-analysis" className="placeholder-card admin-action-card">
+            <BarChart3 size={20} strokeWidth={2} className="placeholder-icon" />
+            <div>
+              <strong>Sales Analysis</strong>
+              <p className="muted-text">Daily, weekly, and monthly trends, revenue, and best/worst sellers.</p>
+            </div>
+          </Link>
 
-      <Link to="/admin/inventory-analysis" className="placeholder-card admin-action-card">
-        <BarChart3 size={20} strokeWidth={2} className="placeholder-icon" />
-        <div>
-          <strong>Deep Inventory Analysis</strong>
-          <p className="muted-text">ABC classification, reorder/EOQ recommendations, AI stock segmentation, and anomaly detection.</p>
+          <Link to="/admin/revenue-analysis" className="placeholder-card admin-action-card">
+            <Wallet size={20} strokeWidth={2} className="placeholder-icon" />
+            <div>
+              <strong>Revenue Analysis</strong>
+              <p className="muted-text">Medicine-by-medicine revenue totals across both online and offline sales channels.</p>
+            </div>
+          </Link>
         </div>
-      </Link>
+      </section>
 
-      <Link to="/admin/orders" className="placeholder-card admin-action-card">
-        <ClipboardList size={20} strokeWidth={2} className="placeholder-icon" />
-        <div>
-          <strong>Order Management</strong>
-          <p className="muted-text">View every order, update delivery status, or cancel — and download invoices.</p>
+      <section className="checkout-section analysis-section">
+        <div className="analysis-header">
+          <h2 className="checkout-section-title"><BarChart3 size={16} strokeWidth={2} /> Analysis Modules</h2>
         </div>
-      </Link>
 
-      <Link to="/admin/medicines" className="placeholder-card admin-action-card">
-        <Pill size={20} strokeWidth={2} className="placeholder-icon" />
-        <div>
-          <strong>Manage Medicines</strong>
-          <p className="muted-text">Add new medicines, edit price/stock/details — changes are live on the storefront immediately.</p>
+        <div className="analysis-grid">
+          <button className="placeholder-card admin-action-card" onClick={handleOpenQuickInventory}>
+            <BarChart3 size={20} strokeWidth={2} className="placeholder-icon" />
+            <div>
+              <strong>Quick Inventory Analysis</strong>
+              <p className="muted-text">Low Stock, Fast Selling, and Slow Selling snapshots that auto-run on arrival.</p>
+            </div>
+          </button>
+
+          <button className="placeholder-card admin-action-card" onClick={handleOpenDiscountOptimization}>
+            <Wallet size={20} strokeWidth={2} className="placeholder-icon" />
+            <div>
+              <strong>Price Sensitivity / Discount Optimization</strong>
+              <p className="muted-text">Dead-stock markdown recommendations based on category elasticity.</p>
+            </div>
+          </button>
+
+          <button className="placeholder-card admin-action-card" onClick={handleOpenDeepInventory}>
+            <Sparkles size={20} strokeWidth={2} className="placeholder-icon" />
+            <div>
+              <strong>Deep Inventory Analysis</strong>
+              <p className="muted-text">ABC, reorder/EOQ, cluster segmentation, and anomaly detection.</p>
+            </div>
+          </button>
         </div>
-      </Link>
+      </section>
+
+      <section className="checkout-section analysis-section">
+        <div className="analysis-header">
+          <h2 className="checkout-section-title"><ClipboardList size={16} strokeWidth={2} /> Operations Modules</h2>
+        </div>
+
+        <div className="analysis-grid">
+          <Link to="/admin/pos" className="placeholder-card admin-action-card">
+            <ScanBarcode size={20} strokeWidth={2} className="placeholder-icon" />
+            <div>
+              <strong>POS Billing</strong>
+              <p className="muted-text">Ring up walk-in customers — scan or search, bill, and print a GST receipt.</p>
+            </div>
+          </Link>
+
+          <Link to="/admin/orders" className="placeholder-card admin-action-card">
+            <ClipboardList size={20} strokeWidth={2} className="placeholder-icon" />
+            <div>
+              <strong>Order Management</strong>
+              <p className="muted-text">View every order, update delivery status, or cancel — and download invoices.</p>
+            </div>
+          </Link>
+
+          <Link to="/admin/medicines" className="placeholder-card admin-action-card">
+            <Pill size={20} strokeWidth={2} className="placeholder-icon" />
+            <div>
+              <strong>Manage Medicines</strong>
+              <p className="muted-text">Add new medicines, edit price/stock/details — changes are live on the storefront immediately.</p>
+            </div>
+          </Link>
+        </div>
+      </section>
     </div>
   );
 };
