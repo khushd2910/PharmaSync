@@ -1,7 +1,7 @@
 """
 Shared helper for the nightly analytics snapshot collections
-(inventory_analysis, sales_analysis, expiry_analysis, market_basket_analysis,
-inventory_deep_analysis, demand_forecasts, revenue_forecasts).
+(inventory_analysis, sales_analysis, expiry_analysis, inventory_deep_analysis,
+demand_forecasts, revenue_forecasts).
 
 Every one of those collections gets a new document inserted every time its
 script runs — the nightly cron job AND every "Run now" click from the admin
@@ -20,7 +20,7 @@ follow from that:
 ensure_snapshot_index() covers the second half: a descending index on
 generatedAt, created once and safe to call on every run (createIndex is a
 no-op if the index already exists) so that sort becomes a fast indexed
-lookup instead of a scan. Four of these seven collections already get this
+lookup instead of a scan. Three of these six collections already get this
 same index from their Mongoose schema on the Node side (server/models/
 *Analysis.js) — this covers those redundantly-but-harmlessly, and covers
 the three (inventory_deep_analysis, demand_forecasts, revenue_forecasts)

@@ -40,14 +40,25 @@ const validateCoupon = async ({ code, userId, cartAmount }) => {
   }
 
   if (coupon.firstOrderOnly) {
-    const previousOrders = await Order.countDocuments({ user: userId });
+    // Cancelled orders shouldn't count against "first order" — the
+    // customer never actually completed a purchase, so this should still
+    // look like their first one.
+    const previousOrders = await Order.countDocuments({ user: userId, orderStatus: { $ne: 'Cancelled' } });
     if (previousOrders > 0) {
       return { valid: false, message: `${coupon.code} is valid only on your first order` };
     }
   }
 
   if (coupon.maxUsesPerUser > 0) {
-    const usedCount = await Order.countDocuments({ user: userId, couponCode: coupon.code });
+    // Same reasoning as firstOrderOnly above: an order that got cancelled
+    // (including one auto-cancelled by a rejected prescription) never
+    // actually delivered the discount, so it shouldn't burn one of the
+    // user's uses of this coupon.
+    const usedCount = await Order.countDocuments({
+      user: userId,
+      couponCode: coupon.code,
+      orderStatus: { $ne: 'Cancelled' },
+    });
     if (usedCount >= coupon.maxUsesPerUser) {
       return { valid: false, message: `You have already used ${coupon.code}` };
     }

@@ -138,14 +138,21 @@ const createOrder = catchAsync(async (req, res, next) => {
     );
   }
 
-  const shouldReserveStock = paymentMethod !== 'COD';
-  if (shouldReserveStock) {
-    const stockResult = await decrementStockOrRollback(validItems);
-    if (!stockResult.success) {
-      return next(
-        new AppError(`"${stockResult.failedItem.medicine.name}" no longer has enough stock. Please update your cart.`, 409)
-      );
-    }
+  // Stock is reserved for every payment method, COD included — it used to
+  // be skipped for COD on the theory that nothing's actually been paid
+  // yet, but that let two COD orders oversell the last few units of the
+  // same medicine (no atomic reservation happened for either), and left
+  // `stock` never actually reflecting COD orders in the pipeline. It also
+  // corrupted inventory on the other end: cancelOrder,
+  // adminUpdateOrderStatus, and adminReviewPrescription all restock an
+  // order's items unconditionally on cancellation/rejection, so a
+  // cancelled COD order was adding stock back that had never been
+  // subtracted in the first place.
+  const stockResult = await decrementStockOrRollback(validItems);
+  if (!stockResult.success) {
+    return next(
+      new AppError(`"${stockResult.failedItem.medicine.name}" no longer has enough stock. Please update your cart.`, 409)
+    );
   }
 
   const orderItems = validItems.map((item) => ({
