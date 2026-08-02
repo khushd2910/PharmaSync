@@ -112,17 +112,28 @@ const checkout = catchAsync(async (req, res, next) => {
   // Re-fetch every medicine server-side rather than trusting client-sent
   // prices/names — the POS screen is just a UI, the source of truth for
   // price/stock/discontinued status is always the current catalog record.
-  const resolvedItems = [];
+  const parsedLines = [];
   for (const line of items) {
     const qty = Math.max(parseInt(line.quantity, 10) || 0, 0);
     if (!line.medicineId || qty < 1) {
       return next(new AppError('Each item needs a medicineId and a quantity of at least 1', 400));
     }
-    const medicine = await Medicine.findById(line.medicineId);
+    parsedLines.push({ medicineId: line.medicineId, quantity: qty });
+  }
+
+  // One query for every item in the basket instead of one findById() per
+  // line — a normal basket is small enough that this didn't matter, but
+  // there's no reason to pay N round trips when one does the same job.
+  const medicines = await Medicine.find({ _id: { $in: parsedLines.map((l) => l.medicineId) } });
+  const medicineById = new Map(medicines.map((m) => [String(m._id), m]));
+
+  const resolvedItems = [];
+  for (const line of parsedLines) {
+    const medicine = medicineById.get(String(line.medicineId));
     if (!medicine || medicine.isDiscontinued) {
       return next(new AppError('One of the scanned items is no longer available', 404));
     }
-    resolvedItems.push({ medicine, quantity: qty });
+    resolvedItems.push({ medicine, quantity: line.quantity });
   }
 
   // Same enforcement as the online storefront: a sale containing an Rx

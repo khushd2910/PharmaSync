@@ -34,6 +34,8 @@ import pandas as pd
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
+from snapshot_retention import ensure_snapshot_index, prune_old_snapshots
+
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
 
@@ -293,11 +295,15 @@ def main():
     sales_df = load_sales_df(db, since)
     result = build_analysis(sales_df)
 
-    db[RESULT_COLLECTION].insert_one(result)
+    collection = db[RESULT_COLLECTION]
+    ensure_snapshot_index(collection)
+    collection.insert_one(result)
+    pruned = prune_old_snapshots(collection)
 
     print(f"[sales_analysis] {result['generatedAt'].isoformat()} — "
           f"Rs.{result['totalRevenue']} total revenue across {result['totalOrders']} orders/sales "
-          f"({len(result['bestSellers'])} best sellers, {len(result['worstSellers'])} worst sellers tracked).")
+          f"({len(result['bestSellers'])} best sellers, {len(result['worstSellers'])} worst sellers tracked)."
+          + (f" Pruned {pruned} old snapshot(s)." if pruned else ""))
 
 
 if __name__ == '__main__':

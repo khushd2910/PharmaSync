@@ -45,8 +45,12 @@ const AdminMedicines = () => {
 
   useEffect(() => {
     // A new search term or filter invalidates whatever page we were on —
-    // start back at page 1 so results aren't a page into a now-different list.
-    setPage(1);
+    // start back at page 1 so results aren't a page into a now-different
+    // list. Debounced on the same 300ms window as the fetch below so this
+    // doesn't re-run (and call setPage) on every single keystroke while
+    // typing — only once the user actually pauses.
+    const timer = setTimeout(() => setPage(1), 300);
+    return () => clearTimeout(timer);
   }, [search, lowStock, expiringSoon]);
 
   useEffect(() => {

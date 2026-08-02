@@ -56,9 +56,23 @@ const normalizeBoolean = (value) => {
   return Boolean(value);
 };
 
+// A cell starting with =, +, -, or @ (or a tab/CR, which some Excel
+// versions also treat as a formula prefix) gets interpreted as a formula
+// the moment the CSV is opened in Excel/Sheets/LibreOffice — not just
+// admin-authored data ends up in this export (e.g. a manufacturer or
+// description string that happens to start with one of these), so every
+// exported field is neutralized the same way regardless of source.
+// Prefixing with a leading apostrophe is the standard OWASP-recommended
+// mitigation: it forces spreadsheet apps to treat the cell as literal
+// text while remaining invisible to anyone reading the CSV as plain text.
+const FORMULA_PREFIX_RE = /^[=+\-@\t\r]/;
+
 const escapeCsvValue = (value) => {
   if (value === null || value === undefined) return '';
-  const stringValue = String(value);
+  let stringValue = String(value);
+  if (FORMULA_PREFIX_RE.test(stringValue)) {
+    stringValue = `'${stringValue}`;
+  }
   if (/[",\n]/.test(stringValue)) {
     return `"${stringValue.replace(/"/g, '""')}"`;
   }
@@ -707,6 +721,9 @@ const bulkImportMedicines = catchAsync(async (req, res, next) => {
   let updated = 0;
   const errors = [];
 
+  // Validate/coerce every row first (no DB access here) — same "one bad
+  // row shouldn't sink the batch" contract as before.
+  const validRows = [];
   for (let i = 0; i < rows.length; i++) {
     const rowNumber = i + 2; // +1 for 0-index, +1 for the header line itself
     const result = mapRow(rows[i], rowNumber);
@@ -714,22 +731,49 @@ const bulkImportMedicines = catchAsync(async (req, res, next) => {
       errors.push(result.error);
       continue;
     }
+    validRows.push({ rowNumber, doc: result.doc });
+  }
 
+  if (validRows.length > 0) {
+    // One query for every barcode in the batch instead of one findOne()
+    // per row, to find which rows are updates vs. creates.
+    const barcodes = validRows.filter((r) => r.doc.barcode).map((r) => r.doc.barcode);
+    const existing = barcodes.length
+      ? await Medicine.find({ barcode: { $in: barcodes } }, { barcode: 1 })
+      : [];
+    const existingIdByBarcode = new Map(existing.map((m) => [m.barcode, m._id]));
+
+    const ops = validRows.map(({ doc }) => {
+      const existingId = doc.barcode ? existingIdByBarcode.get(doc.barcode) : undefined;
+      return existingId
+        ? { updateOne: { filter: { _id: existingId }, update: { $set: doc } } }
+        : { insertOne: { document: doc } };
+    });
+
+    // One round trip for the whole batch instead of one create/updateOne
+    // per row. ordered: false so a single bad op (e.g. two rows in this
+    // same CSV sharing a barcode) doesn't abort every row after it — same
+    // "one bad row shouldn't sink the batch" behavior as before.
+    let bulkResult = { insertedCount: 0, modifiedCount: 0 };
+    let writeErrors = [];
     try {
-      if (result.doc.barcode) {
-        const existing = await Medicine.findOne({ barcode: result.doc.barcode });
-        if (existing) {
-          await Medicine.updateOne({ _id: existing._id }, { $set: result.doc });
-          updated += 1;
-          continue;
-        }
-      }
-      await Medicine.create(result.doc);
-      created += 1;
+      bulkResult = await Medicine.bulkWrite(ops, { ordered: false });
     } catch (err) {
-      // Most likely a duplicate barcode colliding with another row in this
-      // same batch, or a schema validation error — record it and continue.
-      errors.push(`Row ${rowNumber} ("${result.doc.name}"): ${err.message}`);
+      // With ordered: false, MongoDB still attempts every op and only
+      // rejects the promise once at least one fails — the counts for the
+      // ops that DID succeed, and the list of the ones that didn't, both
+      // come back on the error itself rather than being lost.
+      bulkResult = err.result || bulkResult;
+      writeErrors = err.writeErrors || err.result?.result?.writeErrors || [];
+    }
+
+    created += bulkResult.insertedCount || 0;
+    updated += bulkResult.modifiedCount || 0;
+
+    for (const writeError of writeErrors) {
+      const failedRow = validRows[writeError.index];
+      const label = failedRow ? `Row ${failedRow.rowNumber} ("${failedRow.doc.name}")` : 'A row';
+      errors.push(`${label}: ${writeError.errmsg || 'could not be imported'}`);
     }
   }
 

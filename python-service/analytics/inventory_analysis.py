@@ -29,6 +29,8 @@ import pandas as pd
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
+from snapshot_retention import ensure_snapshot_index, prune_old_snapshots
+
 # Load .env from this folder first, then fall back to the repo root, so this
 # script works whether it's run standalone or alongside the Node server.
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
@@ -168,12 +170,16 @@ def main():
     sales_df = load_units_sold_df(db, since)
     result = build_analysis(medicines_df, sales_df)
 
-    db[RESULT_COLLECTION].insert_one(result)
+    collection = db[RESULT_COLLECTION]
+    ensure_snapshot_index(collection)
+    collection.insert_one(result)
+    pruned = prune_old_snapshots(collection)
 
     print(f"[inventory_analysis] {result['generatedAt'].isoformat()} — "
           f"{result['totalMedicines']} medicines, {result['totalStockUnits']} units in stock, "
           f"{len(result['lowStock'])} low-stock, {len(result['fastSelling'])} fast-selling, "
-          f"{len(result['slowSelling'])} slow-selling.")
+          f"{len(result['slowSelling'])} slow-selling."
+          + (f" Pruned {pruned} old snapshot(s)." if pruned else ""))
 
 
 if __name__ == '__main__':

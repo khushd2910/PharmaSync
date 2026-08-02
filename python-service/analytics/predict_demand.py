@@ -26,6 +26,7 @@ from ml_config import (
     DEMAND_MIN_HISTORICAL_SALES,
     DEMAND_MIN_FEATURE_ROWS,
 )
+from snapshot_retention import ensure_snapshot_index, prune_old_snapshots
 
 RESULT_COLLECTION = 'demand_forecasts'
 
@@ -143,7 +144,10 @@ def generate_forecast(db=None, lookback_days=LOOKBACK_DAYS):
         'predictions': predictions
     }
 
-    db[RESULT_COLLECTION].insert_one(result)
+    collection = db[RESULT_COLLECTION]
+    ensure_snapshot_index(collection)
+    collection.insert_one(result)
+    prune_old_snapshots(collection)
     return result
 
 

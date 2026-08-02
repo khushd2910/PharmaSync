@@ -48,6 +48,8 @@ import pandas as pd
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
+from snapshot_retention import ensure_snapshot_index, prune_old_snapshots
+
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
 
@@ -218,11 +220,15 @@ def main():
     baskets, id_to_name = load_baskets(db, since)
     result = build_analysis(baskets, id_to_name)
 
-    db[RESULT_COLLECTION].insert_one(result)
+    collection = db[RESULT_COLLECTION]
+    ensure_snapshot_index(collection)
+    collection.insert_one(result)
+    pruned = prune_old_snapshots(collection)
 
     print(f"[market_basket_analysis] {result['generatedAt'].isoformat()} — "
           f"{result['totalBaskets']} multi-item baskets, "
-          f"{len(result['rules'])} rules, {len(result['topPairs'])} top pairs.")
+          f"{len(result['rules'])} rules, {len(result['topPairs'])} top pairs."
+          + (f" Pruned {pruned} old snapshot(s)." if pruned else ""))
 
 
 if __name__ == '__main__':

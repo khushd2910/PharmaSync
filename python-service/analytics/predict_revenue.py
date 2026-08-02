@@ -19,6 +19,7 @@ from pymongo import MongoClient
 sys.path.insert(0, os.path.dirname(__file__))
 from model_registry import load_model, is_stale
 from train_revenue_model import train_revenue_model, load_transactions_df
+from snapshot_retention import ensure_snapshot_index, prune_old_snapshots
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
@@ -131,7 +132,10 @@ def generate_forecast(db=None, lookback_days=LOOKBACK_DAYS):
         'growthRate': growth_rate
     }
 
-    db[RESULT_COLLECTION].insert_one(result)
+    collection = db[RESULT_COLLECTION]
+    ensure_snapshot_index(collection)
+    collection.insert_one(result)
+    prune_old_snapshots(collection)
     return result
 
 

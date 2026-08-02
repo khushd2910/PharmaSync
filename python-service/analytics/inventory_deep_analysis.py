@@ -73,6 +73,7 @@ from ml_config import (
     ISOLATION_FOREST_RANDOM_STATE,
     ISOLATION_FOREST_MODEL_NAME,
 )
+from snapshot_retention import ensure_snapshot_index, prune_old_snapshots
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
@@ -667,7 +668,10 @@ def generate_deep_analysis():
 
     result = build_analysis(medicines_df, sales_df)
 
-    db[RESULT_COLLECTION].insert_one(result)
+    collection = db[RESULT_COLLECTION]
+    ensure_snapshot_index(collection)
+    collection.insert_one(result)
+    prune_old_snapshots(collection)
     return result
 
 
