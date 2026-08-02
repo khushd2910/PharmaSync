@@ -3,10 +3,10 @@ const path = require('path');
 const multer = require('multer');
 const AppError = require('../utils/AppError');
 
-// Files land in <repo root>/uploads/prescriptions/ — the same `uploads/`
-// folder the project brief already sets aside for this ("Prescription
-// uploads (for future verification modules)"). This middleware lives in
-// server/middleware/, so ../.. gets back to the repo root from there.
+// Files land in <repo root>/uploads/prescriptions/, reviewed by an admin
+// via adminReviewPrescription (server/controllers/prescriptionController.js).
+// This middleware lives in server/middleware/, so ../.. gets back to the
+// repo root from there.
 const UPLOAD_DIR = path.join(__dirname, '..', '..', 'uploads', 'prescriptions');
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 

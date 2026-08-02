@@ -19,7 +19,7 @@ PharmaSync/
 │   ├── analytics/     # Core Python analytics modules (inventory & sales analysis)
 │   └── requirements.txt
 ├── database/          # Database notes & seeding scripts
-├── uploads/           # Prescription uploads (for future verification modules)
+├── uploads/           # Prescription uploads & medicine images
 ├── docs/              # Project documentation & briefs
 └── README.md          # Project readme with setup instructions
 ```

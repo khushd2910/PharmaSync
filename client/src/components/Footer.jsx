@@ -5,11 +5,6 @@ import {
 } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 
-// Non-functional placeholder links (Support/Legal columns, social icons) —
-// there's no backing page for these yet, so clicks are inert rather than
-// jumping the scroll position to the top via a bare `#` href.
-const preventDefault = (e) => e.preventDefault();
-
 const Footer = () => {
   const year = new Date().getFullYear();
 

@@ -14,7 +14,6 @@ const formatExpiry = formatDate;
 const AdminDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [data, setData] = useState(null);
   const [stats, setStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [expiryAnalysis, setExpiryAnalysis] = useState(null);
@@ -47,7 +46,6 @@ const AdminDashboard = () => {
   };
 
   useEffect(() => {
-    api.get('/admin/dashboard').then((res) => setData(res.data));
     api
       .get('/admin/dashboard/stats')
       .then((res) => setStats(res.data.stats))
@@ -90,8 +88,6 @@ const AdminDashboard = () => {
           <h2>Welcome, {user?.name?.split(' ')[0]}</h2>
         </div>
       </header>
-
-      {data && <p className="info-text">{data.info}</p>}
 
       {statsLoading ? (
         <p className="info-text center-text">Loading overview…</p>

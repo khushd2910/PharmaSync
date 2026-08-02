@@ -27,22 +27,6 @@ const uploadMedicine = require('../middleware/uploadMedicine');
 
 router.use(protect, adminOnly); // every admin route requires an admin login
 
-// @desc  Admin dashboard (placeholder - later modules add medicine CRUD,
-//        stock management, POS billing, etc.)
-// @route GET /api/admin/dashboard
-router.get('/dashboard', (req, res) => {
-  res.status(200).json({
-    message: `Welcome Admin ${req.user.name}`,
-    info: 'Manage complete pharmacy from here (coming in later modules).',
-    admin: {
-      id: req.user._id,
-      name: req.user.name,
-      email: req.user.email,
-      role: req.user.role,
-    },
-  });
-});
-
 // @desc  Overview counters for the dashboard (medicines, orders, revenue,
 //        low stock, expiring soon)
 // @route GET /api/admin/dashboard/stats
