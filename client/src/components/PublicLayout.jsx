@@ -3,6 +3,7 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import ChatWidget from './ChatWidget';
 import BackButton from './BackButton';
+import ScrollToTopButton from './ScrollToTopButton';
 
 // Pages where the customer-support chatbot has no business showing up:
 // the whole admin section (including /admin/login), and the storefront's
@@ -22,6 +23,7 @@ const PublicLayout = () => {
       <Footer />
       {!hideChat && <ChatWidget />}
       <BackButton />
+      <ScrollToTopButton />
     </>
   );
 };

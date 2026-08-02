@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FileWarning, Plus, Minus, Heart } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
@@ -22,6 +23,7 @@ const MedicineCard = ({ medicine, onAddToCart, rating }) => {
   const { showToast } = useToast();
   const navigate = useNavigate();
   const wishlisted = wishlist?.isWishlisted(medicine._id) || false;
+  const [addAnim, setAddAnim] = useState(false);
 
   const handleWishlistClick = async (e) => {
     e.preventDefault();
@@ -51,13 +53,12 @@ const MedicineCard = ({ medicine, onAddToCart, rating }) => {
   const cartLine = cart.items.find((item) => item.medicine && item.medicine._id === medicine._id);
   const quantityInCart = cartLine?.quantity || 0;
 
-  // The whole card navigates to the detail page. All the buttons below sit
-  // inside that same clickable area, so every click must be stopped from
-  // bubbling up to (and its default <a> navigation prevented by) the card
-  // link — otherwise pressing one would both act on the cart and navigate away.
   const handleAddClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    // Trigger bouncy pop animation on the button
+    setAddAnim(true);
+    setTimeout(() => setAddAnim(false), 400);
     onAddToCart(medicine);
   };
 
@@ -82,9 +83,14 @@ const MedicineCard = ({ medicine, onAddToCart, rating }) => {
   };
 
   return (
-    <Link to={`/medicines/${medicine._id}`} className="medicine-card">
+    <Link
+      to={`/medicines/${medicine._id}`}
+      className={`medicine-card${outOfStock ? ' medicine-card-oos' : ''}`}
+    >
       <div className="medicine-card-media">
         {hasDiscount && <span className="medicine-card-offtag">{medicine.discountPercent}% OFF</span>}
+
+        {/* Wishlist heart */}
         <button
           type="button"
           className={`medicine-card-wishlist ${wishlisted ? 'active' : ''}`}
@@ -94,12 +100,18 @@ const MedicineCard = ({ medicine, onAddToCart, rating }) => {
         >
           <Heart size={15} strokeWidth={2} fill={wishlisted ? 'currentColor' : 'none'} />
         </button>
+
         <img
           src={resolveImageUrl(medicine.imageUrl) || getMedicineImage(medicine)}
           alt={medicine.name}
           className="medicine-card-img"
           loading="lazy"
         />
+
+        {/* Out-of-stock overlay */}
+        {outOfStock && <div className="medicine-card-oos-overlay">Out of Stock</div>}
+
+        {/* Quantity stepper / ADD button */}
         {quantityInCart > 0 ? (
           <div className="medicine-card-stepper" onClick={(e) => e.preventDefault()}>
             <button onClick={handleDecrement} aria-label="Decrease quantity">
@@ -117,7 +129,7 @@ const MedicineCard = ({ medicine, onAddToCart, rating }) => {
           </div>
         ) : (
           <button
-            className="medicine-card-add"
+            className={`medicine-card-add${addAnim ? ' medicine-card-add-pop' : ''}`}
             onClick={handleAddClick}
             disabled={outOfStock}
             title={outOfStock ? 'Out of stock' : 'Add to cart'}
@@ -138,7 +150,9 @@ const MedicineCard = ({ medicine, onAddToCart, rating }) => {
             <span className="medicine-card-price">Price unavailable</span>
           )}
         </div>
-        <span className="medicine-card-savings">{hasDiscount ? `${formatCurrency(savings)} OFF` : '\u00A0'}</span>
+        <span className="medicine-card-savings">
+          {hasDiscount ? `${formatCurrency(savings)} OFF` : '\u00A0'}
+        </span>
 
         <span className="medicine-card-name">{medicine.name}</span>
         {rating && <RatingStars average={rating.average} count={rating.count} />}
@@ -147,13 +161,25 @@ const MedicineCard = ({ medicine, onAddToCart, rating }) => {
         </p>
 
         <div className="medicine-card-tags">
-          {medicine.category && <span className="badge badge-category">{medicine.category}</span>}
+          {medicine.category && (
+            <span className="badge badge-category">{medicine.category}</span>
+          )}
           {medicine.requiresPrescription && (
-            <span className="badge badge-rx" title="A pharmacist must approve an uploaded prescription before this can be delivered">
+            <span
+              className="badge badge-rx"
+              title="A pharmacist must approve an uploaded prescription before this can be delivered"
+            >
               <FileWarning size={11} strokeWidth={2} /> Rx required
             </span>
           )}
-          {lowStock && <span className="badge badge-discount">Only {medicine.stock} left</span>}
+          {lowStock && (
+            <span
+              className="badge badge-discount"
+              style={{ animation: 'pulseGlowAmber 2s ease-in-out infinite' }}
+            >
+              Only {medicine.stock} left
+            </span>
+          )}
         </div>
       </div>
     </Link>

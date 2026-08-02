@@ -1,26 +1,31 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LogOut, ShoppingCart, User as UserIcon, ClipboardList, LayoutDashboard, ScanBarcode,
-  BarChart3, FileSpreadsheet, ShieldAlert, Pill, Menu, X, Heart,
+  BarChart3, FileSpreadsheet, ShieldAlert, Pill, Menu, X, Heart, Sun, Moon,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useTheme } from '../context/ThemeContext';
 import ConfirmModal from './ConfirmModal';
 import BrandLogo from './BrandLogo';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const { cart } = useCart();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const navRef = useRef(null);
 
-  // Only attached while the menu is actually open, and torn down again as
-  // soon as it closes — so this costs nothing on every other page. A
-  // hamburger menu that only closes via its own toggle button (the
-  // previous behavior) is a common source of "stuck open" complaints:
-  // clicking anywhere else on the page, or pressing Escape, should close
-  // it too.
+  // Scroll shadow: add .navbar-scrolled once user has scrolled 10px
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Close menu on outside click or Escape
   useEffect(() => {
     if (!menuOpen) return;
 
@@ -57,20 +62,10 @@ const Navbar = () => {
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <nav className="navbar" ref={navRef}>
+    <nav className={`navbar${scrolled ? ' navbar-scrolled' : ''}`} ref={navRef}>
       <Link to="/" className="navbar-brand" onClick={closeMenu}>
         <BrandLogo compact />
       </Link>
-
-      <button
-        type="button"
-        className="navbar-menu-toggle"
-        onClick={() => setMenuOpen((prev) => !prev)}
-        aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-        aria-expanded={menuOpen}
-      >
-        {menuOpen ? <X size={22} strokeWidth={2} /> : <Menu size={22} strokeWidth={2} />}
-      </button>
 
       <div className={`navbar-links ${menuOpen ? 'navbar-links-open' : ''}`}>
         <Link to="/" className="navbar-link" onClick={closeMenu}>Home</Link>
@@ -133,7 +128,49 @@ const Navbar = () => {
             </button>
           </>
         )}
+
+        {/* Theme toggle — always visible inside the menu on mobile */}
+        <button
+          type="button"
+          className="theme-toggle-btn"
+          onClick={toggleTheme}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+        >
+          {theme === 'dark'
+            ? <Sun size={16} strokeWidth={2} />
+            : <Moon size={16} strokeWidth={2} />
+          }
+        </button>
       </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {/* Theme toggle visible on desktop outside menu */}
+        <button
+          type="button"
+          className="theme-toggle-btn navbar-desktop-theme"
+          onClick={toggleTheme}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          style={{ display: menuOpen ? 'none' : undefined }}
+        >
+          {theme === 'dark'
+            ? <Sun size={16} strokeWidth={2} />
+            : <Moon size={16} strokeWidth={2} />
+          }
+        </button>
+
+        <button
+          type="button"
+          className="navbar-menu-toggle"
+          onClick={() => setMenuOpen((prev) => !prev)}
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={menuOpen}
+        >
+          {menuOpen ? <X size={22} strokeWidth={2} /> : <Menu size={22} strokeWidth={2} />}
+        </button>
+      </div>
+
       <ConfirmModal
         open={confirmLogoutOpen}
         title="Log out of PharmaSync?"

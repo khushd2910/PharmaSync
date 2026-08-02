@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Search, ShieldCheck, Truck, FileText, Tag, Heart } from 'lucide-react';
+import { Search, ShieldCheck, Truck, FileText, Heart, Sparkles } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -13,35 +13,43 @@ import MedicineRow from '../components/MedicineRow';
 import { SkeletonMedicineCard } from '../components/Skeleton';
 import { getRecentlyViewed, setRecentlyViewed as persistRecentlyViewed } from '../utils/recentlyViewed';
 
+// Trust highlights shown in the feature grid below the catalog
 const highlights = [
-  { icon: ShieldCheck, title: 'Verified accounts', text: 'Email verification keeps every account secure.' },
-  { icon: Truck, title: 'Doorstep delivery', text: 'Live address selection with delivery tracking.' },
-  { icon: FileText, title: 'GST invoices', text: 'Download clean, itemized invoices for every order.' },
+  { icon: ShieldCheck, title: 'Verified accounts', text: 'Email verification keeps every account secure and trusted.' },
+  { icon: Truck, title: 'Doorstep delivery', text: 'Live address selection with real-time delivery tracking.' },
+  { icon: FileText, title: 'GST invoices', text: 'Download clean, itemized invoices instantly for every order.' },
+];
+
+// Category tiles with emojis for visual, non-tech-savvy navigation
+const CATEGORY_TILES = [
+  { emoji: '💊', name: 'Pain Relief' },
+  { emoji: '🤧', name: 'Cold & Flu' },
+  { emoji: '❤️', name: 'Heart Care' },
+  { emoji: '🍬', name: 'Diabetes' },
+  { emoji: '🧴', name: 'Skin Care' },
+  { emoji: '🌿', name: 'Ayurvedic' },
+  { emoji: '🧪', name: 'Vitamins' },
+  { emoji: '😴', name: 'Sleep Aid' },
+  { emoji: '🏋️', name: 'Nutrition' },
+  { emoji: '👁️', name: 'Eye Care' },
 ];
 
 const Home = () => {
-  // Discovery-mode data (shown as promo rows above the catalog when no
-  // search/filter is active — purely additive, not a replacement view)
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [offers, setOffers] = useState([]);
   const [popular, setPopular] = useState([]);
   const [recent, setRecent] = useState([]);
 
-  // Search/filter state — initialized from the URL so a shared link,
-  // bookmark, or browser back/forward restores the same filtered view
-  // instead of always resetting to a blank Home page.
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(() => searchParams.get('q') || '');
+  const [heroSearch, setHeroSearch] = useState('');
   const [category, setCategory] = useState(() => searchParams.get('category') || '');
   const [brand, setBrand] = useState(() => searchParams.get('brand') || '');
   const [sort, setSort] = useState(() => searchParams.get('sort') || 'name');
   const [prescriptionRequired, setPrescriptionRequired] = useState(() => searchParams.get('rx') || '');
   const [inStockOnly, setInStockOnly] = useState(() => searchParams.get('inStock') === 'true');
 
-  // Search suggestions dropdown — shown under the search bar while typing,
-  // built from whatever the main catalog fetch below already returned
-  // (no extra network round-trip needed).
   const [suggestOpen, setSuggestOpen] = useState(false);
   const suggestCloseRef = useRef(null);
 
@@ -52,18 +60,18 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const debounceRef = useRef(null);
 
+  const catalogRef = useRef(null);
+
   const { user } = useAuth();
   const { addToCart } = useCart();
   const { medicines: wishlistMedicines } = useWishlist() || {};
   const { showToast } = useToast();
   const navigate = useNavigate();
-  // Each account (and guest browsing) gets its own Recently Viewed list —
-  // otherwise everyone sharing a browser would see each other's history.
   const recentScope = user?.id || 'guest';
 
   const isBrowsing = !search.trim() && !category && !brand && !prescriptionRequired && !inStockOnly;
 
-  // Load discovery sections + filter option lists once
+  // Load discovery sections + filter lists
   useEffect(() => {
     api.get('/medicines/categories').then((res) => setCategories(res.data.categories)).catch(() => {});
     api.get('/medicines/brands').then((res) => setBrands(res.data.brands)).catch(() => {});
@@ -72,17 +80,6 @@ const Home = () => {
     api.get('/medicines', { params: { sort: 'newest', limit: 8 } }).then((res) => setRecent(res.data.medicines)).catch(() => {});
   }, []);
 
-  // Recently Viewed is cached client-side, so it can go stale — a medicine
-  // gets removed, or the catalog gets reseeded with new ids. Rather than
-  // trusting the cache and only finding out it's wrong when the person
-  // clicks through to a "not found" page, re-check every cached id against
-  // the server on load and quietly drop anything that no longer comes back
-  // (also refreshing price/stock for the ones that do).
-  //
-  // This used to be a hand-rolled effect with its own cancelled-flag
-  // cleanup. React Query gets the same result for less code, plus caching
-  // for free: navigating Home → a medicine → back to Home reuses the
-  // cached result (same queryKey) instead of re-fetching every time.
   const cachedRecentlyViewed = getRecentlyViewed(recentScope);
   const cachedRecentlyViewedIds = cachedRecentlyViewed.map((m) => m._id).join(',');
 
@@ -91,8 +88,6 @@ const Home = () => {
     queryFn: async () => {
       const res = await api.get('/medicines/by-ids', { params: { ids: cachedRecentlyViewedIds } });
       const byId = new Map(res.data.medicines.map((m) => [m._id, m]));
-      // Keep the cache's most-recent-first order, just filtered down to
-      // (and refreshed with) whatever the server confirms still exists.
       const stillValid = cachedRecentlyViewed.map((m) => byId.get(m._id)).filter(Boolean);
       persistRecentlyViewed(stillValid, recentScope);
       return stillValid;
@@ -101,16 +96,8 @@ const Home = () => {
     staleTime: 60 * 1000,
   });
 
-  // While the validation query is loading (or if it fails — offline, server
-  // hiccup), fall back to showing the cache as-is rather than hiding the
-  // row entirely; worst case a stale click still goes through the existing
-  // 404 handling on the details page.
   const recentlyViewed = validatedRecentlyViewed ?? cachedRecentlyViewed;
 
-  // Star ratings for every medicine currently on screen (discovery rows +
-  // catalog grid + recently viewed + wishlist) — one bulk request rather
-  // than one per card. Medicines with no reviews just aren't in the
-  // response, so their cards render without a rating rather than 0 stars.
   const visibleMedicineIds = Array.from(
     new Set(
       [...offers, ...popular, ...recent, ...medicines, ...recentlyViewed, ...(wishlistMedicines || [])].map(
@@ -157,8 +144,6 @@ const Home = () => {
     }
   };
 
-  // The catalog grid is always live — filters/search/sort are available
-  // from the start, not hidden behind an initial search action.
   useEffect(() => {
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => fetchMedicines(1, false), 350);
@@ -166,10 +151,6 @@ const Home = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, category, brand, sort, prescriptionRequired, inStockOnly]);
 
-  // Mirror the active filters into the URL (replacing, not pushing, so
-  // typing in the search box doesn't fill up browser history) — lets
-  // people bookmark/share a filtered view and makes back/forward and
-  // refresh restore it instead of dropping back to a blank Home page.
   useEffect(() => {
     const next = {};
     if (search.trim()) next.q = search.trim();
@@ -201,10 +182,6 @@ const Home = () => {
     navigate(`/medicines/${medicine._id}`);
   };
 
-  // A plain onBlur would close the dropdown before a click on one of its
-  // items has a chance to register, since blur fires first — delaying the
-  // close by a tick lets that click go through, and gets cancelled by
-  // onFocus/onMouseDown if the person is just clicking back into the input.
   const handleSearchBlur = () => {
     suggestCloseRef.current = setTimeout(() => setSuggestOpen(false), 150);
   };
@@ -212,24 +189,161 @@ const Home = () => {
 
   const searchSuggestions = search.trim() ? medicines.slice(0, 6) : [];
 
+  // Hero search: set the main search and scroll to catalog
+  const handleHeroSearch = (e) => {
+    e.preventDefault();
+    if (!heroSearch.trim()) return;
+    setSearch(heroSearch.trim());
+    setTimeout(() => {
+      catalogRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
+  // Category tile click: set category filter and scroll to catalog
+  const handleCategoryTileClick = (name) => {
+    setCategory(category === name ? '' : name);
+    setTimeout(() => {
+      catalogRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
   return (
     <div className="home-page">
-      <section className="hero">
-        <p className="eyebrow center">Pharmacy Management, Simplified</p>
-        <h1 className="hero-title">Your neighborhood pharmacy, online.</h1>
-        <p className="hero-subtitle">
-          Browse medicines below without an account — sign up when you're
-          ready to order, track deliveries, or manage prescriptions.
-        </p>
-        {!user && (
-          <div className="hero-actions">
-            <Link to="/register" className="btn-primary hero-btn">Get started as a patient</Link>
-            <Link to="/admin/login" className="btn-secondary hero-btn">I'm pharmacy staff</Link>
+
+      {/* ── Hero Banner ── */}
+      <section className="hero-banner">
+        {/* Decorative floating orbs */}
+        <div className="hero-orb hero-orb-1" aria-hidden="true" />
+        <div className="hero-orb hero-orb-2" aria-hidden="true" />
+        <div className="hero-orb hero-orb-3" aria-hidden="true" />
+        <div className="hero-orb hero-orb-4" aria-hidden="true" />
+
+        <div className="hero-inner">
+          <div className="hero-eyebrow">
+            <Sparkles size={12} strokeWidth={2.5} />
+            India&apos;s Trusted Online Pharmacy
           </div>
-        )}
+          <h1 className="hero-title">
+            Your health, delivered<br />
+            <span className="gradient-text">to your door.</span>
+          </h1>
+          <p className="hero-subtitle">
+            Browse 1,150+ genuine medicines. Order with confidence —<br />
+            pharmacist-verified, GST-invoiced, and tracked door-to-door.
+          </p>
+
+          {/* Hero Search Bar */}
+          <form className="hero-search-wrap" onSubmit={handleHeroSearch}>
+            <Search size={18} style={{ color: '#9db4ac', flexShrink: 0 }} />
+            <input
+              type="text"
+              placeholder="Search medicines, vitamins, supplements…"
+              value={heroSearch}
+              onChange={(e) => setHeroSearch(e.target.value)}
+              autoComplete="off"
+            />
+            <button type="submit" className="hero-search-btn">
+              Search
+            </button>
+          </form>
+
+          {/* Trust pills */}
+          <div className="hero-trust-pills">
+            <span className="hero-trust-pill">✓ 1,150+ Medicines</span>
+            <span className="hero-trust-pill">✓ Verified Sellers</span>
+            <span className="hero-trust-pill">✓ GST Invoices</span>
+            <span className="hero-trust-pill">✓ Free Returns</span>
+          </div>
+
+          {/* CTA Buttons (for guests) */}
+          {!user && (
+            <div className="hero-actions">
+              <Link to="/register" className="hero-btn-white">
+                Get started as a patient
+              </Link>
+              <Link to="/admin/login" className="hero-btn-outline">
+                I&apos;m pharmacy staff →
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Animated scroll-down indicator */}
+        <button
+          type="button"
+          className="hero-scroll-indicator"
+          aria-label="Scroll to medicines"
+          onClick={() => catalogRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+          Scroll
+        </button>
       </section>
 
-      {/* Search bar — always visible */}
+      {/* ── Trust Ticker Strip ── */}
+      <div className="ticker-strip" aria-hidden="true">
+        <div className="ticker-inner">
+          {[
+            { icon: <ShieldCheck size={14} />, text: 'Licensed Pharmacy Partners' },
+            { icon: <Truck size={14} />, text: 'Fast Tracked Delivery' },
+            { icon: <FileText size={14} />, text: 'GST-Invoiced Orders' },
+            { icon: <Heart size={14} />, text: 'Pharmacist Verified' },
+            { icon: <ShieldCheck size={14} />, text: '1,150+ Genuine Medicines' },
+            { icon: <Truck size={14} />, text: '7-Day Easy Returns' },
+            { icon: <FileText size={14} />, text: 'Secure Encrypted Payments' },
+            { icon: <Heart size={14} />, text: 'Rx Prescription Support' },
+            // Duplicate for seamless loop
+            { icon: <ShieldCheck size={14} />, text: 'Licensed Pharmacy Partners' },
+            { icon: <Truck size={14} />, text: 'Fast Tracked Delivery' },
+            { icon: <FileText size={14} />, text: 'GST-Invoiced Orders' },
+            { icon: <Heart size={14} />, text: 'Pharmacist Verified' },
+            { icon: <ShieldCheck size={14} />, text: '1,150+ Genuine Medicines' },
+            { icon: <Truck size={14} />, text: '7-Day Easy Returns' },
+            { icon: <FileText size={14} />, text: 'Secure Encrypted Payments' },
+            { icon: <Heart size={14} />, text: 'Rx Prescription Support' },
+          ].map((item, i) => (
+            <span key={i} className="ticker-item">
+              {item.icon}
+              {item.text}
+              <span className="ticker-dot" />
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Category Tiles ── */}
+      {categories.length > 0 && (
+        <section className="category-tiles-section">
+          <div className="category-tiles-header">
+            <h2>Shop by Category</h2>
+            <p>Find medicines quickly — just tap the area you need help with</p>
+          </div>
+          <div className="category-tiles-grid">
+            {CATEGORY_TILES.map((tile) => {
+              // Match tile name to real categories (case-insensitive contains check)
+              const matched = categories.find((c) =>
+                c.toLowerCase().includes(tile.name.toLowerCase().split(' ')[0])
+              );
+              const targetCategory = matched || tile.name;
+              return (
+                <button
+                  key={tile.name}
+                  className="category-tile"
+                  onClick={() => handleCategoryTileClick(targetCategory)}
+                  type="button"
+                >
+                  <span className="category-tile-emoji">{tile.emoji}</span>
+                  <span className="category-tile-name">{tile.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* ── Main Search Bar ── */}
       <section className="search-bar-section">
         <div className="search-suggest-wrap">
           <IconInput
@@ -261,7 +375,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Medicine Categories — quick-filter pills */}
+      {/* ── Category Pill Filters ── */}
       {categories.length > 0 && (
         <section className="category-pills-section">
           <button
@@ -282,7 +396,7 @@ const Home = () => {
         </section>
       )}
 
-      {/* Promo rows — additive, shown above the catalog only while browsing */}
+      {/* ── Discovery Rows (browsing mode only) ── */}
       {isBrowsing && wishlistMedicines?.length > 0 && (
         <MedicineRow title="My Wishlist" icon={Heart} medicines={wishlistMedicines} onAddToCart={handleAddToCart} ratings={ratings} />
       )}
@@ -290,19 +404,21 @@ const Home = () => {
         <MedicineRow title="Recently Viewed" medicines={recentlyViewed} onAddToCart={handleAddToCart} ratings={ratings} />
       )}
       {isBrowsing && offers.length > 0 && (
-        <MedicineRow title="Offers" icon={Tag} medicines={offers} onAddToCart={handleAddToCart} ratings={ratings} />
+        <MedicineRow title="🔖 Today&apos;s Offers" medicines={offers} onAddToCart={handleAddToCart} ratings={ratings} />
       )}
       {isBrowsing && popular.length > 0 && (
-        <MedicineRow title="Popular Medicines" medicines={popular} onAddToCart={handleAddToCart} ratings={ratings} />
+        <MedicineRow title="⭐ Popular Medicines" medicines={popular} onAddToCart={handleAddToCart} ratings={ratings} />
       )}
       {isBrowsing && recent.length > 0 && (
-        <MedicineRow title="Recently Added" medicines={recent} onAddToCart={handleAddToCart} ratings={ratings} />
+        <MedicineRow title="🆕 Recently Added" medicines={recent} onAddToCart={handleAddToCart} ratings={ratings} />
       )}
 
-      {/* Filters + catalog grid — always visible and always functional */}
-      <section className="browse-section">
+      {/* ── Catalog Grid ── */}
+      <section className="browse-section" ref={catalogRef}>
         <div className="browse-header">
-          <h2 className="browse-title">{isBrowsing ? 'All Medicines' : 'Search results'}</h2>
+          <h2 className="browse-title">
+            {isBrowsing ? 'All Medicines' : `Results for "${search || category || brand}"`}
+          </h2>
           <span className="browse-count">{total.toLocaleString()} found</span>
         </div>
 
@@ -359,10 +475,13 @@ const Home = () => {
         )}
       </section>
 
+      {/* ── Trust / Feature Grid ── */}
       <section className="feature-grid">
         {highlights.map(({ icon: Icon, title, text }) => (
           <div className="feature-card" key={title}>
-            <Icon size={22} strokeWidth={2} className="feature-icon" />
+            <div className="feature-icon-wrap">
+              <Icon size={22} strokeWidth={2} />
+            </div>
             <h3>{title}</h3>
             <p>{text}</p>
           </div>
